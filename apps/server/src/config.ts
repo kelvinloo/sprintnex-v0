@@ -49,6 +49,7 @@ const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_TIMEOUT_MS = 30000;
 const DEFAULT_LOG_FORMAT: LogFormat = "pretty";
 const DEFAULT_LOG_REQUESTS = true;
+const DEFAULT_CONFIG_FILENAME = "sprintnex-server.json";
 
 function normalizeLogFormat(value: string | undefined): LogFormat | undefined {
   if (!value) return undefined;
@@ -208,7 +209,7 @@ async function loadFileConfig(configPath: string): Promise<FileConfig> {
 
 export async function resolveServerConfig(cli: CliArgs): Promise<ServerConfig> {
   const envConfigPath = process.env.OPENWORK_SERVER_CONFIG;
-  const configPath = cli.configPath ?? envConfigPath ?? resolve(homedir(), ".config", "openwork", "server.json");
+  const configPath = cli.configPath ?? envConfigPath ?? resolve(homedir(), ".config", "openwork", DEFAULT_CONFIG_FILENAME);
   const fileConfig = await loadFileConfig(configPath);
   const configDir = dirname(configPath);
 

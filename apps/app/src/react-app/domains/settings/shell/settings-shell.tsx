@@ -24,7 +24,6 @@ import {
   SettingsPage,
   SettingsBetaBadge,
   SettingsSidebar,
-  getCloudSettingsTabs,
   getGlobalSettingsTabs,
   getSettingsTabIcon,
   getSettingsTabLabel,
@@ -32,9 +31,11 @@ import {
   isSettingsTabBeta,
 } from "./settings-page";
 import { WorkspaceIcon } from "../../../design-system/workspace-icon";
-import { useFeatureFlagsPreferences } from "../state/feature-flags-preferences";
 
-type SettingsPageFrameProps = Omit<React.ComponentProps<typeof SettingsPage>, "children">;
+type SettingsPageFrameProps = Omit<
+  React.ComponentProps<typeof SettingsPage>,
+  "children"
+>;
 
 export type SettingsShellProps = SettingsPageFrameProps & {
   selectedWorkspaceId: string;
@@ -119,7 +120,9 @@ export function SettingsShell(props: SettingsShellProps) {
               <div className="flex min-w-0 items-center gap-3">
                 <SidebarTrigger className="mac:titlebar-no-drag md:hidden" />
                 {props.headerLeadingSlot}
-                <h1 className="truncate text-[15px] font-semibold text-dls-text">{title}</h1>
+                <h1 className="truncate text-[15px] font-semibold text-dls-text">
+                  {title}
+                </h1>
                 <span className="hidden truncate text-[13px] text-dls-secondary lg:inline">
                   {props.selectedWorkspaceName}
                 </span>
@@ -163,44 +166,64 @@ export function SettingsShell(props: SettingsShellProps) {
   );
 }
 
-function SettingsSectionMenu(props: Pick<SettingsPageFrameProps, "activeTab" | "developerMode" | "onSelectTab">) {
-  const { memoryEnabled } = useFeatureFlagsPreferences();
+function SettingsSectionMenu(
+  props: Pick<
+    SettingsPageFrameProps,
+    "activeTab" | "developerMode" | "onSelectTab"
+  >,
+) {
   const sections: Array<{ label: string | null; tabs: SettingsTab[] }> = [
     { label: null, tabs: ["general"] },
     { label: t("settings.group_workspace"), tabs: getWorkspaceSettingsTabs() },
-    { label: t("settings.group_global"), tabs: getGlobalSettingsTabs(props.developerMode) },
-    { label: t("settings.group_cloud"), tabs: getCloudSettingsTabs(memoryEnabled) },
+    {
+      label: t("settings.group_global"),
+      tabs: getGlobalSettingsTabs(props.developerMode),
+    },
   ];
   const ActiveIcon = getSettingsTabIcon(props.activeTab);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={(
-          <Button variant="outline" size="sm" className="min-w-0 max-w-46 justify-start gap-2">
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            className="min-w-0 max-w-46 justify-start gap-2"
+          >
             <ActiveIcon className="size-4 shrink-0" />
-            <span className="truncate">{getSettingsTabLabel(props.activeTab)}</span>
+            <span className="truncate">
+              {getSettingsTabLabel(props.activeTab)}
+            </span>
             {isSettingsTabBeta(props.activeTab) ? <SettingsBetaBadge /> : null}
             <ChevronDown className="ml-auto size-4 shrink-0" />
           </Button>
-        )}
+        }
       />
       <DropdownMenuContent className="w-64">
         {sections.map((section, index) => (
           <DropdownMenuGroup key={section.label ?? "root"}>
             {index > 0 ? <DropdownMenuSeparator /> : null}
-            {section.label ? <DropdownMenuLabel>{section.label}</DropdownMenuLabel> : null}
+            {section.label ? (
+              <DropdownMenuLabel>{section.label}</DropdownMenuLabel>
+            ) : null}
             {section.tabs.map((tab) => {
               const Icon = getSettingsTabIcon(tab);
               return (
                 <DropdownMenuItem
                   key={tab}
                   onClick={() => props.onSelectTab(tab)}
-                  className={props.activeTab === tab ? "bg-foreground/10 text-accent-foreground" : undefined}
+                  className={
+                    props.activeTab === tab
+                      ? "bg-foreground/10 text-accent-foreground"
+                      : undefined
+                  }
                 >
                   <Icon />
                   <span>{getSettingsTabLabel(tab)}</span>
-                  {isSettingsTabBeta(tab) ? <SettingsBetaBadge className="ml-auto" /> : null}
+                  {isSettingsTabBeta(tab) ? (
+                    <SettingsBetaBadge className="ml-auto" />
+                  ) : null}
                 </DropdownMenuItem>
               );
             })}
@@ -211,17 +234,32 @@ function SettingsSectionMenu(props: Pick<SettingsPageFrameProps, "activeTab" | "
   );
 }
 
-function WorkspaceMenu(props: Pick<SettingsShellProps, "selectedWorkspaceId" | "selectedWorkspaceName" | "workspaces" | "onSelectWorkspace">) {
+function WorkspaceMenu(
+  props: Pick<
+    SettingsShellProps,
+    | "selectedWorkspaceId"
+    | "selectedWorkspaceName"
+    | "workspaces"
+    | "onSelectWorkspace"
+  >,
+) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        render={(
-          <Button variant="ghost" size="sm" className="min-w-0 max-w-36 justify-start gap-2 text-dls-secondary">
-            <WorkspaceIcon workspaceId={props.selectedWorkspaceId} sizeClass="size-4" />
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="min-w-0 max-w-36 justify-start gap-2 text-dls-secondary"
+          >
+            <WorkspaceIcon
+              workspaceId={props.selectedWorkspaceId}
+              sizeClass="size-4"
+            />
             <span className="truncate">{props.selectedWorkspaceName}</span>
             <ChevronDown className="ml-auto size-4 shrink-0" />
           </Button>
-        )}
+        }
       />
       <DropdownMenuContent className="w-56">
         {props.workspaces.map((workspace) => (

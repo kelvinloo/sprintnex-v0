@@ -7,6 +7,7 @@ import { isWebDeployment } from "@/app/lib/openwork-deployment";
 import { hydrateOpenworkServerSettingsFromEnv } from "@/app/lib/openwork-server";
 import { isDesktopRuntime } from "@/app/utils";
 import { DenAuthProvider } from "@/react-app/domains/cloud/den-auth-provider";
+import { SprintnexAuthProvider } from "@/react-app/domains/auth/sprintnex-auth-provider";
 import { BrandThemeProvider } from "@/react-app/domains/cloud/brand-theme";
 import { DesktopConfigProvider } from "@/react-app/domains/cloud/desktop-config-provider";
 import { RestrictionNoticeProvider } from "@/react-app/domains/cloud/restriction-notice-provider";
@@ -67,6 +68,7 @@ export function AppProviders({ children }: AppProvidersProps) {
         <ArchitectureMismatchGate>
           <DesktopRuntimeBoot />
           <DenAuthProvider>
+            <SprintnexAuthProvider>
             <DesktopConfigProvider>
               <BrandThemeProvider>
               <RestrictionNoticeProvider>
@@ -77,6 +79,7 @@ export function AppProviders({ children }: AppProvidersProps) {
               </RestrictionNoticeProvider>
               </BrandThemeProvider>
             </DesktopConfigProvider>
+            </SprintnexAuthProvider>
           </DenAuthProvider>
         </ArchitectureMismatchGate>
       </ServerProvider>

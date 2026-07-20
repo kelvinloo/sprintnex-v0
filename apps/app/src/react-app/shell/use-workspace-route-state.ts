@@ -45,7 +45,6 @@ import {
 } from "./route-workspaces";
 import {
   readActiveWorkspaceId,
-  readLastSessionFor,
   readWorkspaceOrderIds,
   writeActiveWorkspaceId,
 } from "./session-memory";
@@ -632,8 +631,9 @@ export function useWorkspaceRouteState(input: UseWorkspaceRouteStateInput) {
     workspaces,
   ]);
 
-  // Once workspaces + sessions are loaded and the URL has no sessionId, try to
-  // restore the last session the user opened in the active workspace.
+  // Sprintnex workspaces are project dashboards first. When the URL has no
+  // sessionId, stay at the workspace-level task hub instead of restoring the
+  // last execution session automatically.
   useEffect(() => {
     if (loading) return;
     if (routeWorkspaceId && workspaces.length > 0 && !workspaces.some((workspace) => workspace.id === routeWorkspaceId)) {
@@ -650,12 +650,6 @@ export function useWorkspaceRouteState(input: UseWorkspaceRouteStateInput) {
       return;
     }
     if (selectedSessionId) return;
-    if (!selectedWorkspaceId) return;
-    const remembered = readLastSessionFor(selectedWorkspaceId);
-    if (!remembered) return;
-    const sessions = sessionsByWorkspaceId[selectedWorkspaceId] ?? [];
-    if (!sessions.some((session) => session?.id === remembered)) return;
-    navigateToWorkspaceSession(selectedWorkspaceId, remembered, { replace: true });
   }, [
     loading,
     legacySelectedWorkspaceId,

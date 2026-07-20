@@ -1,13 +1,13 @@
 /**
  * Thin localStorage wrapper for the React shell's "remember what the user had
- * open" behavior. Keys mirror those the Solid app used so users don't lose
- * their spot when switching between shells during the port.
+ * open" behavior. Sprintnex uses its own keys so project workspaces cannot
+ * inherit stale OpenWork desktop workspace state.
  */
 
-const ACTIVE_WORKSPACE_KEY = "openwork.react.activeWorkspace";
-const SESSION_BY_WORKSPACE_KEY = "openwork.react.sessionByWorkspace";
-const WORKSPACE_ORDER_KEY = "openwork.react.workspaceOrder";
-const WORKSPACE_PROJECT_DIMENSION_KEY = "openwork.react.workspaceProjectDimension";
+const ACTIVE_WORKSPACE_KEY = "sprintnex.openwork.react.activeWorkspace";
+const SESSION_BY_WORKSPACE_KEY = "sprintnex.openwork.react.sessionByWorkspace";
+const WORKSPACE_ORDER_KEY = "sprintnex.openwork.react.workspaceOrder";
+const WORKSPACE_PROJECT_DIMENSION_KEY = "sprintnex.openwork.react.workspaceProjectDimension";
 
 function safeGet(key: string): string | null {
   if (typeof window === "undefined") return null;
@@ -159,7 +159,7 @@ export function writeWorkspaceProjectDimension(
 // workspace-memory keys so a "reset onboarding" (Settings → Recovery) or a
 // recovery-disabled dev launch produces a genuinely fresh first run — the
 // first-run loader arms, the first session auto-creates, and the provider step
-// (not the OpenWork Models startup promo) shows on the first send.
+// shows on the first send.
 const ONBOARDING_FLAG_KEYS = [
   "openwork.acknowledgedProviders",
   "openwork.orgOnboardingSeen",

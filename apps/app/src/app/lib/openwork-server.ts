@@ -119,6 +119,28 @@ export type OpenworkSessionSnapshot = {
     | { type: "retry"; attempt: number; message: string; next: number };
 };
 
+export type SprintnexTaskPriority = "low" | "medium" | "high" | "urgent";
+export type SprintnexTaskStatus = "draft" | "queued" | "running" | "done" | "blocked";
+export type SprintnexTaskExecutionMode = "autonomous" | "guided";
+
+export type SprintnexTaskRecord = {
+  id: string;
+  workspaceId: string;
+  sessionId?: string | null;
+  executionSessionId?: string | null;
+  title: string;
+  description: string;
+  priority: SprintnexTaskPriority;
+  executionMode: SprintnexTaskExecutionMode;
+  skills: string;
+  mcpRules: string;
+  status: SprintnexTaskStatus;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type SprintnexTaskInput = Partial<Omit<SprintnexTaskRecord, "workspaceId">>;
+
 export type OpenworkPluginItem = {
   spec: string;
   source: "config" | "dir.project" | "dir.global";
@@ -1200,6 +1222,30 @@ export function createOpenworkServerClient(options: { baseUrl: string; token?: s
         { token, hostToken, timeoutMs: timeouts.sessionRead },
       );
     },
+    listSprintnexTasks: (workspaceId: string) =>
+      requestJson<{ items: SprintnexTaskRecord[] }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/sprintnex/tasks`,
+        { token, hostToken, timeoutMs: timeouts.sessionRead },
+      ),
+    getSprintnexTask: (workspaceId: string, taskId: string) =>
+      requestJson<{ item: SprintnexTaskRecord }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/sprintnex/tasks/${encodeURIComponent(taskId)}`,
+        { token, hostToken, timeoutMs: timeouts.sessionRead },
+      ),
+    upsertSprintnexTask: (workspaceId: string, taskId: string, task: SprintnexTaskInput) =>
+      requestJson<{ item: SprintnexTaskRecord }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/sprintnex/tasks/${encodeURIComponent(taskId)}`,
+        { token, hostToken, method: "PUT", body: { task }, timeoutMs: timeouts.config },
+      ),
+    deleteSprintnexTask: (workspaceId: string, taskId: string) =>
+      requestJson<{ ok: boolean }>(
+        baseUrl,
+        `/workspace/${encodeURIComponent(workspaceId)}/sprintnex/tasks/${encodeURIComponent(taskId)}`,
+        { token, hostToken, method: "DELETE", timeoutMs: timeouts.config },
+      ),
     exportWorkspace: (
       workspaceId: string,
       options?: { sensitiveMode?: OpenworkWorkspaceExportSensitiveMode },

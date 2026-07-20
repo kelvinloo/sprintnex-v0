@@ -6,7 +6,9 @@ import {
   ArchiveRestore,
   ChevronRight,
   FolderPlus,
+  ListChecks,
   Loader2,
+  LogOut,
   MoreHorizontal,
   Pencil,
   Pin,
@@ -20,12 +22,29 @@ import {
   Settings,
   FolderOpen,
   Tag,
+  Workflow,
 } from "lucide-react";
 import { LazyMotion, Reorder, domMax, m, useDragControls } from "motion/react";
+import { useNavigate } from "react-router-dom";
 
 import { getDisplaySessionTitle } from "../../../../app/lib/session-title";
 import type { WorkspaceInfo } from "../../../../app/lib/desktop";
+import {
+  getMappedWorkspaceForSprintnexProject,
+  getSprintnexTeamSpaces,
+  getSprintnexWorkspaces,
+  readSprintnexAicoeScope,
+  writeSprintnexWorkspaceScope,
+  type SprintnexAicoeScope,
+  type SprintnexTeamSpaceNode,
+  type SprintnexTenantWorkspaceNode,
+} from "../../../../app/lib/sprintnex-aicoe-api";
 import { OpenWorkDenHelpLink } from "../../workspace/openwork-den-help-link";
+import { useSprintnexAuth } from "../../auth/sprintnex-auth-provider";
+import {
+  useSprintnexTask,
+  type SprintnexTaskRecord,
+} from "../../sprintnex/task-store";
 import type {
   WorkspaceConnectionState,
   WorkspaceSessionGroup,
@@ -54,6 +73,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
@@ -94,7 +114,11 @@ import {
   workspaceKindLabel,
   workspaceLabel,
 } from "./utils";
-import type { FlattenedSessionRow, SessionListItem, SessionTreeState } from "./utils";
+import type {
+  FlattenedSessionRow,
+  SessionListItem,
+  SessionTreeState,
+} from "./utils";
 import {
   useSessionManagementStore,
   usePinnedSessionIds,
@@ -104,7 +128,10 @@ import {
 } from "./session-management-store";
 import { cn } from "@/lib/utils";
 import { WorkspaceIcon } from "../../../design-system/workspace-icon";
-import { getSessionActivityStatusLabel, type SessionActivityStatus } from "../status/session-activity-store";
+import {
+  getSessionActivityStatusLabel,
+  type SessionActivityStatus,
+} from "../status/session-activity-store";
 
 interface SessionStatusIndicatorProps {
   className?: string;
@@ -113,11 +140,21 @@ interface SessionStatusIndicatorProps {
   isActive: boolean;
 }
 
-function SessionStatusIndicator({ className, status, isStreaming, isActive }: SessionStatusIndicatorProps) {
-  const activityTitle = isSessionActivityStatus(status) && status !== "idle"
-    ? getSessionActivityStatusLabel(status)
-    : undefined;
-  const title = activityTitle ?? (isStreaming ? t("workspace_list.session_streaming") : t("workspace_list.session_active"));
+function SessionStatusIndicator({
+  className,
+  status,
+  isStreaming,
+  isActive,
+}: SessionStatusIndicatorProps) {
+  const activityTitle =
+    isSessionActivityStatus(status) && status !== "idle"
+      ? getSessionActivityStatusLabel(status)
+      : undefined;
+  const title =
+    activityTitle ??
+    (isStreaming
+      ? t("workspace_list.session_streaming")
+      : t("workspace_list.session_active"));
 
   if (isStreaming) {
     return (
@@ -177,7 +214,13 @@ type SessionMenuContentProps = {
   isArchived: boolean;
 };
 
-function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchived }: SessionMenuContentProps) {
+function SessionMenuContent({
+  variant,
+  sessionId,
+  workspaceId,
+  isPinned,
+  isArchived,
+}: SessionMenuContentProps) {
   const ctx = useSidebarContext();
   const { groups, assignments } = useWorkspaceGroups(workspaceId);
   const store = useSessionManagementStore;
@@ -187,11 +230,19 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
     return (
       <>
         <DropdownMenuItem onClick={() => store.getState().togglePin(sessionId)}>
-          {isPinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
-          {isPinned ? t("session_management.unpin_session") : t("session_management.pin_session")}
+          {isPinned ? (
+            <PinOff className="size-4" />
+          ) : (
+            <Pin className="size-4" />
+          )}
+          {isPinned
+            ? t("session_management.unpin_session")
+            : t("session_management.pin_session")}
         </DropdownMenuItem>
         {ctx.onOpenRenameSession ? (
-          <DropdownMenuItem onClick={() => ctx.onOpenRenameSession?.(sessionId)}>
+          <DropdownMenuItem
+            onClick={() => ctx.onOpenRenameSession?.(sessionId)}
+          >
             <Pencil className="size-4" />
             {t("workspace_list.rename_session")}
           </DropdownMenuItem>
@@ -203,7 +254,9 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="w-52">
             {groups.length === 0 ? (
-              <DropdownMenuItem onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}>
+              <DropdownMenuItem
+                onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}
+              >
                 <span className="min-w-0 flex-1 truncate text-muted-foreground">
                   {t("session_management.no_groups_yet")}
                 </span>
@@ -214,7 +267,9 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
             ) : (
               <>
                 <DropdownMenuItem
-                  onClick={() => store.getState().assignGroup(workspaceId, sessionId, null)}
+                  onClick={() =>
+                    store.getState().assignGroup(workspaceId, sessionId, null)
+                  }
                   disabled={!assignedGroupId}
                 >
                   {t("session_management.no_group")}
@@ -223,14 +278,20 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
                 {groups.map((group) => (
                   <DropdownMenuItem
                     key={group.id}
-                    onClick={() => store.getState().assignGroup(workspaceId, sessionId, group.id)}
+                    onClick={() =>
+                      store
+                        .getState()
+                        .assignGroup(workspaceId, sessionId, group.id)
+                    }
                     disabled={assignedGroupId === group.id}
                   >
                     {group.label}
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}>
+                <DropdownMenuItem
+                  onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}
+                >
                   <FolderPlus className="size-4" />
                   {t("session_management.new_group")}
                 </DropdownMenuItem>
@@ -239,15 +300,26 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         {ctx.onArchiveSession ? (
-          <DropdownMenuItem onClick={() => ctx.onArchiveSession?.(sessionId, !isArchived)}>
-            {isArchived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
-            {isArchived ? t("session_management.unarchive_session") : t("session_management.archive_session")}
+          <DropdownMenuItem
+            onClick={() => ctx.onArchiveSession?.(sessionId, !isArchived)}
+          >
+            {isArchived ? (
+              <ArchiveRestore className="size-4" />
+            ) : (
+              <Archive className="size-4" />
+            )}
+            {isArchived
+              ? t("session_management.unarchive_session")
+              : t("session_management.archive_session")}
           </DropdownMenuItem>
         ) : null}
         {ctx.onOpenDeleteSession ? (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={() => ctx.onOpenDeleteSession?.(sessionId)}>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => ctx.onOpenDeleteSession?.(sessionId)}
+            >
               <Trash2 className="size-4" />
               {t("workspace_list.delete_session")}
             </DropdownMenuItem>
@@ -261,7 +333,9 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
     <>
       <ContextMenuItem onClick={() => store.getState().togglePin(sessionId)}>
         {isPinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
-        {isPinned ? t("session_management.unpin_session") : t("session_management.pin_session")}
+        {isPinned
+          ? t("session_management.unpin_session")
+          : t("session_management.pin_session")}
       </ContextMenuItem>
       {ctx.onOpenRenameSession ? (
         <ContextMenuItem onClick={() => ctx.onOpenRenameSession?.(sessionId)}>
@@ -276,7 +350,9 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
         </ContextMenuSubTrigger>
         <ContextMenuSubContent>
           {groups.length === 0 ? (
-            <ContextMenuItem onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}>
+            <ContextMenuItem
+              onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}
+            >
               <span className="min-w-0 flex-1 truncate text-muted-foreground">
                 {t("session_management.no_groups_yet")}
               </span>
@@ -287,7 +363,9 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
           ) : (
             <>
               <ContextMenuItem
-                onClick={() => store.getState().assignGroup(workspaceId, sessionId, null)}
+                onClick={() =>
+                  store.getState().assignGroup(workspaceId, sessionId, null)
+                }
                 disabled={!assignedGroupId}
               >
                 {t("session_management.no_group")}
@@ -296,14 +374,20 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
               {groups.map((group) => (
                 <ContextMenuItem
                   key={group.id}
-                  onClick={() => store.getState().assignGroup(workspaceId, sessionId, group.id)}
+                  onClick={() =>
+                    store
+                      .getState()
+                      .assignGroup(workspaceId, sessionId, group.id)
+                  }
                   disabled={assignedGroupId === group.id}
                 >
                   {group.label}
                 </ContextMenuItem>
               ))}
               <ContextMenuSeparator />
-              <ContextMenuItem onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}>
+              <ContextMenuItem
+                onClick={() => ctx.onOpenCreateGroupModal?.(workspaceId)}
+              >
                 <FolderPlus className="size-4" />
                 {t("session_management.new_group")}
               </ContextMenuItem>
@@ -312,15 +396,26 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
         </ContextMenuSubContent>
       </ContextMenuSub>
       {ctx.onArchiveSession ? (
-        <ContextMenuItem onClick={() => ctx.onArchiveSession?.(sessionId, !isArchived)}>
-          {isArchived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
-          {isArchived ? t("session_management.unarchive_session") : t("session_management.archive_session")}
+        <ContextMenuItem
+          onClick={() => ctx.onArchiveSession?.(sessionId, !isArchived)}
+        >
+          {isArchived ? (
+            <ArchiveRestore className="size-4" />
+          ) : (
+            <Archive className="size-4" />
+          )}
+          {isArchived
+            ? t("session_management.unarchive_session")
+            : t("session_management.archive_session")}
         </ContextMenuItem>
       ) : null}
       {ctx.onOpenDeleteSession ? (
         <>
           <ContextMenuSeparator />
-          <ContextMenuItem variant="destructive" onClick={() => ctx.onOpenDeleteSession?.(sessionId)}>
+          <ContextMenuItem
+            variant="destructive"
+            onClick={() => ctx.onOpenDeleteSession?.(sessionId)}
+          >
             <Trash2 className="size-4" />
             {t("workspace_list.delete_session")}
           </ContextMenuItem>
@@ -330,19 +425,36 @@ function SessionMenuContent({ variant, sessionId, workspaceId, isPinned, isArchi
   );
 }
 
-function SessionActions({ className, sessionId, workspaceId, isPinned, isArchived }: SessionActionsProps) {
+function SessionActions({
+  className,
+  sessionId,
+  workspaceId,
+  isPinned,
+  isArchived,
+}: SessionActionsProps) {
   if (!useCanManageSession()) return null;
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="size-6 text-muted-foreground"
+      <DropdownMenuTrigger
+        className="size-6 text-muted-foreground"
         render={
-          <Button variant="ghost" size="icon-sm" className={cn("size-6", className)}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className={cn("size-6", className)}
+          >
             <MoreHorizontal className="size-4" />
           </Button>
         }
       />
-      <DropdownMenuContent align="end" side="bottom" sideOffset={4} alignOffset={-4} className="w-56">
+      <DropdownMenuContent
+        align="end"
+        side="bottom"
+        sideOffset={4}
+        alignOffset={-4}
+        className="w-56"
+      >
         <SessionMenuContent
           variant="dropdown"
           sessionId={sessionId}
@@ -363,7 +475,13 @@ type SessionContextMenuProps = {
   isArchived: boolean;
 };
 
-function SessionContextMenu({ children, sessionId, workspaceId, isPinned, isArchived }: SessionContextMenuProps) {
+function SessionContextMenu({
+  children,
+  sessionId,
+  workspaceId,
+  isPinned,
+  isArchived,
+}: SessionContextMenuProps) {
   if (!useCanManageSession()) return children;
 
   return (
@@ -389,7 +507,12 @@ type WorkspaceActionsMenuProps = {
   className: string;
 };
 
-function WorkspaceActionsMenu({ workspace, isConnectionActionBusy, canRecover, className }: WorkspaceActionsMenuProps) {
+function WorkspaceActionsMenu({
+  workspace,
+  isConnectionActionBusy,
+  canRecover,
+  className,
+}: WorkspaceActionsMenuProps) {
   const ctx = useSidebarContext();
 
   return (
@@ -409,8 +532,15 @@ function WorkspaceActionsMenu({ workspace, isConnectionActionBusy, canRecover, c
           </Button>
         }
       />
-      <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="w-56">
-        <DropdownMenuItem onClick={() => ctx.onOpenRenameWorkspace(workspace.id)}>
+      <DropdownMenuContent
+        align="end"
+        side="bottom"
+        sideOffset={4}
+        className="w-56"
+      >
+        <DropdownMenuItem
+          onClick={() => ctx.onOpenRenameWorkspace(workspace.id)}
+        >
           <Pencil className="size-4" />
           {t("workspace_list.edit_name")}
         </DropdownMenuItem>
@@ -421,14 +551,18 @@ function WorkspaceActionsMenu({ workspace, isConnectionActionBusy, canRecover, c
         {workspace.workspaceType === "local" ? (
           <DropdownMenuItem onClick={() => ctx.onRevealWorkspace(workspace.id)}>
             <FolderOpen className="size-4" />
-            {isWindowsPlatform() ? t("workspace_list.reveal_explorer") : t("workspace_list.reveal_finder")}
+            {isWindowsPlatform()
+              ? t("workspace_list.reveal_explorer")
+              : t("workspace_list.reveal_finder")}
           </DropdownMenuItem>
         ) : null}
         {workspace.workspaceType === "remote" ? (
           <>
             {canRecover ? (
               <DropdownMenuItem
-                onClick={() => void Promise.resolve(ctx.onRecoverWorkspace(workspace.id))}
+                onClick={() =>
+                  void Promise.resolve(ctx.onRecoverWorkspace(workspace.id))
+                }
                 disabled={isConnectionActionBusy}
               >
                 <RefreshCw className="size-4" />
@@ -436,7 +570,11 @@ function WorkspaceActionsMenu({ workspace, isConnectionActionBusy, canRecover, c
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem
-              onClick={() => void Promise.resolve(ctx.onTestWorkspaceConnection(workspace.id))}
+              onClick={() =>
+                void Promise.resolve(
+                  ctx.onTestWorkspaceConnection(workspace.id),
+                )
+              }
               disabled={isConnectionActionBusy}
             >
               <RefreshCw className="size-4" />
@@ -452,7 +590,9 @@ function WorkspaceActionsMenu({ workspace, isConnectionActionBusy, canRecover, c
           </>
         ) : null}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => ctx.onOpenCreateGroupModal?.(workspace.id)}>
+        <DropdownMenuItem
+          onClick={() => ctx.onOpenCreateGroupModal?.(workspace.id)}
+        >
           <FolderPlus className="size-4" />
           {t("session_management.new_group")}
         </DropdownMenuItem>
@@ -573,6 +713,7 @@ export type AppSidebarProps = {
   onOpenSession: (workspaceId: string, sessionId: string) => void;
   onPrefetchSession?: (workspaceId: string, sessionId: string) => void;
   onCreateTaskInWorkspace: (workspaceId: string) => void;
+  onOpenProjectTasks: (workspaceId: string) => void;
   onOpenRenameSession?: (sessionId: string) => void;
   onOpenDeleteSession?: (sessionId: string) => void;
   onArchiveSession?: (sessionId: string, archived: boolean) => void;
@@ -580,8 +721,12 @@ export type AppSidebarProps = {
   onOpenRenameWorkspace: (workspaceId: string) => void;
   onShareWorkspace: (workspaceId: string) => void;
   onRevealWorkspace: (workspaceId: string) => void;
-  onRecoverWorkspace: (workspaceId: string) => Promise<boolean> | boolean | void;
-  onTestWorkspaceConnection: (workspaceId: string) => Promise<boolean> | boolean | void;
+  onRecoverWorkspace: (
+    workspaceId: string,
+  ) => Promise<boolean> | boolean | void;
+  onTestWorkspaceConnection: (
+    workspaceId: string,
+  ) => Promise<boolean> | boolean | void;
   onEditWorkspaceConnection: (workspaceId: string) => void;
   onForgetWorkspace: (workspaceId: string) => void;
   onOpenCreateWorkspace: () => void;
@@ -601,18 +746,285 @@ function useSessionTree(
   );
 }
 
-function isSessionActivityStatus(status: string | undefined): status is SessionActivityStatus {
-  return status === "idle" || status === "thinking" || status === "responding" || status === "error" || status === "compacting" || status === "waiting";
+function isSessionActivityStatus(
+  status: string | undefined,
+): status is SessionActivityStatus {
+  return (
+    status === "idle" ||
+    status === "thinking" ||
+    status === "responding" ||
+    status === "error" ||
+    status === "compacting" ||
+    status === "waiting"
+  );
+}
+
+type SprintnexScopeSelectorProps = {
+  selectedWorkspaceId: string;
+  workspaceSessionGroups: WorkspaceSessionGroup[];
+  onOpenProjectTasks: (workspaceId: string) => void;
+};
+
+function SprintnexScopeSelector({
+  selectedWorkspaceId,
+  workspaceSessionGroups,
+  onOpenProjectTasks,
+}: SprintnexScopeSelectorProps) {
+  const navigate = useNavigate();
+  const auth = useSprintnexAuth();
+  const [scope, setScope] = React.useState<SprintnexAicoeScope>(() =>
+    readSprintnexAicoeScope(),
+  );
+  const [teams, setTeams] = React.useState<SprintnexTeamSpaceNode[]>([]);
+  const [projects, setProjects] = React.useState<
+    SprintnexTenantWorkspaceNode[]
+  >([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  const scopedProjects = React.useMemo(
+    () => projects.filter((project) => project.teamSpaceId === scope.teamId),
+    [projects, scope.teamId],
+  );
+
+  const applyScope = React.useCallback(
+    (input: {
+      teamId: string;
+      teamName?: string;
+      projectId: string;
+      projectName?: string;
+      organizationId: string;
+    }) => {
+      writeSprintnexWorkspaceScope({
+        ...input,
+        userId: auth.user?.id || scope.userId,
+      });
+      setScope(readSprintnexAicoeScope());
+      // Don't auto-navigate — the user can open tasks manually.
+    },
+    [auth.user?.id, onOpenProjectTasks, scope.userId, selectedWorkspaceId],
+  );
+
+  React.useEffect(() => {
+    if (!auth.user?.id || scope.userId === auth.user.id) return;
+    writeSprintnexWorkspaceScope({
+      teamId: scope.teamId,
+      teamName: scope.teamName,
+      projectId: scope.projectId,
+      projectName: scope.projectName,
+      organizationId: scope.organizationId,
+      userId: auth.user.id,
+    });
+    setScope(readSprintnexAicoeScope());
+  }, [
+    auth.user?.id,
+    scope.organizationId,
+    scope.projectId,
+    scope.projectName,
+    scope.teamId,
+    scope.teamName,
+    scope.userId,
+  ]);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const [teamData, workspaceData] = await Promise.all([
+          getSprintnexTeamSpaces(),
+          getSprintnexWorkspaces(),
+        ]);
+        if (cancelled) return;
+        setTeams(teamData);
+        setProjects(workspaceData);
+
+        const current = readSprintnexAicoeScope();
+        const nextTeamId = teamData.some((team) => team.id === current.teamId)
+          ? current.teamId
+          : teamData[0]?.id || "";
+        const nextProjects = workspaceData.filter(
+          (project) => project.teamSpaceId === nextTeamId,
+        );
+        const nextProject =
+          nextProjects.find((project) => project.id === current.projectId) ??
+          nextProjects[0] ??
+          null;
+        const nextTeam =
+          teamData.find((team) => team.id === nextTeamId) ?? null;
+        writeSprintnexWorkspaceScope({
+          teamId: nextTeamId,
+          teamName: nextTeam?.name || "",
+          projectId: nextProject?.id || "",
+          projectName: nextProject?.name || "",
+          organizationId:
+            nextProject?.organizationId ||
+            nextTeam?.organizationId ||
+            current.organizationId,
+          userId: auth.user?.id || current.userId,
+        });
+        setScope(readSprintnexAicoeScope());
+      } catch (err) {
+        if (!cancelled)
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load Sprintnex projects",
+          );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.user?.id]);
+
+  const missing = [
+    !scope.organizationId ? "organizationId" : "",
+    !scope.teamId ? "teamId" : "",
+    !scope.projectId ? "projectId" : "",
+    !scope.userId ? "userId" : "",
+  ].filter(Boolean);
+
+  const selectTeam = (teamId: string) => {
+    const scoped = projects.filter((project) => project.teamSpaceId === teamId);
+    const project = scoped[0] ?? null;
+    const team = teams.find((item) => item.id === teamId) ?? null;
+    applyScope({
+      teamId,
+      teamName: team?.name || "",
+      projectId: project?.id || "",
+      projectName: project?.name || "",
+      organizationId: project?.organizationId || team?.organizationId || "",
+    });
+  };
+
+  const selectProject = (projectId: string) => {
+    const project = projects.find((item) => item.id === projectId) ?? null;
+    const team =
+      teams.find(
+        (item) => item.id === (project?.teamSpaceId || scope.teamId),
+      ) ?? null;
+    applyScope({
+      teamId: project?.teamSpaceId || scope.teamId,
+      teamName: team?.name || scope.teamName || "",
+      projectId,
+      projectName: project?.name || "",
+      organizationId: project?.organizationId || team?.organizationId || "",
+    });
+    // Don't auto-navigate — the user can click the task button to open tasks.
+  };
+
+  const mappedWorkspaceId = scope.projectId
+    ? getMappedWorkspaceForSprintnexProject(scope.projectId)
+    : "";
+  const mappedWorkspace = mappedWorkspaceId
+    ? (workspaceSessionGroups.find((g) => g.workspace.id === mappedWorkspaceId)
+        ?.workspace ?? null)
+    : null;
+  const mappedWorkspaceName =
+    mappedWorkspace?.displayName || mappedWorkspace?.name || "";
+
+  return (
+    <div className="mx-2 rounded-lg border border-sidebar-border bg-sidebar-accent/40 p-2">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate text-xs font-medium text-sidebar-foreground">
+            Sprintnex project
+          </p>
+          <p className="truncate text-[11px] text-sidebar-foreground/60">
+            {missing.length
+              ? `Missing ${missing.join(", ")}`
+              : mappedWorkspaceName
+                ? `Workspace: ${mappedWorkspaceName}`
+                : "Ready"}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-7 shrink-0"
+            onClick={() => navigate("/sprintnex/mappings")}
+            aria-label="Sprintnex settings"
+          >
+            <Settings className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-7 shrink-0"
+            onClick={() => onOpenProjectTasks(selectedWorkspaceId)}
+            disabled={!selectedWorkspaceId}
+            aria-label="Open project tasks"
+          >
+            <ListChecks className="size-4" />
+          </Button>
+        </div>
+      </div>
+      <div className="space-y-2">
+        <select
+          className="h-8 w-full rounded-md border border-sidebar-border bg-background px-2 text-xs text-foreground"
+          value={scope.teamId}
+          onChange={(event) => selectTeam(event.target.value)}
+          disabled={loading}
+          aria-label="Sprintnex team"
+        >
+          <option value="">Select team</option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}
+            </option>
+          ))}
+        </select>
+        <select
+          className="h-8 w-full rounded-md border border-sidebar-border bg-background px-2 text-xs text-foreground"
+          value={scope.projectId}
+          onChange={(event) => selectProject(event.target.value)}
+          disabled={loading || !scope.teamId}
+          aria-label="Sprintnex project"
+        >
+          <option value="">Select project</option>
+          {scopedProjects.map((project) => (
+            <option key={project.id} value={project.id}>
+              {project.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      {mappedWorkspaceName ? (
+        <div className="mt-2 rounded border border-sidebar-border/60 bg-sidebar-accent px-2 py-1.5 text-[11px]">
+          <span className="text-sidebar-foreground/70">Mapped to </span>
+          <span className="font-medium text-sidebar-foreground">
+            {mappedWorkspaceName}
+          </span>
+        </div>
+      ) : null}
+      {error ? (
+        <p className="mt-2 line-clamp-2 text-[11px] text-destructive">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 export function AppSidebar(props: AppSidebarProps) {
-  const [expandedWorkspaceIds, setExpandedWorkspaceIds] = React.useState<Set<string>>(
-    () => new Set(),
-  );
-  const [previewCountByWorkspaceId, setPreviewCountByWorkspaceId] = React.useState<Record<string, number>>({});
-  const [expandedSessionIds, setExpandedSessionIds] = React.useState<Set<string>>(
-    () => new Set(),
-  );
+  const navigate = useNavigate();
+  const auth = useSprintnexAuth();
+  const [expandedWorkspaceIds, setExpandedWorkspaceIds] = React.useState<
+    Set<string>
+  >(() => new Set());
+  const [previewCountByWorkspaceId, setPreviewCountByWorkspaceId] =
+    React.useState<Record<string, number>>({});
+  const [expandedSessionIds, setExpandedSessionIds] = React.useState<
+    Set<string>
+  >(() => new Set());
 
   const expandWorkspace = React.useCallback((workspaceId: string) => {
     const id = workspaceId.trim();
@@ -666,7 +1078,10 @@ export function AppSidebar(props: AppSidebarProps) {
     expandWorkspace(workspaceId);
     setPreviewCountByWorkspaceId((current) => ({
       ...current,
-      [workspaceId]: Math.min((current[workspaceId] ?? MAX_SESSIONS_PREVIEW) + MAX_SESSIONS_PREVIEW, totalRoots),
+      [workspaceId]: Math.min(
+        (current[workspaceId] ?? MAX_SESSIONS_PREVIEW) + MAX_SESSIONS_PREVIEW,
+        totalRoots,
+      ),
     }));
   };
 
@@ -684,9 +1099,10 @@ export function AppSidebar(props: AppSidebarProps) {
       ? group.sessions.findIndex((session) => session.id === selectedId)
       : -1;
     const start = selectedIndex >= 0 ? Math.max(0, selectedIndex - 2) : 0;
-    const end = selectedIndex >= 0
-      ? Math.min(group.sessions.length, selectedIndex + 3)
-      : Math.min(group.sessions.length, 4);
+    const end =
+      selectedIndex >= 0
+        ? Math.min(group.sessions.length, selectedIndex + 3)
+        : Math.min(group.sessions.length, 4);
 
     group.sessions.slice(start, end).forEach((session) => {
       props.onPrefetchSession?.(workspaceId, session.id);
@@ -711,6 +1127,7 @@ export function AppSidebar(props: AppSidebarProps) {
     onOpenSession: props.onOpenSession,
     onPrefetchSession: props.onPrefetchSession,
     onCreateTaskInWorkspace: props.onCreateTaskInWorkspace,
+    onOpenProjectTasks: props.onOpenProjectTasks,
     onOpenRenameSession: props.onOpenRenameSession,
     onOpenDeleteSession: props.onOpenDeleteSession,
     onArchiveSession: props.onArchiveSession,
@@ -737,7 +1154,7 @@ export function AppSidebar(props: AppSidebarProps) {
         collapsible="offcanvas"
         className="mac:**:data-[sidebar=sidebar]:bg-transparent"
       >
-        <div className="hidden h-14 mac:block mac:titlebar-drag"/>
+        <div className="hidden h-14 mac:block mac:titlebar-drag" />
         {brandLogoUrl ? (
           <div
             data-testid="brand-logo"
@@ -750,25 +1167,34 @@ export function AppSidebar(props: AppSidebarProps) {
             />
           </div>
         ) : null}
-        {props.onOpenSessionSearch ? (
-          <SidebarHeader className="pb-2">
+        <SidebarHeader className="space-y-2 pb-2">
+          <SprintnexScopeSelector
+            selectedWorkspaceId={props.selectedWorkspaceId}
+            workspaceSessionGroups={props.workspaceSessionGroups}
+            onOpenProjectTasks={props.onOpenProjectTasks}
+          />
+          {props.onOpenSessionSearch ? (
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={props.onOpenSessionSearch}
-                  aria-keyshortcuts={isMacPlatform() ? "Meta+Shift+F" : "Control+Shift+F"}
+                  aria-keyshortcuts={
+                    isMacPlatform() ? "Meta+Shift+F" : "Control+Shift+F"
+                  }
                   className="text-sidebar-foreground/70"
                 >
                   <Search className="size-4" />
-                  <span className="flex-1 truncate">{t("workspace_list.search_sessions")}</span>
+                  <span className="flex-1 truncate">
+                    {t("workspace_list.search_sessions")}
+                  </span>
                   <kbd className="ml-auto font-sans text-[11px] tracking-wide text-sidebar-foreground/50">
                     {isMacPlatform() ? "⌘⇧F" : "Ctrl+Shift+F"}
                   </kbd>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-          </SidebarHeader>
-        ) : null}
+          ) : null}
+        </SidebarHeader>
         <LazyMotion features={domMax}>
           <m.div
             layoutScroll
@@ -779,8 +1205,12 @@ export function AppSidebar(props: AppSidebarProps) {
             <Reorder.Group
               as="div"
               axis="y"
-              values={props.workspaceSessionGroups.map((group) => group.workspace.id)}
-              onReorder={(workspaceIds) => props.onReorderWorkspaces?.(workspaceIds)}
+              values={props.workspaceSessionGroups.map(
+                (group) => group.workspace.id,
+              )}
+              onReorder={(workspaceIds) =>
+                props.onReorderWorkspaces?.(workspaceIds)
+              }
               className="flex flex-col gap-px"
             >
               {props.workspaceSessionGroups.map((group, index) => (
@@ -800,19 +1230,56 @@ export function AppSidebar(props: AppSidebarProps) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={props.onOpenCreateWorkspace}>
-                <Plus className="size-4" />
-                {t("workspace_list.add_workspace")}
+              <SidebarMenuButton
+                onClick={() => navigate("/sprintnex/mappings")}
+              >
+                <Settings className="size-4" />
+                Sprintnex settings
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => navigate("/sprintnex/tasks")}>
+                <ListChecks className="size-4" />
+                Sprintnex tasks
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => props.onOpenCreateWorkspace()}>
+                <FolderPlus className="size-4" />
+                Create workspace
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => {
+                  auth.signOut();
+                  navigate("/login", { replace: true });
+                }}
+              >
+                <LogOut className="size-4" />
+                Logout
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
         <SidebarRail
-          aria-label={props.onStartResize ? t("session.resize_workspace_column") : undefined}
-          title={props.onStartResize ? t("session.resize_workspace_column") : undefined}
-          onClick={props.onStartResize ? (event) => {
-            event.preventDefault();
-          } : undefined}
+          aria-label={
+            props.onStartResize
+              ? t("session.resize_workspace_column")
+              : undefined
+          }
+          title={
+            props.onStartResize
+              ? t("session.resize_workspace_column")
+              : undefined
+          }
+          onClick={
+            props.onStartResize
+              ? (event) => {
+                  event.preventDefault();
+                }
+              : undefined
+          }
           onPointerDown={props.onStartResize}
         />
       </Sidebar>
@@ -887,6 +1354,8 @@ function WorkspaceHeader({
   const handleSelectWorkspace = () => {
     void Promise.resolve(ctx.onSelectWorkspace(workspace.id));
   };
+  const isSelected = ctx.selectedWorkspaceId === workspace.id;
+  const displayName = workspaceLabel(workspace);
 
   return (
     <SidebarMenuButton
@@ -908,9 +1377,14 @@ function WorkspaceHeader({
         )}
         onPointerDown={onTitlePointerDown}
       >
-        <span className="block truncate">{workspaceLabel(workspace)}</span>
+        <span className="block truncate">{displayName}</span>
         {statusLabel ? (
-          <span className={cn("block text-xs", isError ? "text-destructive" : "text-muted-foreground")}>
+          <span
+            className={cn(
+              "block text-xs",
+              isError ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
             {statusLabel}
           </span>
         ) : null}
@@ -946,28 +1420,36 @@ function WorkspaceSidebarGroup({
   const tree = useSessionTree(group.sessions, ctx.sessionStatusById);
 
   const forcedExpandedSessionIds = React.useMemo(
-    () => new Set(
-      ctx.selectedSessionId
-        ? tree.ancestorIdsBySessionId.get(ctx.selectedSessionId) ?? []
-        : [],
-    ),
+    () =>
+      new Set(
+        ctx.selectedSessionId
+          ? (tree.ancestorIdsBySessionId.get(ctx.selectedSessionId) ?? [])
+          : [],
+      ),
     [ctx.selectedSessionId, tree.ancestorIdsBySessionId],
   );
 
   const isConnecting = ctx.connectingWorkspaceId === workspace.id;
-  const connectionState: WorkspaceConnectionState = ctx.workspaceConnectionStateById[workspace.id] ?? {
+  const connectionState: WorkspaceConnectionState = ctx
+    .workspaceConnectionStateById[workspace.id] ?? {
     status: "idle",
     message: null,
   };
-  const isConnectionActionBusy = isConnecting || connectionState.status === "connecting";
+  const isConnectionActionBusy =
+    isConnecting || connectionState.status === "connecting";
   const isRemoteWorkspace = isRemoteConnectionWorkspace(workspace);
   const canRecover = isRemoteWorkspace && connectionState.status === "error";
-  const taskLoadError = getWorkspaceTaskLoadErrorDisplay(workspace, group.error);
-  const connectionIssueMessage = connectionState.status === "error"
-    ? connectionState.message?.trim() || taskLoadError.message
-    : group.error?.trim() || taskLoadError.message;
+  const taskLoadError = getWorkspaceTaskLoadErrorDisplay(
+    workspace,
+    group.error,
+  );
+  const connectionIssueMessage =
+    connectionState.status === "error"
+      ? connectionState.message?.trim() || taskLoadError.message
+      : group.error?.trim() || taskLoadError.message;
   const showRemoteConnectionIssue =
-    (isRemoteWorkspace || isRemoteConnectionErrorMessage(connectionIssueMessage)) &&
+    (isRemoteWorkspace ||
+      isRemoteConnectionErrorMessage(connectionIssueMessage)) &&
     Boolean(connectionIssueMessage) &&
     (connectionState.status === "error" || group.status === "error");
   const isExpanded = ctx.expandedWorkspaceIds.has(workspace.id);
@@ -975,10 +1457,12 @@ function WorkspaceSidebarGroup({
 
   const statusLabel = (() => {
     if (showRemoteConnectionIssue) return t("workspace_list.unavailable");
-    if (connectionState.status === "error") return connectionState.message?.trim() || taskLoadError.message;
+    if (connectionState.status === "error")
+      return connectionState.message?.trim() || taskLoadError.message;
     if (group.status === "error") return taskLoadError.label;
     if (isConnectionActionBusy) return t("workspace_list.connecting");
-    if (isRemoteWorkspace && connectionState.status === "connected") return connectionState.message?.trim() || t("workspace_list.connected");
+    if (isRemoteWorkspace && connectionState.status === "connected")
+      return connectionState.message?.trim() || t("workspace_list.connected");
     if (!ctx.developerMode) return "";
     if (isSelected) return t("workspace.selected");
     return workspaceKindLabel(workspace);
@@ -986,7 +1470,9 @@ function WorkspaceSidebarGroup({
 
   const pinnedIds = usePinnedSessionIds();
   const orderIds = useSessionOrder(workspace.id);
-  const { groups: wsGroups, assignments: wsAssignments } = useWorkspaceGroups(workspace.id);
+  const { groups: wsGroups, assignments: wsAssignments } = useWorkspaceGroups(
+    workspace.id,
+  );
   const store = useSessionManagementStore;
 
   const { active: activeSessions, archived: archivedSessions } = React.useMemo(
@@ -1003,7 +1489,8 @@ function WorkspaceSidebarGroup({
     orderIds,
   );
   const visibleRootIds = React.useMemo(
-    () => sessionRows.flatMap((row) => (row.depth === 0 ? [row.session.id] : [])),
+    () =>
+      sessionRows.flatMap((row) => (row.depth === 0 ? [row.session.id] : [])),
     [sessionRows],
   );
   const activeRootCount = React.useMemo(
@@ -1012,11 +1499,12 @@ function WorkspaceSidebarGroup({
   );
   const [archivedExpanded, setArchivedExpanded] = React.useState(false);
   const remainingRootSessions = Math.max(0, activeRootCount - previewCount);
-  const showMoreLabel = remainingRootSessions > 0
-    ? t("workspace_list.show_more", {
-      count: Math.min(MAX_SESSIONS_PREVIEW, remainingRootSessions),
-    })
-    : t("workspace_list.show_more_fallback");
+  const showMoreLabel =
+    remainingRootSessions > 0
+      ? t("workspace_list.show_more", {
+          count: Math.min(MAX_SESSIONS_PREVIEW, remainingRootSessions),
+        })
+      : t("workspace_list.show_more_fallback");
 
   return (
     <SidebarGroup className={className}>
@@ -1036,7 +1524,10 @@ function WorkspaceSidebarGroup({
                 isLoading={group.status === "loading" || isConnecting}
                 onTitlePointerDown={onWorkspaceTitlePointerDown}
               />
-              <div data-workspace-actions className="group/workspace-actions absolute right-9 top-1/2 flex -translate-y-1/2 items-center gap-1">
+              <div
+                data-workspace-actions
+                className="group/workspace-actions absolute right-9 top-1/2 flex -translate-y-1/2 items-center gap-1"
+              >
                 <Button
                   variant="ghost"
                   size="icon"
@@ -1045,8 +1536,7 @@ function WorkspaceSidebarGroup({
                     e.stopPropagation();
                     ctx.onCreateTaskInWorkspace(workspace.id);
                   }}
-                  disabled={ctx.newTaskDisabled}
-                  aria-label={t("session.new_task")}
+                  aria-label="New session"
                 >
                   <Plus className="size-4" />
                 </Button>
@@ -1061,14 +1551,21 @@ function WorkspaceSidebarGroup({
                 variant="ghost"
                 size="icon"
                 className="absolute right-2 top-1/2 size-6 -translate-y-1/2 text-muted-foreground flex items-center justify-center group/expand-collapse-button"
-                aria-label={isExpanded ? t("sidebar.collapse") : t("sidebar.expand")}
+                aria-label={
+                  isExpanded ? t("sidebar.collapse") : t("sidebar.expand")
+                }
                 aria-expanded={isExpanded}
                 onClick={(e) => {
                   e.stopPropagation();
                   ctx.toggleWorkspaceExpanded(workspace.id);
                 }}
               >
-                <ChevronRight className={cn("size-4 transition-transform duration-200 text-muted-foreground group-hover/expand-collapse-button:text-foreground", isExpanded && "rotate-90")} />
+                <ChevronRight
+                  className={cn(
+                    "size-4 transition-transform duration-200 text-muted-foreground group-hover/expand-collapse-button:text-foreground",
+                    isExpanded && "rotate-90",
+                  )}
+                />
               </Button>
             </div>
 
@@ -1081,19 +1578,30 @@ function WorkspaceSidebarGroup({
                     canRecover={canRecover}
                     busy={isConnectionActionBusy}
                     onRecover={() => {
-                      void Promise.resolve(ctx.onRecoverWorkspace(workspace.id));
+                      void Promise.resolve(
+                        ctx.onRecoverWorkspace(workspace.id),
+                      );
                     }}
                     onTest={() => {
-                      void Promise.resolve(ctx.onTestWorkspaceConnection(workspace.id));
+                      void Promise.resolve(
+                        ctx.onTestWorkspaceConnection(workspace.id),
+                      );
                     }}
                     onEdit={() => {
                       ctx.onEditWorkspaceConnection(workspace.id);
                     }}
                   />
-                ) : showInitialLoading || (group.status === "loading" && group.sessions.length === 0) ? (
+                ) : showInitialLoading ||
+                  (group.status === "loading" &&
+                    group.sessions.length === 0) ? (
                   <SidebarMenuSubItem>
-                    <SidebarMenuSubButton aria-disabled className="text-muted-foreground text-xs truncate">
-                      <span className="truncate">{t("workspace.loading_tasks")}</span>
+                    <SidebarMenuSubButton
+                      aria-disabled
+                      className="text-muted-foreground text-xs truncate"
+                    >
+                      <span className="truncate">
+                        {t("workspace.loading_tasks")}
+                      </span>
                     </SidebarMenuSubButton>
                   </SidebarMenuSubItem>
                 ) : activeSessions.length > 0 || archivedSessions.length > 0 ? (
@@ -1116,8 +1624,13 @@ function WorkspaceSidebarGroup({
                         values={visibleRootIds}
                         onReorder={(ids) => {
                           const visible = new Set(ids);
-                          const allRootIds = getRootSessions(activeSessions).map((s) => s.id);
-                          const full = [...ids, ...allRootIds.filter((id) => !visible.has(id))];
+                          const allRootIds = getRootSessions(
+                            activeSessions,
+                          ).map((s) => s.id);
+                          const full = [
+                            ...ids,
+                            ...allRootIds.filter((id) => !visible.has(id)),
+                          ];
                           store.getState().reorderSessions(workspace.id, full);
                         }}
                         className="flex flex-col"
@@ -1140,11 +1653,15 @@ function WorkspaceSidebarGroup({
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           className="text-muted-foreground text-xs"
-                          onClick={() => showMoreSessions(workspace.id, activeRootCount)}
+                          onClick={() =>
+                            showMoreSessions(workspace.id, activeRootCount)
+                          }
                         >
                           <span className="flex min-w-0 items-center gap-1">
                             <span className="truncate">{showMoreLabel}</span>
-                            <span aria-hidden className="shrink-0">⋅</span>
+                            <span aria-hidden className="shrink-0">
+                              ⋅
+                            </span>
                             <span
                               role="button"
                               tabIndex={0}
@@ -1154,7 +1671,8 @@ function WorkspaceSidebarGroup({
                                 ctx.onOpenCreateGroupModal?.(workspace.id);
                               }}
                               onKeyDown={(event) => {
-                                if (event.key !== "Enter" && event.key !== " ") return;
+                                if (event.key !== "Enter" && event.key !== " ")
+                                  return;
                                 event.preventDefault();
                                 event.stopPropagation();
                                 ctx.onOpenCreateGroupModal?.(workspace.id);
@@ -1181,7 +1699,12 @@ function WorkspaceSidebarGroup({
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
                       aria-disabled
-                      className={cn("text-xs", taskLoadError.tone === "offline" ? "text-amber-600" : "text-destructive")}
+                      className={cn(
+                        "text-xs",
+                        taskLoadError.tone === "offline"
+                          ? "text-amber-600"
+                          : "text-destructive",
+                      )}
                     >
                       <span className="truncate">{taskLoadError.message}</span>
                     </SidebarMenuSubButton>
@@ -1190,12 +1713,13 @@ function WorkspaceSidebarGroup({
                   <SidebarMenuSubItem>
                     <SidebarMenuSubButton
                       className="text-muted-foreground text-xs"
-                      onClick={() => ctx.onCreateTaskInWorkspace(workspace.id)}
                       aria-disabled={ctx.newTaskDisabled}
                     >
                       <span className="truncate">
-                        {isRemoteWorkspace && connectionState.status === "connected"
-                          ? connectionState.message?.trim() || t("workspace.connected_no_tasks")
+                        {isRemoteWorkspace &&
+                        connectionState.status === "connected"
+                          ? connectionState.message?.trim() ||
+                            t("workspace.connected_no_tasks")
                           : t("workspace.no_tasks")}
                       </span>
                     </SidebarMenuSubButton>
@@ -1213,7 +1737,14 @@ function WorkspaceSidebarGroup({
 const SESSION_DRAG_TYPE = "application/x-openwork-session-id";
 const UNGROUPED_GROUP_ID = "__openwork_ungrouped";
 
-function SessionGroupSeparator({ label, count, expanded, onToggle, onRemove, onTitlePointerDown }: {
+function SessionGroupSeparator({
+  label,
+  count,
+  expanded,
+  onToggle,
+  onRemove,
+  onTitlePointerDown,
+}: {
   label: string;
   count: number;
   expanded: boolean;
@@ -1228,14 +1759,21 @@ function SessionGroupSeparator({ label, count, expanded, onToggle, onRemove, onT
       className="group/separator flex w-full items-center gap-1.5 rounded px-2 pb-1 pt-2.5 text-left transition-colors first:pt-1 hover:bg-sidebar-accent/50"
       aria-expanded={expanded}
     >
-      <ChevronRight className={cn("size-3.5 shrink-0 text-muted-foreground transition-transform duration-200", expanded && "rotate-90")} />
+      <ChevronRight
+        className={cn(
+          "size-3.5 shrink-0 text-muted-foreground transition-transform duration-200",
+          expanded && "rotate-90",
+        )}
+      />
       <span
         className="min-w-0 flex-1 cursor-grab touch-none truncate text-[11px] font-medium uppercase tracking-wide text-muted-foreground active:cursor-grabbing"
         onPointerDown={onTitlePointerDown}
       >
         {label}
       </span>
-      <span className="text-[10px] tabular-nums text-muted-foreground/70">{count}</span>
+      <span className="text-[10px] tabular-nums text-muted-foreground/70">
+        {count}
+      </span>
       {onRemove ? (
         <span
           role="button"
@@ -1261,7 +1799,11 @@ function SessionGroupSeparator({ label, count, expanded, onToggle, onRemove, onT
 }
 
 /** Drop zone wrapping a group's header + sessions. Dropping a session anywhere in the zone assigns it to this group. */
-function GroupDropZone({ groupId, workspaceId, children }: {
+function GroupDropZone({
+  groupId,
+  workspaceId,
+  children,
+}: {
   groupId: string | null;
   workspaceId: string;
   children: React.ReactNode;
@@ -1301,7 +1843,16 @@ function GroupDropZone({ groupId, workspaceId, children }: {
 }
 
 /** Renders sessions partitioned by group. Empty groups always show. Ungrouped sessions render at the end. */
-function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree, workspaceId, forcedExpandedSessionIds, store }: {
+function GroupedSessionList({
+  sessionRows,
+  groups,
+  assignments,
+  pinnedIds,
+  tree,
+  workspaceId,
+  forcedExpandedSessionIds,
+  store,
+}: {
   sessionRows: FlattenedSessionRow[];
   groups: SessionGroupDefinition[];
   assignments: Record<string, string>;
@@ -1311,27 +1862,34 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
   forcedExpandedSessionIds: Set<string>;
   store: typeof useSessionManagementStore;
 }) {
-  const [previewCountByGroup, setPreviewCountByGroup] = React.useState<Record<string, number>>({});
+  const [previewCountByGroup, setPreviewCountByGroup] = React.useState<
+    Record<string, number>
+  >({});
 
   const groupPreviewCount = (groupId: string) =>
     previewCountByGroup[groupId] ?? MAX_SESSIONS_PREVIEW;
 
-  const showMoreInGroup = React.useCallback((groupId: string, totalCount: number) => {
-    setPreviewCountByGroup((current) => ({
-      ...current,
-      [groupId]: Math.min(
-        (current[groupId] ?? MAX_SESSIONS_PREVIEW) + MAX_SESSIONS_PREVIEW,
-        totalCount,
-      ),
-    }));
-  }, []);
+  const showMoreInGroup = React.useCallback(
+    (groupId: string, totalCount: number) => {
+      setPreviewCountByGroup((current) => ({
+        ...current,
+        [groupId]: Math.min(
+          (current[groupId] ?? MAX_SESSIONS_PREVIEW) + MAX_SESSIONS_PREVIEW,
+          totalCount,
+        ),
+      }));
+    },
+    [],
+  );
 
   // Partition root rows into per-group buckets + ungrouped.
   const rootRowsByGroup = new Map<string, FlattenedSessionRow[]>();
   const ungroupedRows: FlattenedSessionRow[] = [];
   // Child rows follow their parent regardless of group.
   const childrenByParent = new Map<string, FlattenedSessionRow[]>();
-  const rowIndexById = new Map(sessionRows.map((row, index) => [row.session.id, index]));
+  const rowIndexById = new Map(
+    sessionRows.map((row, index) => [row.session.id, index]),
+  );
 
   for (const row of sessionRows) {
     if (row.depth > 0) {
@@ -1339,7 +1897,10 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
       if (rowIndex === undefined) continue;
       let parentId: string | null = null;
       for (let j = rowIndex - 1; j >= 0; j--) {
-        if (sessionRows[j].depth < row.depth) { parentId = sessionRows[j].session.id; break; }
+        if (sessionRows[j].depth < row.depth) {
+          parentId = sessionRows[j].session.id;
+          break;
+        }
       }
       if (parentId) {
         const kids = childrenByParent.get(parentId) ?? [];
@@ -1374,7 +1935,9 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
 
   const renderGroup = (group: SessionGroupDefinition) => {
     const rows = rootRowsByGroup.get(group.id) ?? [];
-    const expanded = !(store.getState().groupsByWorkspace[workspaceId]?.collapsedGroupIds ?? []).includes(group.id);
+    const expanded = !(
+      store.getState().groupsByWorkspace[workspaceId]?.collapsedGroupIds ?? []
+    ).includes(group.id);
     const limit = groupPreviewCount(group.id);
 
     return (
@@ -1392,7 +1955,9 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
     );
   };
 
-  const ungroupedExpanded = !(store.getState().groupsByWorkspace[workspaceId]?.collapsedGroupIds ?? []).includes(UNGROUPED_GROUP_ID);
+  const ungroupedExpanded = !(
+    store.getState().groupsByWorkspace[workspaceId]?.collapsedGroupIds ?? []
+  ).includes(UNGROUPED_GROUP_ID);
   const ungroupedLimit = groupPreviewCount(UNGROUPED_GROUP_ID);
   const visibleUngroupedRows = ungroupedRows.slice(0, ungroupedLimit);
   const ungroupedRemaining = Math.max(0, ungroupedRows.length - ungroupedLimit);
@@ -1413,13 +1978,21 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
         <GroupDropZone groupId={null} workspaceId={workspaceId}>
           <Collapsible
             open={ungroupedExpanded}
-            onOpenChange={() => store.getState().toggleGroupExpanded(workspaceId, UNGROUPED_GROUP_ID)}
+            onOpenChange={() =>
+              store
+                .getState()
+                .toggleGroupExpanded(workspaceId, UNGROUPED_GROUP_ID)
+            }
           >
             <SessionGroupSeparator
               label={t("session_management.ungrouped")}
               count={ungroupedRows.length}
               expanded={ungroupedExpanded}
-              onToggle={() => store.getState().toggleGroupExpanded(workspaceId, UNGROUPED_GROUP_ID)}
+              onToggle={() =>
+                store
+                  .getState()
+                  .toggleGroupExpanded(workspaceId, UNGROUPED_GROUP_ID)
+              }
             />
             <CollapsibleContent>
               <Reorder.Group
@@ -1427,12 +2000,23 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
                 axis="y"
                 values={visibleUngroupedRootIds}
                 onReorder={(ids) => {
-                  const allRootIds = sessionRows.filter((r) => r.depth === 0).map((r) => r.session.id);
-                  const ungroupedSet = new Set(ungroupedRows.map((r) => r.session.id));
+                  const allRootIds = sessionRows
+                    .filter((r) => r.depth === 0)
+                    .map((r) => r.session.id);
+                  const ungroupedSet = new Set(
+                    ungroupedRows.map((r) => r.session.id),
+                  );
                   const visibleSet = new Set(ids);
-                  const fullUngrouped = [...ids, ...ungroupedRows.map((r) => r.session.id).filter((id) => !visibleSet.has(id))];
+                  const fullUngrouped = [
+                    ...ids,
+                    ...ungroupedRows
+                      .map((r) => r.session.id)
+                      .filter((id) => !visibleSet.has(id)),
+                  ];
                   let ui = 0;
-                  const full = allRootIds.map((id) => ungroupedSet.has(id) ? fullUngrouped[ui++] : id);
+                  const full = allRootIds.map((id) =>
+                    ungroupedSet.has(id) ? fullUngrouped[ui++] : id,
+                  );
                   store.getState().reorderSessions(workspaceId, full);
                 }}
                 className="flex flex-col"
@@ -1448,7 +2032,9 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
                       isPinned={pinnedIds.has(row.session.id)}
                       draggable={row.depth === 0}
                     />
-                    {(childrenByParent.get(row.session.id) ?? []).map(renderRow)}
+                    {(childrenByParent.get(row.session.id) ?? []).map(
+                      renderRow,
+                    )}
                   </React.Fragment>
                 ))}
               </Reorder.Group>
@@ -1456,10 +2042,17 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
                 <SidebarMenuSubItem>
                   <SidebarMenuSubButton
                     className="text-muted-foreground text-xs"
-                    onClick={() => showMoreInGroup(UNGROUPED_GROUP_ID, ungroupedRows.length)}
+                    onClick={() =>
+                      showMoreInGroup(UNGROUPED_GROUP_ID, ungroupedRows.length)
+                    }
                   >
                     <span className="truncate">
-                      {t("workspace_list.show_more", { count: Math.min(MAX_SESSIONS_PREVIEW, ungroupedRemaining) })}
+                      {t("workspace_list.show_more", {
+                        count: Math.min(
+                          MAX_SESSIONS_PREVIEW,
+                          ungroupedRemaining,
+                        ),
+                      })}
                     </span>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
@@ -1472,7 +2065,16 @@ function GroupedSessionList({ sessionRows, groups, assignments, pinnedIds, tree,
   );
 }
 
-function SessionGroupSection({ group, rows, expanded, workspaceId, store, renderRow, previewCount, onShowMore }: {
+function SessionGroupSection({
+  group,
+  rows,
+  expanded,
+  workspaceId,
+  store,
+  renderRow,
+  previewCount,
+  onShowMore,
+}: {
   group: SessionGroupDefinition;
   rows: FlattenedSessionRow[];
   expanded: boolean;
@@ -1495,48 +2097,59 @@ function SessionGroupSection({ group, rows, expanded, workspaceId, store, render
       dragElastic={0}
       dragListener={false}
       dragControls={dragControls}
-      transformTemplate={(_latest, generated) => generated.replace(/ ?scale[XY]?\([^)]*\)/g, "")}
+      transformTemplate={(_latest, generated) =>
+        generated.replace(/ ?scale[XY]?\([^)]*\)/g, "")
+      }
     >
       <GroupDropZone groupId={group.id} workspaceId={workspaceId}>
         <Collapsible
           open={expanded}
-          onOpenChange={() => store.getState().toggleGroupExpanded(workspaceId, group.id)}
+          onOpenChange={() =>
+            store.getState().toggleGroupExpanded(workspaceId, group.id)
+          }
           className="group/session-group"
         >
           <SessionGroupSeparator
             label={group.label}
             count={rows.length}
             expanded={expanded}
-            onToggle={() => store.getState().toggleGroupExpanded(workspaceId, group.id)}
+            onToggle={() =>
+              store.getState().toggleGroupExpanded(workspaceId, group.id)
+            }
             onRemove={() => store.getState().removeGroup(workspaceId, group.id)}
             onTitlePointerDown={(event) => dragControls.start(event)}
           />
           <CollapsibleContent>
-            {visibleRows.length > 0
-              ? (
-                <>
-                  {visibleRows.map(renderRow)}
-                  {remaining > 0 ? (
-                    <SidebarMenuSubItem>
-                      <SidebarMenuSubButton
-                        className="text-muted-foreground text-xs"
-                        onClick={onShowMore}
-                      >
-                        <span className="truncate">
-                          {t("workspace_list.show_more", { count: Math.min(MAX_SESSIONS_PREVIEW, remaining) })}
-                        </span>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ) : null}
-                </>
-              )
-              : (
-                <SidebarMenuSubItem>
-                  <SidebarMenuSubButton aria-disabled className="text-muted-foreground text-xs italic">
-                    <span className="truncate">{t("session_management.empty_group")}</span>
-                  </SidebarMenuSubButton>
-                </SidebarMenuSubItem>
-              )}
+            {visibleRows.length > 0 ? (
+              <>
+                {visibleRows.map(renderRow)}
+                {remaining > 0 ? (
+                  <SidebarMenuSubItem>
+                    <SidebarMenuSubButton
+                      className="text-muted-foreground text-xs"
+                      onClick={onShowMore}
+                    >
+                      <span className="truncate">
+                        {t("workspace_list.show_more", {
+                          count: Math.min(MAX_SESSIONS_PREVIEW, remaining),
+                        })}
+                      </span>
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                ) : null}
+              </>
+            ) : (
+              <SidebarMenuSubItem>
+                <SidebarMenuSubButton
+                  aria-disabled
+                  className="text-muted-foreground text-xs italic"
+                >
+                  <span className="truncate">
+                    {t("session_management.empty_group")}
+                  </span>
+                </SidebarMenuSubButton>
+              </SidebarMenuSubItem>
+            )}
           </CollapsibleContent>
         </Collapsible>
       </GroupDropZone>
@@ -1551,6 +2164,19 @@ function PinnedIndicator({ isPinned }: { isPinned: boolean }) {
       className="size-3 shrink-0 text-muted-foreground/70"
       aria-label={t("session_management.pinned")}
     />
+  );
+}
+
+function SprintnexTaskBadge({ task }: { task: SprintnexTaskRecord | null }) {
+  if (!task) return null;
+  return (
+    <Badge
+      variant={task.priority === "urgent" ? "destructive" : "outline"}
+      className="h-4 max-w-24 rounded px-1.5 text-[10px] uppercase tracking-normal"
+      title={`Sprintnex ${task.status} - ${task.priority}`}
+    >
+      <span className="truncate">SNX - {task.priority}</span>
+    </Badge>
   );
 }
 
@@ -1575,12 +2201,19 @@ function SessionMenuItem({
 }: SessionMenuItemProps) {
   const ctx = useSidebarContext();
   const isSelected = ctx.selectedSessionId === session.id;
-  const displayTitle = getDisplaySessionTitle(session.title);
-  const hasChildren = (tree.descendantCountBySessionId.get(session.id) ?? 0) > 0;
-  const isExpanded = ctx.expandedSessionIds.has(session.id) || forcedExpandedSessionIds.has(session.id);
+  const sprintnexTask = useSprintnexTask(session.id);
+  const displayTitle =
+    sprintnexTask?.title ?? getDisplaySessionTitle(session.title);
+  const hasChildren =
+    (tree.descendantCountBySessionId.get(session.id) ?? 0) > 0;
+  const isExpanded =
+    ctx.expandedSessionIds.has(session.id) ||
+    forcedExpandedSessionIds.has(session.id);
   const sessionActivityStatus = ctx.sessionStatusById?.[session.id];
   const isSessionActive = tree.activeIds.has(session.id);
-  const isSessionStreaming = tree.streamingIds.has(session.id) || isStreamingSessionStatus(sessionActivityStatus);
+  const isSessionStreaming =
+    tree.streamingIds.has(session.id) ||
+    isStreamingSessionStatus(sessionActivityStatus);
   const isArchived = isSessionArchived(session);
 
   const openSession = () => {
@@ -1595,13 +2228,16 @@ function SessionMenuItem({
     ctx.onPrefetchSession?.(workspaceId, session.id);
   };
 
-  const dragProps = depth === 0 ? {
-    draggable: true,
-    onDragStart: (e: React.DragEvent) => {
-      e.dataTransfer.setData(SESSION_DRAG_TYPE, session.id);
-      e.dataTransfer.effectAllowed = "move";
-    },
-  } : {};
+  const dragProps =
+    depth === 0
+      ? {
+          draggable: true,
+          onDragStart: (e: React.DragEvent) => {
+            e.dataTransfer.setData(SESSION_DRAG_TYPE, session.id);
+            e.dataTransfer.effectAllowed = "move";
+          },
+        }
+      : {};
 
   const item = hasChildren ? (
     <Collapsible
@@ -1610,7 +2246,12 @@ function SessionMenuItem({
       className="group/session-collapsible"
     >
       <SidebarMenuSubItem {...dragProps}>
-        <SessionContextMenu sessionId={session.id} workspaceId={workspaceId} isPinned={isPinned} isArchived={isArchived}>
+        <SessionContextMenu
+          sessionId={session.id}
+          workspaceId={workspaceId}
+          isPinned={isPinned}
+          isArchived={isArchived}
+        >
           <CollapsibleTrigger
             render={
               <SidebarMenuSubButton
@@ -1622,11 +2263,15 @@ function SessionMenuItem({
               >
                 <PinnedIndicator isPinned={isPinned} />
                 <span
-                  className={cn("min-w-0 flex-1 truncate transition-[padding] duration-75 group-hover/menu-sub-item:pe-12 group-has-data-popup-open/menu-sub-item:pe-12 pe-4", isSessionStreaming || isSessionActive && "pe-12")}
+                  className={cn(
+                    "min-w-0 flex-1 truncate transition-[padding] duration-75 group-hover/menu-sub-item:pe-12 group-has-data-popup-open/menu-sub-item:pe-12 pe-4",
+                    isSessionStreaming || (isSessionActive && "pe-12"),
+                  )}
                   title={displayTitle}
                 >
                   {displayTitle}
                 </span>
+                <SprintnexTaskBadge task={sprintnexTask} />
                 <span className="flex items-center justify-center size-6 absolute right-2 top-1/2 -translate-y-1/2">
                   <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-data-open/session-collapsible:rotate-90 hover:text-foreground" />
                 </span>
@@ -1641,21 +2286,38 @@ function SessionMenuItem({
           isArchived={isArchived}
           className="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 group-hover/menu-sub-item:opacity-100 data-popup-open:opacity-100"
         />
-        <SessionStatusIndicator className="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 group-hover/menu-sub-item:opacity-0 group-has-data-popup-open/menu-sub-item:opacity-0 pointer-events-none select-none" status={sessionActivityStatus} isStreaming={isSessionStreaming} isActive={isSessionActive} />
+        <SessionStatusIndicator
+          className="absolute right-9 top-1/2 -translate-y-1/2 opacity-0 group-hover/menu-sub-item:opacity-0 group-has-data-popup-open/menu-sub-item:opacity-0 pointer-events-none select-none"
+          status={sessionActivityStatus}
+          isStreaming={isSessionStreaming}
+          isActive={isSessionActive}
+        />
       </SidebarMenuSubItem>
     </Collapsible>
   ) : (
     <SidebarMenuSubItem {...dragProps}>
-      <SessionContextMenu sessionId={session.id} workspaceId={workspaceId} isPinned={isPinned} isArchived={isArchived}>
+      <SessionContextMenu
+        sessionId={session.id}
+        workspaceId={workspaceId}
+        isPinned={isPinned}
+        isArchived={isArchived}
+      >
         <SidebarMenuSubButton
           isActive={isSelected}
           onClick={openSession}
           onPointerEnter={prefetchSession}
           onFocus={prefetchSession}
-          className={cn("transition-[padding] duration-75 group-hover/menu-sub-item:pe-8 group-has-data-popup-open/menu-sub-item:pe-8", depth > 0 && "ps-13", isSessionStreaming || isSessionActive && "pe-8")}
+          className={cn(
+            "transition-[padding] duration-75 group-hover/menu-sub-item:pe-8 group-has-data-popup-open/menu-sub-item:pe-8",
+            depth > 0 && "ps-13",
+            isSessionStreaming || (isSessionActive && "pe-8"),
+          )}
         >
           <PinnedIndicator isPinned={isPinned} />
-          <span className="truncate" title={displayTitle}>{displayTitle}</span>
+          <span className="min-w-0 flex-1 truncate" title={displayTitle}>
+            {displayTitle}
+          </span>
+          <SprintnexTaskBadge task={sprintnexTask} />
         </SidebarMenuSubButton>
       </SessionContextMenu>
       <SessionActions
@@ -1665,7 +2327,12 @@ function SessionMenuItem({
         isArchived={isArchived}
         className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover/menu-sub-item:opacity-100 data-popup-open:opacity-100"
       />
-      <SessionStatusIndicator className="absolute right-3 top-1/2 -translate-y-1/2 opacity-100 group-hover/menu-sub-item:opacity-0 group-has-data-popup-open/menu-sub-item:opacity-0 pointer-events-none select-none" status={sessionActivityStatus} isStreaming={isSessionStreaming} isActive={isSessionActive} />
+      <SessionStatusIndicator
+        className="absolute right-3 top-1/2 -translate-y-1/2 opacity-100 group-hover/menu-sub-item:opacity-0 group-has-data-popup-open/menu-sub-item:opacity-0 pointer-events-none select-none"
+        status={sessionActivityStatus}
+        isStreaming={isSessionStreaming}
+        isActive={isSessionActive}
+      />
     </SidebarMenuSubItem>
   );
 
@@ -1678,7 +2345,9 @@ function SessionMenuItem({
       id={session.id}
       layout="position"
       dragElastic={0}
-      transformTemplate={(_latest, generated) => generated.replace(/ ?scale[XY]?\([^)]*\)/g, "")}
+      transformTemplate={(_latest, generated) =>
+        generated.replace(/ ?scale[XY]?\([^)]*\)/g, "")
+      }
     >
       {item}
     </Reorder.Item>
@@ -1704,7 +2373,11 @@ function ArchivedSessionsSection({
 }: ArchivedSessionsSectionProps) {
   const pinned = usePinnedSessionIds();
   return (
-    <Collapsible open={expanded} onOpenChange={onToggle} className="group/archived">
+    <Collapsible
+      open={expanded}
+      onOpenChange={onToggle}
+      className="group/archived"
+    >
       <CollapsibleTrigger
         render={
           <button
@@ -1715,7 +2388,9 @@ function ArchivedSessionsSection({
             <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               {t("session_management.archived_label")}
             </span>
-            <span className="text-[10px] tabular-nums text-muted-foreground/70">{sessions.length}</span>
+            <span className="text-[10px] tabular-nums text-muted-foreground/70">
+              {sessions.length}
+            </span>
             <ChevronRight className="ml-auto size-3.5 text-muted-foreground transition-transform duration-200 group-data-open/archived:rotate-90" />
           </button>
         }

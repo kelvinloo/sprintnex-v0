@@ -93,16 +93,16 @@ function ShowcasePanel() {
           </div>
         ))}
         <div className="flex flex-col items-start gap-2.5 rounded-xl border border-border p-3">
-            <ShareIcon className="size-4 shrink-0 text-muted-foreground" />
-            <div className="flex flex-col gap-1.5">
-              <div className="text-sm font-medium text-foreground">
+          <ShareIcon className="size-4 shrink-0 text-muted-foreground" />
+          <div className="flex flex-col gap-1.5">
+            <div className="text-sm font-medium text-foreground">
               Shared extensions
-              </div>
-              <div className="text-xs leading-snug text-muted-foreground">
+            </div>
+            <div className="text-xs leading-snug text-muted-foreground">
               Share approved skills, MCPs, and plugins with your organization.
-              </div>
             </div>
           </div>
+        </div>
         <div className="flex flex-col items-start gap-2.5 rounded-xl border border-border p-3">
           <UserGroupIcon className="size-4 shrink-0 text-muted-foreground" />
           <div className="flex flex-col gap-1.5">
@@ -199,7 +199,7 @@ export function WelcomePage({
                     Choose any folder on your machine to get started.
                   </OnboardingStep>
                   <OnboardingStep number="2" title="Chat">
-                    Describe what you need. OpenWork handles the rest.
+                    Describe what you need. Sprintnex handles the rest.
                   </OnboardingStep>
                   <OnboardingStep number="3" title="Interact">
                     Review results, approve actions, and iterate.
@@ -213,7 +213,9 @@ export function WelcomePage({
                     onClick={onGetStarted}
                     disabled={busy}
                   >
-                    {busy ? t("welcome.creating_workspace") : (getStartedLabel || t("welcome.get_started"))}
+                    {busy
+                      ? t("welcome.creating_workspace")
+                      : getStartedLabel || t("welcome.get_started")}
                   </Button>
                   <OrganizationServerAffordance
                     busy={organizationServerBusy}
@@ -233,7 +235,9 @@ export function WelcomePage({
                     </Button>
                   ) : null}
                   {error ? (
-                    <p className="text-center text-xs text-destructive">{error}</p>
+                    <p className="text-center text-xs text-destructive">
+                      {error}
+                    </p>
                   ) : null}
                   {showManualFolder ? (
                     <div className="rounded-xl border border-dashed border-border p-3">
@@ -242,7 +246,9 @@ export function WelcomePage({
                         <input
                           className="h-9 rounded-md border border-input bg-background px-3 text-sm font-normal text-foreground outline-none focus:border-ring"
                           value={manualFolder ?? ""}
-                          onChange={(event) => onManualFolderChange?.(event.target.value)}
+                          onChange={(event) =>
+                            onManualFolderChange?.(event.target.value)
+                          }
                           placeholder="/workspace/my-project"
                         />
                       </label>

@@ -17,8 +17,23 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { app, BrowserWindow, dialog, ipcMain, nativeImage, nativeTheme, net as electronNet, Notification as ElectronNotification, session, shell, systemPreferences } from "electron";
-import { configureFakeMediaForTests, installMediaPermissionHandlers } from "./media-permissions.mjs";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  nativeImage,
+  nativeTheme,
+  net as electronNet,
+  Notification as ElectronNotification,
+  session,
+  shell,
+  systemPreferences,
+} from "electron";
+import {
+  configureFakeMediaForTests,
+  installMediaPermissionHandlers,
+} from "./media-permissions.mjs";
 import { registerMigrationIpc } from "./migration.mjs";
 import { createRuntimeManager } from "./runtime.mjs";
 import { registerUpdaterIpc } from "./updater.mjs";
@@ -59,8 +74,10 @@ let currentDisplayAppName = APP_NAME;
 const APP_IDENTIFIER =
   process.env.OPENWORK_ELECTRON_APP_IDENTIFIER?.trim() ||
   (isDevMode ? DEV_APP_IDENTIFIER : TAURI_APP_IDENTIFIER);
-const RELEASE_DOWNLOAD_BASE_URL = "https://github.com/different-ai/openwork/releases/latest/download";
-const RELEASE_PAGE_URL = "https://github.com/different-ai/openwork/releases/latest";
+const RELEASE_DOWNLOAD_BASE_URL =
+  "https://github.com/different-ai/openwork/releases/latest/download";
+const RELEASE_PAGE_URL =
+  "https://github.com/different-ai/openwork/releases/latest";
 const DOCS_PAGE_URL = "https://openworklabs.com/docs";
 const applicationMenu = createApplicationMenu({
   appName: APP_NAME,
@@ -78,8 +95,12 @@ const terminalProcesses = new Map();
 let nextTerminalId = 1;
 
 function defaultTerminalShell() {
-  if (process.platform === "win32") return process.env.COMSPEC || "powershell.exe";
-  return process.env.SHELL || (process.platform === "darwin" ? "/bin/zsh" : "/bin/bash");
+  if (process.platform === "win32")
+    return process.env.COMSPEC || "powershell.exe";
+  return (
+    process.env.SHELL ||
+    (process.platform === "darwin" ? "/bin/zsh" : "/bin/bash")
+  );
 }
 
 async function resolveTerminalCwd(cwd) {
@@ -100,7 +121,11 @@ function killTerminal(terminalId) {
   const terminal = terminalProcesses.get(terminalId);
   if (!terminal) return;
   terminalProcesses.delete(terminalId);
-  try { terminal.process.kill(); } catch { /* already gone */ }
+  try {
+    terminal.process.kill();
+  } catch {
+    /* already gone */
+  }
 }
 
 function killTerminalsForWebContents(webContentsId) {
@@ -124,10 +149,7 @@ const userDataOverride = process.env.OPENWORK_ELECTRON_USERDATA?.trim();
 if (userDataOverride) {
   app.setPath("userData", userDataOverride);
 } else {
-  app.setPath(
-    "userData",
-    path.join(app.getPath("appData"), APP_IDENTIFIER),
-  );
+  app.setPath("userData", path.join(app.getPath("appData"), APP_IDENTIFIER));
 }
 
 // Resolve and cache the app icon (reused for BrowserWindow + mac dock).
@@ -156,7 +178,9 @@ function resolveAppIconPath() {
 }
 
 function normalizeRuntimeArch(value) {
-  const normalized = String(value || "").trim().toLowerCase();
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase();
   if (["arm64", "aarch64", "arm64e"].includes(normalized)) return "arm64";
   if (["x64", "x86_64", "amd64"].includes(normalized)) return "x64";
   return normalized || "unknown";
@@ -165,23 +189,29 @@ function normalizeRuntimeArch(value) {
 function isMacRunningUnderRosetta() {
   if (process.platform !== "darwin" || process.arch !== "x64") return false;
   try {
-    return execFileSync("/usr/sbin/sysctl", ["-in", "sysctl.proc_translated"], {
-      encoding: "utf8",
-      stdio: ["ignore", "pipe", "ignore"],
-    }).trim() === "1";
+    return (
+      execFileSync("/usr/sbin/sysctl", ["-in", "sysctl.proc_translated"], {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+      }).trim() === "1"
+    );
   } catch {
     return false;
   }
 }
 
 function resolveSystemArch() {
-  if (process.platform === "darwin" && isMacRunningUnderRosetta()) return "arm64";
+  if (process.platform === "darwin" && isMacRunningUnderRosetta())
+    return "arm64";
   if (process.platform === "win32") {
     return normalizeRuntimeArch(
-      process.env.PROCESSOR_ARCHITEW6432 || process.env.PROCESSOR_ARCHITECTURE || os.arch(),
+      process.env.PROCESSOR_ARCHITEW6432 ||
+        process.env.PROCESSOR_ARCHITECTURE ||
+        os.arch(),
     );
   }
-  if (typeof os.machine === "function") return normalizeRuntimeArch(os.machine());
+  if (typeof os.machine === "function")
+    return normalizeRuntimeArch(os.machine());
   return normalizeRuntimeArch(os.arch());
 }
 
@@ -252,7 +282,10 @@ async function resolveCorrectArchitectureDownloadUrl(arch) {
       headers: { Accept: "text/yaml, text/plain, */*" },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const selected = selectDownloadFile(parseUpdaterManifestFiles(await response.text()), arch);
+    const selected = selectDownloadFile(
+      parseUpdaterManifestFiles(await response.text()),
+      arch,
+    );
     if (!selected?.url) return null;
     return /^https?:\/\//i.test(selected.url)
       ? selected.url
@@ -267,9 +300,11 @@ async function resolveArchitectureInfo() {
   const appArch = normalizeRuntimeArch(process.arch);
   const systemArch = resolveSystemArch();
   const version = app.getVersion();
-  const targetArch = systemArch === "arm64" || systemArch === "x64" ? systemArch : appArch;
+  const targetArch =
+    systemArch === "arm64" || systemArch === "x64" ? systemArch : appArch;
   const assetName = `openwork-${platformDownloadSlug()}-${downloadAssetArch(targetArch)}-${version}.${downloadAssetExtension()}`;
-  const latestDownloadUrl = await resolveCorrectArchitectureDownloadUrl(targetArch);
+  const latestDownloadUrl =
+    await resolveCorrectArchitectureDownloadUrl(targetArch);
   const hasCorrectArchitectureDownload = Boolean(latestDownloadUrl);
   return {
     appArch,
@@ -279,18 +314,22 @@ async function resolveArchitectureInfo() {
     mismatch: appArch !== systemArch && hasCorrectArchitectureDownload,
     platform: process.platform === "win32" ? "windows" : process.platform,
     version,
-    downloadUrl: latestDownloadUrl || `${RELEASE_DOWNLOAD_BASE_URL}/${assetName}`,
+    downloadUrl:
+      latestDownloadUrl || `${RELEASE_DOWNLOAD_BASE_URL}/${assetName}`,
     releaseUrl: RELEASE_PAGE_URL,
   };
 }
 
 const APP_ICON_PATH = resolveAppIconPath();
-const APP_ICON_IMAGE = APP_ICON_PATH ? nativeImage.createFromPath(APP_ICON_PATH) : null;
+const APP_ICON_IMAGE = APP_ICON_PATH
+  ? nativeImage.createFromPath(APP_ICON_PATH)
+  : null;
 const BRAND_ICON_MAX_BYTES = 2 * 1024 * 1024;
 const BRAND_ICON_FETCH_TIMEOUT_MS = 10_000;
 // Keep in sync with ee/apps/den-api/src/brand-icon-validation.ts so logo CDNs
 // that expect a browser request behave the same at save time and apply time.
-const BRAND_ICON_FETCH_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+const BRAND_ICON_FETCH_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 let brandIconApplySequence = 0;
 let brandIconRuntimeState = { applied: false, sourceUrl: null, reason: null };
 
@@ -314,16 +353,30 @@ let cachedWindowsProgramsPath = null;
 function windowsProgramsPath() {
   if (cachedWindowsProgramsPath) return cachedWindowsProgramsPath;
   const userProfile = app.getPath("userData").split(/[\\/]AppData[\\/]/i)[0];
-  cachedWindowsProgramsPath = path.join(userProfile, "AppData", "Roaming", "Microsoft", "Windows", "Start Menu", "Programs");
+  cachedWindowsProgramsPath = path.join(
+    userProfile,
+    "AppData",
+    "Roaming",
+    "Microsoft",
+    "Windows",
+    "Start Menu",
+    "Programs",
+  );
   return cachedWindowsProgramsPath;
 }
 
 function windowsBrandShortcutPath() {
-  return path.join(windowsProgramsPath(), windowsBrandShortcutFileName(currentDisplayAppName));
+  return path.join(
+    windowsProgramsPath(),
+    windowsBrandShortcutFileName(currentDisplayAppName),
+  );
 }
 
 function windowsInstalledShortcutPath() {
-  return path.join(windowsProgramsPath(), windowsInstalledShortcutFileName(APP_NAME));
+  return path.join(
+    windowsProgramsPath(),
+    windowsInstalledShortcutFileName(APP_NAME),
+  );
 }
 
 function windowsBrandShortcutMarkerPath() {
@@ -340,11 +393,16 @@ function windowsExecutablePath() {
 }
 
 async function readWindowsBrandShortcutMarker() {
-  return (await readFile(windowsBrandShortcutMarkerPath(), "utf8").catch(() => "")).trim();
+  return (
+    await readFile(windowsBrandShortcutMarkerPath(), "utf8").catch(() => "")
+  ).trim();
 }
 
 function repairWindowsShortcutTarget(shortcutPath, details) {
-  const payload = Buffer.from(JSON.stringify({ shortcutPath, ...details }), "utf8").toString("base64");
+  const payload = Buffer.from(
+    JSON.stringify({ shortcutPath, ...details }),
+    "utf8",
+  ).toString("base64");
   const script = [
     `$value = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${payload}')) | ConvertFrom-Json`,
     "$shell = New-Object -ComObject WScript.Shell",
@@ -352,12 +410,23 @@ function repairWindowsShortcutTarget(shortcutPath, details) {
     "$link.TargetPath = $value.target",
     "$link.WorkingDirectory = $value.cwd",
     "$link.Description = $value.description",
-    "$link.IconLocation = \"$($value.icon),$($value.iconIndex)\"",
+    '$link.IconLocation = "$($value.icon),$($value.iconIndex)"',
     "$link.Save()",
   ].join("\n");
-  execFileSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", script], {
-    windowsHide: true,
-  });
+  execFileSync(
+    "powershell.exe",
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-Command",
+      script,
+    ],
+    {
+      windowsHide: true,
+    },
+  );
 }
 
 async function registerWindowsBrandShortcut(appId, appIconPath) {
@@ -375,8 +444,16 @@ async function registerWindowsBrandShortcut(appId, appIconPath) {
     appIconPath,
     appName: currentDisplayAppName,
   });
-  const written = writeWindowsBrandShortcut(shell, shortcutTempPath, details, false);
-  if (!written) throw new Error(`Windows rejected the organization shortcut: ${shortcutPath}`);
+  const written = writeWindowsBrandShortcut(
+    shell,
+    shortcutTempPath,
+    details,
+    false,
+  );
+  if (!written)
+    throw new Error(
+      `Windows rejected the organization shortcut: ${shortcutPath}`,
+    );
   await rename(shortcutTempPath, shortcutPath);
   if (shell.readShortcutLink(shortcutPath).target !== details.target) {
     repairWindowsShortcutTarget(shortcutPath, details);
@@ -424,12 +501,18 @@ function recordBrandIconResult(result, sourceUrl) {
       reason: null,
     };
   } else {
-    brandIconRuntimeState = { ...brandIconRuntimeState, reason: result.reason ?? "apply-failed" };
+    brandIconRuntimeState = {
+      ...brandIconRuntimeState,
+      reason: result.reason ?? "apply-failed",
+    };
   }
   return result;
 }
 
-async function applyAppIconImage(image, { taskbarIconPath = null, taskbarAppId = APP_IDENTIFIER } = {}) {
+async function applyAppIconImage(
+  image,
+  { taskbarIconPath = null, taskbarAppId = APP_IDENTIFIER } = {},
+) {
   if (!image || image.isEmpty()) return brandIconFailure("invalid-image");
   try {
     if (process.platform === "darwin") {
@@ -479,7 +562,9 @@ async function applyDefaultAppIconImage(expectedSequence = null) {
       }
     } else {
       try {
-        const executableIcon = await app.getFileIcon(process.execPath, { size: "large" });
+        const executableIcon = await app.getFileIcon(process.execPath, {
+          size: "large",
+        });
         if (executableIcon && !executableIcon.isEmpty()) image = executableIcon;
         taskbarIconPath = process.execPath;
       } catch (error) {
@@ -490,7 +575,9 @@ async function applyDefaultAppIconImage(expectedSequence = null) {
   if (!image || image.isEmpty()) {
     // Preserve the pre-existing no-op fallback on platforms whose packaged
     // application icon is managed entirely by the bundle.
-    return process.platform === "win32" ? brandIconFailure("stock-icon-unavailable") : { ok: true };
+    return process.platform === "win32"
+      ? brandIconFailure("stock-icon-unavailable")
+      : { ok: true };
   }
   if (process.platform === "win32" && taskbarIconPath) {
     try {
@@ -499,7 +586,10 @@ async function applyDefaultAppIconImage(expectedSequence = null) {
       return brandIconFailure("shortcut-write-failed", error);
     }
   }
-  if (expectedSequence !== null && expectedSequence !== brandIconApplySequence) {
+  if (
+    expectedSequence !== null &&
+    expectedSequence !== brandIconApplySequence
+  ) {
     return { ok: false, reason: "stale" };
   }
   return applyAppIconImage(image, {
@@ -548,7 +638,8 @@ function showDesktopNotification(input) {
     notification.show();
     return { ok: true };
   } catch (error) {
-    const reason = error instanceof Error ? error.message : "failed to show notification";
+    const reason =
+      error instanceof Error ? error.message : "failed to show notification";
     return { ok: false, reason };
   }
 }
@@ -576,7 +667,9 @@ function normalizeBrandIconSourceUrl(value) {
   if (!trimmed) return null;
   try {
     const parsed = new URL(trimmed);
-    return parsed.protocol === "http:" || parsed.protocol === "https:" ? trimmed : null;
+    return parsed.protocol === "http:" || parsed.protocol === "https:"
+      ? trimmed
+      : null;
   } catch {
     return null;
   }
@@ -584,7 +677,10 @@ function normalizeBrandIconSourceUrl(value) {
 
 async function fetchBrandIconBuffer(sourceUrl) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), BRAND_ICON_FETCH_TIMEOUT_MS);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    BRAND_ICON_FETCH_TIMEOUT_MS,
+  );
   try {
     const response = await electronNet.fetch(sourceUrl, {
       signal: controller.signal,
@@ -598,7 +694,10 @@ async function fetchBrandIconBuffer(sourceUrl) {
     if (!response.ok) return { ok: false, reason: "http-status" };
 
     const contentLength = Number(response.headers.get("content-length") ?? "0");
-    if (Number.isFinite(contentLength) && contentLength > BRAND_ICON_MAX_BYTES) {
+    if (
+      Number.isFinite(contentLength) &&
+      contentLength > BRAND_ICON_MAX_BYTES
+    ) {
       return { ok: false, reason: "too-large" };
     }
 
@@ -608,7 +707,10 @@ async function fetchBrandIconBuffer(sourceUrl) {
     }
     return { ok: true, buffer };
   } catch (error) {
-    return { ok: false, reason: error?.name === "AbortError" ? "timeout" : "fetch-failed" };
+    return {
+      ok: false,
+      reason: error?.name === "AbortError" ? "timeout" : "fetch-failed",
+    };
   } finally {
     clearTimeout(timeout);
   }
@@ -631,16 +733,25 @@ async function writeBrandIconCache(image, sourceUrl) {
   const cacheTempPath = `${cachePath}.${suffix}.tmp`;
   const sidecarTempPath = `${sidecarPath}.${suffix}.tmp`;
   const windowsTempPath = `${windowsPath}.${suffix}.tmp`;
-  const windowsIcon = process.platform === "win32" ? windowsIconFromNativeImage(image) : null;
+  const windowsIcon =
+    process.platform === "win32" ? windowsIconFromNativeImage(image) : null;
   try {
     await mkdir(path.dirname(cachePath), { recursive: true });
     await writeFile(cacheTempPath, image.toPNG());
     if (windowsIcon) await writeFile(windowsTempPath, windowsIcon);
-    await writeFile(sidecarTempPath, JSON.stringify({
-      sourceUrl,
-      appliedAt: new Date().toISOString(),
-      appVersion: app.getVersion(),
-    }, null, 2), "utf8");
+    await writeFile(
+      sidecarTempPath,
+      JSON.stringify(
+        {
+          sourceUrl,
+          appliedAt: new Date().toISOString(),
+          appVersion: app.getVersion(),
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    );
     await rename(cacheTempPath, cachePath);
     if (windowsIcon) await rename(windowsTempPath, windowsPath);
     await rename(sidecarTempPath, sidecarPath);
@@ -676,14 +787,20 @@ async function ensureWindowsBrandIcon(image) {
 async function registerWindowsDisplayShortcut() {
   if (process.platform !== "win32") return;
   const sidecar = await readBrandIconSidecar();
-  const sourceUrl = typeof sidecar?.sourceUrl === "string" ? sidecar.sourceUrl : null;
+  const sourceUrl =
+    typeof sidecar?.sourceUrl === "string" ? sidecar.sourceUrl : null;
   const brandedImage = sourceUrl ? resolveBrandIconImage() : null;
   if (brandedImage && sourceUrl) {
     const iconPath = await ensureWindowsBrandIcon(brandedImage);
-    await registerWindowsBrandShortcut(windowsBrandAppUserModelId(APP_IDENTIFIER, sourceUrl), iconPath);
+    await registerWindowsBrandShortcut(
+      windowsBrandAppUserModelId(APP_IDENTIFIER, sourceUrl),
+      iconPath,
+    );
     return;
   }
-  const stockImage = APP_ICON_IMAGE ?? await app.getFileIcon(windowsExecutablePath(), { size: "large" });
+  const stockImage =
+    APP_ICON_IMAGE ??
+    (await app.getFileIcon(windowsExecutablePath(), { size: "large" }));
   const iconPath = defaultAppWindowsIconPath();
   await writeWindowsIconFile(stockImage, iconPath);
   await registerWindowsBrandShortcut(APP_IDENTIFIER, iconPath);
@@ -700,18 +817,30 @@ async function applyCachedBrandIcon(image, sourceUrl, expectedSequence = null) {
       app.setAppUserModelId(taskbarAppId);
     }
   } catch (error) {
-    if (expectedSequence !== null && expectedSequence !== brandIconApplySequence) {
+    if (
+      expectedSequence !== null &&
+      expectedSequence !== brandIconApplySequence
+    ) {
       return { ok: false, reason: "stale" };
     }
-    return recordBrandIconResult(brandIconFailure("write-failed", error), sourceUrl);
+    return recordBrandIconResult(
+      brandIconFailure("write-failed", error),
+      sourceUrl,
+    );
   }
-  if (expectedSequence !== null && expectedSequence !== brandIconApplySequence) {
+  if (
+    expectedSequence !== null &&
+    expectedSequence !== brandIconApplySequence
+  ) {
     return { ok: false, reason: "stale" };
   }
-  return recordBrandIconResult(await applyAppIconImage(image, {
-    taskbarIconPath,
-    taskbarAppId,
-  }), sourceUrl);
+  return recordBrandIconResult(
+    await applyAppIconImage(image, {
+      taskbarIconPath,
+      taskbarAppId,
+    }),
+    sourceUrl,
+  );
 }
 
 async function applyBrandIconUrl(value) {
@@ -725,12 +854,16 @@ async function applyBrandIconUrl(value) {
       await clearBrandIconCache();
       return applied;
     } catch (error) {
-      return recordBrandIconResult(brandIconFailure("clear-failed", error), null);
+      return recordBrandIconResult(
+        brandIconFailure("clear-failed", error),
+        null,
+      );
     }
   }
 
   const sourceUrl = normalizeBrandIconSourceUrl(value);
-  if (!sourceUrl) return recordBrandIconResult(brandIconFailure("invalid-url"), null);
+  if (!sourceUrl)
+    return recordBrandIconResult(brandIconFailure("invalid-url"), null);
 
   const sidecar = await readBrandIconSidecar();
   const cachedImage = resolveBrandIconImage();
@@ -739,18 +872,25 @@ async function applyBrandIconUrl(value) {
   }
 
   const fetched = await fetchBrandIconBuffer(sourceUrl);
-  if (sequence !== brandIconApplySequence) return { ok: false, reason: "stale" };
-  if (!fetched.ok) return recordBrandIconResult(brandIconFailure(fetched.reason), sourceUrl);
+  if (sequence !== brandIconApplySequence)
+    return { ok: false, reason: "stale" };
+  if (!fetched.ok)
+    return recordBrandIconResult(brandIconFailure(fetched.reason), sourceUrl);
 
   const image = nativeImage.createFromBuffer(fetched.buffer);
   const rejectionReason = brandIconImageRejectionReason(image);
-  if (rejectionReason) return recordBrandIconResult(brandIconFailure(rejectionReason), sourceUrl);
+  if (rejectionReason)
+    return recordBrandIconResult(brandIconFailure(rejectionReason), sourceUrl);
 
   try {
     await writeBrandIconCache(image, sourceUrl);
   } catch (error) {
-    if (sequence !== brandIconApplySequence) return { ok: false, reason: "stale" };
-    return recordBrandIconResult(brandIconFailure("write-failed", error), sourceUrl);
+    if (sequence !== brandIconApplySequence)
+      return { ok: false, reason: "stale" };
+    return recordBrandIconResult(
+      brandIconFailure("write-failed", error),
+      sourceUrl,
+    );
   }
   if (sequence !== brandIconApplySequence) {
     const latestSidecar = await readBrandIconSidecar();
@@ -767,7 +907,12 @@ async function getBrandIconState() {
 }
 
 const INITIAL_APP_ICON_IMAGE = resolveBrandIconImage() ?? APP_ICON_IMAGE;
-if (process.platform === "darwin" && INITIAL_APP_ICON_IMAGE && !INITIAL_APP_ICON_IMAGE.isEmpty() && app.dock) {
+if (
+  process.platform === "darwin" &&
+  INITIAL_APP_ICON_IMAGE &&
+  !INITIAL_APP_ICON_IMAGE.isEmpty() &&
+  app.dock
+) {
   app.dock.setIcon(INITIAL_APP_ICON_IMAGE);
 }
 
@@ -796,11 +941,15 @@ const explicitCdpPort = Number.parseInt(
   process.env.OPENWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? "",
   10,
 );
-const remoteDebugPort = Number.isFinite(explicitCdpPort) && explicitCdpPort > 0
-  ? explicitCdpPort
-  : await findFreeCdpPort([9223, 9224, 9225, 9226, 9227]);
+const remoteDebugPort =
+  Number.isFinite(explicitCdpPort) && explicitCdpPort > 0
+    ? explicitCdpPort
+    : await findFreeCdpPort([9223, 9224, 9225, 9226, 9227]);
 if (remoteDebugPort > 0) {
-  app.commandLine.appendSwitch("remote-debugging-port", String(remoteDebugPort));
+  app.commandLine.appendSwitch(
+    "remote-debugging-port",
+    String(remoteDebugPort),
+  );
   app.commandLine.appendSwitch("remote-debugging-address", "127.0.0.1");
 }
 // Make the resolved port available to the embedded server so it flows into
@@ -816,7 +965,10 @@ if (extraLaunchArgs) {
     if (!cleaned) continue;
     const eqIdx = cleaned.indexOf("=");
     if (eqIdx > 0) {
-      app.commandLine.appendSwitch(cleaned.slice(0, eqIdx), cleaned.slice(eqIdx + 1));
+      app.commandLine.appendSwitch(
+        cleaned.slice(0, eqIdx),
+        cleaned.slice(eqIdx + 1),
+      );
     } else {
       app.commandLine.appendSwitch(cleaned);
     }
@@ -965,7 +1117,9 @@ async function isDirectory(targetPath) {
 }
 
 function sanitizeCommandName(raw) {
-  const trimmed = String(raw ?? "").trim().replace(/^\/+/, "");
+  const trimmed = String(raw ?? "")
+    .trim()
+    .replace(/^\/+/, "");
   if (!trimmed) return null;
   const safe = Array.from(trimmed)
     .filter((char) => /[A-Za-z0-9_-]/.test(char))
@@ -1023,7 +1177,8 @@ function showShutdownScreen() {
   if (!win || win.isDestroyed()) return;
   try {
     win.show();
-    win.webContents.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html>
+    win.webContents.loadURL(
+      `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -1040,11 +1195,12 @@ function showShutdownScreen() {
   <body>
     <main>
       <div class="spinner" aria-hidden="true"></div>
-      <div class="title">Stopping OpenWork services</div>
+      <div class="title">Stopping Sprintnex services</div>
       <div class="body">Closing local workers and background services...</div>
     </main>
   </body>
-</html>`)}`);
+</html>`)}`,
+    );
   } catch {
     // Ignore renderer teardown races during quit.
   }
@@ -1063,20 +1219,23 @@ async function disposeRuntimeBeforeQuit() {
 
 function assertOpenworkServerReady(info) {
   if (!info?.running) {
-    throw new Error("OpenWork server did not stay running after startup.");
+    throw new Error("Sprintnex server did not stay running after startup.");
   }
   if (!info.baseUrl) {
     throw new Error("OpenWork server did not report a base URL after startup.");
   }
   if (!info.ownerToken && !info.clientToken) {
-    throw new Error("OpenWork server did not report an access token after startup.");
+    throw new Error(
+      "OpenWork server did not report an access token after startup.",
+    );
   }
   return info;
 }
 
 async function bootRuntimeForSelectedWorkspace() {
   const list = await workspaceStore.readWorkspaceState();
-  const selectedId = list.selectedId || list.activeId || list.workspaces[0]?.id || "";
+  const selectedId =
+    list.selectedId || list.activeId || list.workspaces[0]?.id || "";
   const workspace = selectedId
     ? list.workspaces.find((entry) => entry?.id === selectedId)
     : list.workspaces[0];
@@ -1089,9 +1248,11 @@ async function bootRuntimeForSelectedWorkspace() {
   for (const entry of list.workspaces) {
     if (entry?.workspaceType === "remote") continue;
     const workspacePath = String(entry?.path ?? "").trim();
-    if (workspacePath && !workspacePaths.includes(workspacePath)) workspacePaths.push(workspacePath);
+    if (workspacePath && !workspacePaths.includes(workspacePath))
+      workspacePaths.push(workspacePath);
   }
-  if (!workspacePaths.includes(workspaceRoot)) workspacePaths.unshift(workspaceRoot);
+  if (!workspacePaths.includes(workspaceRoot))
+    workspacePaths.unshift(workspaceRoot);
 
   let bootWorkspace = workspace;
   let bootWorkspaceRoot = workspaceRoot;
@@ -1104,18 +1265,27 @@ async function bootRuntimeForSelectedWorkspace() {
   } catch (error) {
     const fallback = list.workspaces.find((entry) => {
       const candidatePath = String(entry?.path ?? "").trim();
-      return entry?.workspaceType !== "remote" && candidatePath && candidatePath !== workspaceRoot;
+      return (
+        entry?.workspaceType !== "remote" &&
+        candidatePath &&
+        candidatePath !== workspaceRoot
+      );
     });
     const fallbackRoot = String(fallback?.path ?? "").trim();
     if (!fallback || !fallbackRoot) throw error;
-    console.warn("[runtime] selected workspace failed during boot; trying fallback workspace", {
-      selectedWorkspaceId: workspace?.id ?? null,
-      fallbackWorkspaceId: fallback.id ?? null,
-      error: error instanceof Error ? error.message : String(error),
-    });
+    console.warn(
+      "[runtime] selected workspace failed during boot; trying fallback workspace",
+      {
+        selectedWorkspaceId: workspace?.id ?? null,
+        fallbackWorkspaceId: fallback.id ?? null,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    );
     const fallbackWorkspacePaths = [
       fallbackRoot,
-      ...workspacePaths.filter((entry) => entry !== fallbackRoot && entry !== workspaceRoot),
+      ...workspacePaths.filter(
+        (entry) => entry !== fallbackRoot && entry !== workspaceRoot,
+      ),
     ];
     engine = await runtimeManager.engineStart(fallbackRoot, {
       runtime: "direct",
@@ -1123,26 +1293,40 @@ async function bootRuntimeForSelectedWorkspace() {
     });
     bootWorkspace = fallback;
     bootWorkspaceRoot = fallbackRoot;
-    await workspaceStore.writeWorkspaceState({
-      ...list,
-      selectedId: String(fallback.id ?? ""),
-      watchedId: String(fallback.id ?? ""),
-    }).catch(() => undefined);
+    await workspaceStore
+      .writeWorkspaceState({
+        ...list,
+        selectedId: String(fallback.id ?? ""),
+        watchedId: String(fallback.id ?? ""),
+      })
+      .catch(() => undefined);
   }
-  await runtimeManager.orchestratorWorkspaceActivate({
-    workspacePath: bootWorkspaceRoot,
-    name: bootWorkspace.name ?? bootWorkspace.displayName ?? null,
-  }).catch(() => undefined);
-  const openworkServer = assertOpenworkServerReady(await runtimeManager.openworkServerInfo());
-  return { ok: true, skipped: false, engine, openworkServer, workspaceId: bootWorkspace.id ?? null };
+  await runtimeManager
+    .orchestratorWorkspaceActivate({
+      workspacePath: bootWorkspaceRoot,
+      name: bootWorkspace.name ?? bootWorkspace.displayName ?? null,
+    })
+    .catch(() => undefined);
+  const openworkServer = assertOpenworkServerReady(
+    await runtimeManager.openworkServerInfo(),
+  );
+  return {
+    ok: true,
+    skipped: false,
+    engine,
+    openworkServer,
+    workspaceId: bootWorkspace.id ?? null,
+  };
 }
 
 function ensureRuntimeBootstrap() {
   if (!runtimeBootstrapPromise) {
-    runtimeBootstrapPromise = bootRuntimeForSelectedWorkspace().catch((error) => ({
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    }));
+    runtimeBootstrapPromise = bootRuntimeForSelectedWorkspace().catch(
+      (error) => ({
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    );
   }
   return runtimeBootstrapPromise;
 }
@@ -1167,7 +1351,11 @@ function resolveOpencodeConfigPath(scope, projectDir) {
 
 async function readOpencodeConfig(scope, projectDir) {
   const { jsoncPath, jsonPath } = resolveOpencodeConfigPath(scope, projectDir);
-  const chosenPath = (await pathExists(jsoncPath)) ? jsoncPath : (await pathExists(jsonPath)) ? jsonPath : jsoncPath;
+  const chosenPath = (await pathExists(jsoncPath))
+    ? jsoncPath
+    : (await pathExists(jsonPath))
+      ? jsonPath
+      : jsoncPath;
   const exists = await pathExists(chosenPath);
   return {
     path: chosenPath,
@@ -1178,7 +1366,11 @@ async function readOpencodeConfig(scope, projectDir) {
 
 async function writeOpencodeConfig(scope, projectDir, content) {
   const { jsoncPath, jsonPath } = resolveOpencodeConfigPath(scope, projectDir);
-  const targetPath = (await pathExists(jsoncPath)) ? jsoncPath : (await pathExists(jsonPath)) ? jsonPath : jsoncPath;
+  const targetPath = (await pathExists(jsoncPath))
+    ? jsoncPath
+    : (await pathExists(jsonPath))
+      ? jsonPath
+      : jsoncPath;
   await mkdir(path.dirname(targetPath), { recursive: true });
   await writeFile(targetPath, content, "utf8");
   return execResult(true, `Wrote ${targetPath}`);
@@ -1217,7 +1409,11 @@ async function writeCommandFile(scope, projectDir, command) {
   const commandsDir = resolveCommandsDir(scope, projectDir);
   await mkdir(commandsDir, { recursive: true });
   const filePath = path.join(commandsDir, `${safeName}.md`);
-  await writeFile(filePath, serializeCommandFrontmatter({ ...command, name: safeName }), "utf8");
+  await writeFile(
+    filePath,
+    serializeCommandFrontmatter({ ...command, name: safeName }),
+    "utf8",
+  );
   return execResult(true, `Wrote ${filePath}`);
 }
 
@@ -1278,7 +1474,10 @@ async function collectGlobalSkillRoots() {
 }
 
 async function collectSkillRoots(projectDir) {
-  const roots = [...(await collectProjectSkillRoots(projectDir)), ...(await collectGlobalSkillRoots())];
+  const roots = [
+    ...(await collectProjectSkillRoots(projectDir)),
+    ...(await collectGlobalSkillRoots()),
+  ];
   return roots.filter((value, index) => roots.indexOf(value) === index);
 }
 
@@ -1295,7 +1494,9 @@ async function findSkillDirsInRoot(root) {
       continue;
     }
 
-    const nestedEntries = await readdir(direct, { withFileTypes: true }).catch(() => []);
+    const nestedEntries = await readdir(direct, { withFileTypes: true }).catch(
+      () => [],
+    );
     for (const nested of nestedEntries) {
       if (!nested.isDirectory()) continue;
       const nestedDir = path.join(direct, nested.name);
@@ -1316,7 +1517,10 @@ function extractFrontmatterValue(raw, keys) {
     if (separator <= 0) continue;
     const key = line.slice(0, separator).trim().toLowerCase();
     if (!keys.includes(key)) continue;
-    const value = line.slice(separator + 1).trim().replace(/^['"]|['"]$/g, "");
+    const value = line
+      .slice(separator + 1)
+      .trim()
+      .replace(/^['"]|['"]$/g, "");
     if (value) return value;
   }
   return null;
@@ -1377,7 +1581,9 @@ async function findSkillFile(projectDir, name) {
     const direct = path.join(root, safeName, "SKILL.md");
     if (await pathExists(direct)) return direct;
 
-    const entries = await readdir(root, { withFileTypes: true }).catch(() => []);
+    const entries = await readdir(root, { withFileTypes: true }).catch(
+      () => [],
+    );
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const nested = path.join(root, entry.name, safeName, "SKILL.md");
@@ -1435,370 +1641,415 @@ function applyNativeTheme(mode) {
 // typecheck:electron`.
 /** @type {import("@openwork/types/desktop-ipc").DesktopCommandHandlers<import("electron").IpcMainInvokeEvent>} */
 const desktopCommandHandlers = {
-  "workspaceBootstrap": async (event, ...args) => {
-      return workspaceStore.readWorkspaceState();
+  workspaceBootstrap: async (event, ...args) => {
+    return workspaceStore.readWorkspaceState();
   },
-  "workspaceSetSelected": async (event, ...args) => {
-      return workspaceStore.setSelectedWorkspace(typeof args[0] === "string" ? args[0] : "");
+  workspaceSetSelected: async (event, ...args) => {
+    return workspaceStore.setSelectedWorkspace(
+      typeof args[0] === "string" ? args[0] : "",
+    );
   },
-  "workspaceSetRuntimeActive": async (event, ...args) => {
-      return workspaceStore.setRuntimeActiveWorkspace(typeof args[0] === "string" && args[0].trim() ? args[0] : null);
+  workspaceSetRuntimeActive: async (event, ...args) => {
+    return workspaceStore.setRuntimeActiveWorkspace(
+      typeof args[0] === "string" && args[0].trim() ? args[0] : null,
+    );
   },
-  "workspaceCreate": async (event, ...args) => {
-      return workspaceStore.createWorkspace(args[0] ?? {});
+  workspaceCreate: async (event, ...args) => {
+    return workspaceStore.createWorkspace(args[0] ?? {});
   },
-  "workspaceCreateRemote": async (event, ...args) => {
-      return workspaceStore.createRemoteWorkspace(args[0] ?? {});
+  workspaceCreateRemote: async (event, ...args) => {
+    return workspaceStore.createRemoteWorkspace(args[0] ?? {});
   },
-  "workspaceUpdateRemote": async (event, ...args) => {
-      return workspaceStore.updateRemoteWorkspace(args[0] ?? {});
+  workspaceUpdateRemote: async (event, ...args) => {
+    return workspaceStore.updateRemoteWorkspace(args[0] ?? {});
   },
-  "workspaceUpdateDisplayName": async (event, ...args) => {
-      return workspaceStore.updateWorkspaceDisplayName(args[0] ?? {});
+  workspaceUpdateDisplayName: async (event, ...args) => {
+    return workspaceStore.updateWorkspaceDisplayName(args[0] ?? {});
   },
-  "workspaceForget": async (event, ...args) => {
-      return workspaceStore.forgetWorkspace(String(args[0] ?? "").trim());
+  workspaceForget: async (event, ...args) => {
+    return workspaceStore.forgetWorkspace(String(args[0] ?? "").trim());
   },
-  "workspaceAddAuthorizedRoot": async (event, ...args) => {
-      return workspaceStore.addAuthorizedRoot(args[0] ?? {});
+  workspaceAddAuthorizedRoot: async (event, ...args) => {
+    return workspaceStore.addAuthorizedRoot(args[0] ?? {});
   },
-  "workspaceOpenworkRead": async (event, ...args) => {
-      return workspaceStore.readWorkspaceOpenworkConfig(String(args[0]?.workspacePath ?? "").trim());
+  workspaceOpenworkRead: async (event, ...args) => {
+    return workspaceStore.readWorkspaceOpenworkConfig(
+      String(args[0]?.workspacePath ?? "").trim(),
+    );
   },
-  "workspaceOpenworkWrite": async (event, ...args) => {
-      return workspaceStore.writeWorkspaceOpenworkConfig(
-        String(args[0]?.workspacePath ?? "").trim(),
-        args[0]?.config ?? workspaceStore.defaultWorkspaceOpenworkConfig(""),
+  workspaceOpenworkWrite: async (event, ...args) => {
+    return workspaceStore.writeWorkspaceOpenworkConfig(
+      String(args[0]?.workspacePath ?? "").trim(),
+      args[0]?.config ?? workspaceStore.defaultWorkspaceOpenworkConfig(""),
+    );
+  },
+  workspaceExportConfig: async (event, ...args) => {
+    return workspaceStore.exportConfig(args[0] ?? {});
+  },
+  workspaceImportConfig: async (event, ...args) => {
+    return workspaceStore.importConfig(args[0] ?? {});
+  },
+  opencodeCommandList: async (event, ...args) => {
+    return listCommandNames(
+      String(args[0]?.scope ?? "").trim(),
+      String(args[0]?.projectDir ?? "").trim(),
+    );
+  },
+  opencodeCommandWrite: async (event, ...args) => {
+    return writeCommandFile(
+      String(args[0]?.scope ?? "").trim(),
+      String(args[0]?.projectDir ?? "").trim(),
+      args[0]?.command ?? {},
+    );
+  },
+  opencodeCommandDelete: async (event, ...args) => {
+    return deleteCommandFile(
+      String(args[0]?.scope ?? "").trim(),
+      String(args[0]?.projectDir ?? "").trim(),
+      String(args[0]?.name ?? "").trim(),
+    );
+  },
+  engineStart: async (event, ...args) => {
+    const projectDir = String(args[0] ?? "").trim();
+    const options = args[1] ?? {};
+    return runtimeManager.engineStart(projectDir, options);
+  },
+  prepareFreshRuntime: async (event, ...args) => {
+    return runtimeManager.prepareFreshRuntime();
+  },
+  runtimeBootstrap: async (event, ...args) => {
+    return ensureRuntimeBootstrap();
+  },
+  runtimeStatus: async (event, ...args) => {
+    return runtimeManager.runtimeStatus();
+  },
+  engineStop: async (event, ...args) => {
+    return runtimeManager.engineStop();
+  },
+  engineRestart: async (event, ...args) => {
+    return runtimeManager.engineRestart(args[0] ?? {});
+  },
+  engineInfo: async (event, ...args) => {
+    return runtimeManager.engineInfo();
+  },
+  engineDoctor: async (event, ...args) => {
+    return engineDoctor(args[0]);
+  },
+  engineInstall: async (event, ...args) => {
+    return runtimeManager.engineInstall();
+  },
+  orchestratorStatus: async (event, ...args) => {
+    return runtimeManager.orchestratorStatus();
+  },
+  orchestratorWorkspaceActivate: async (event, ...args) => {
+    return runtimeManager.orchestratorWorkspaceActivate(args[0] ?? {});
+  },
+  orchestratorInstanceDispose: async (event, ...args) => {
+    return runtimeManager.orchestratorInstanceDispose(
+      String(args[0] ?? "").trim(),
+    );
+  },
+  appBuildInfo: async (event, ...args) => {
+    return {
+      version: app.getVersion(),
+      gitSha: process.env.OPENWORK_GIT_SHA ?? null,
+      buildEpoch: process.env.OPENWORK_BUILD_EPOCH ?? null,
+      openworkDevMode: process.env.OPENWORK_DEV_MODE === "1",
+    };
+  },
+  desktopNotificationShow: async (event, ...args) => {
+    return showDesktopNotification(args[0] ?? {});
+  },
+  getUiControlBridgeInfo: async (event, ...args) => {
+    try {
+      const raw = await readFile(
+        path.join(app.getPath("userData"), "openwork-ui-control.json"),
+        "utf8",
       );
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
   },
-  "workspaceExportConfig": async (event, ...args) => {
-      return workspaceStore.exportConfig(args[0] ?? {});
+  getOpenworkUiMcpCommand: async (event, ...args) => {
+    if (process.env.OPENWORK_DEV_MODE === "1") {
+      return [
+        "node",
+        path.resolve(
+          __dirname,
+          "../../..",
+          "packages/openwork-ui-mcp/index.mjs",
+        ),
+      ];
+    }
+    return ["npx", "-y", "openwork-ui-mcp"];
   },
-  "workspaceImportConfig": async (event, ...args) => {
-      return workspaceStore.importConfig(args[0] ?? {});
+  getComputerUseMcpCommand: async (event, ...args) => {
+    return getComputerUseMcpCommand();
   },
-  "opencodeCommandList": async (event, ...args) => {
-      return listCommandNames(String(args[0]?.scope ?? "").trim(), String(args[0]?.projectDir ?? "").trim());
+  checkComputerUsePermissions: async (event, ...args) => {
+    // Spawn --check → fresh TCC read → always accurate.
+    return checkComputerUsePermissions();
   },
-  "opencodeCommandWrite": async (event, ...args) => {
-      return writeCommandFile(
-        String(args[0]?.scope ?? "").trim(),
-        String(args[0]?.projectDir ?? "").trim(),
-        args[0]?.command ?? {},
-      );
+  listRunningApps: async (event, ...args) => {
+    // Running regular macOS apps for composer @App mentions.
+    return listRunningApps();
   },
-  "opencodeCommandDelete": async (event, ...args) => {
-      return deleteCommandFile(
-        String(args[0]?.scope ?? "").trim(),
-        String(args[0]?.projectDir ?? "").trim(),
-        String(args[0]?.name ?? "").trim(),
-      );
+  openComputerUsePermissionSetup: async (event, ...args) => {
+    // Open the GUI app. Returns immediately — React shows "verify" CTA.
+    await openComputerUseSetupApp();
+    // Return a fresh check so the UI shows the current state.
+    return checkComputerUsePermissions();
   },
-  "engineStart": async (event, ...args) => {
-      const projectDir = String(args[0] ?? "").trim();
-      const options = args[1] ?? {};
-      return runtimeManager.engineStart(projectDir, options);
+  openComputerUsePermissionSettings: async (event, ...args) => {
+    // Legacy: open the setup app (same as above).
+    await openComputerUseSetupApp();
+    return checkComputerUsePermissions();
   },
-  "prepareFreshRuntime": async (event, ...args) => {
-      return runtimeManager.prepareFreshRuntime();
+  getOpenworkUiMcpEnvironment: async (event, ...args) => {
+    return {
+      OPENWORK_UI_CONTROL_DISCOVERY: path.join(
+        app.getPath("userData"),
+        "openwork-ui-control.json",
+      ),
+    };
   },
-  "runtimeBootstrap": async (event, ...args) => {
-      return ensureRuntimeBootstrap();
+  getDesktopBootstrapConfig: async (event, ...args) => {
+    return workspaceStore.getDesktopBootstrapConfig();
   },
-  "runtimeStatus": async (event, ...args) => {
-      return runtimeManager.runtimeStatus();
+  debugDesktopBootstrapConfig: async (event, ...args) => {
+    return workspaceStore.debugDesktopBootstrapConfig();
   },
-  "engineStop": async (event, ...args) => {
-      return runtimeManager.engineStop();
+  clearDesktopBootstrapConfig: async (event, ...args) => {
+    return workspaceStore.clearDesktopBootstrapConfig();
   },
-  "engineRestart": async (event, ...args) => {
-      return runtimeManager.engineRestart(args[0] ?? {});
+  setDesktopBootstrapConfig: async (event, ...args) => {
+    return workspaceStore.setDesktopBootstrapConfig(args[0] ?? {});
   },
-  "engineInfo": async (event, ...args) => {
-      return runtimeManager.engineInfo();
+  nukeOpenworkAndOpencodeConfigAndExit: async (event, ...args) => {
+    await rm(app.getPath("userData"), { recursive: true, force: true });
+    app.exit(0);
+    return undefined;
   },
-  "engineDoctor": async (event, ...args) => {
-      return engineDoctor(args[0]);
+  orchestratorStartDetached: async (event, ...args) => {
+    return runtimeManager.orchestratorStartDetached(args[0] ?? {});
   },
-  "engineInstall": async (event, ...args) => {
-      return runtimeManager.engineInstall();
+  sandboxDoctor: async (event, ...args) => {
+    return runtimeManager.sandboxDoctor();
   },
-  "orchestratorStatus": async (event, ...args) => {
-      return runtimeManager.orchestratorStatus();
+  sandboxStop: async (event, ...args) => {
+    return runtimeManager.sandboxStop(String(args[0] ?? "").trim());
   },
-  "orchestratorWorkspaceActivate": async (event, ...args) => {
-      return runtimeManager.orchestratorWorkspaceActivate(args[0] ?? {});
+  sandboxCleanupOpenworkContainers: async (event, ...args) => {
+    return runtimeManager.sandboxCleanupOpenworkContainers();
   },
-  "orchestratorInstanceDispose": async (event, ...args) => {
-      return runtimeManager.orchestratorInstanceDispose(String(args[0] ?? "").trim());
+  sandboxDebugProbe: async (event, ...args) => {
+    return runtimeManager.sandboxDebugProbe();
   },
-  "appBuildInfo": async (event, ...args) => {
-      return {
-        version: app.getVersion(),
-        gitSha: process.env.OPENWORK_GIT_SHA ?? null,
-        buildEpoch: process.env.OPENWORK_BUILD_EPOCH ?? null,
-        openworkDevMode: process.env.OPENWORK_DEV_MODE === "1",
-      };
+  openworkServerInfo: async (event, ...args) => {
+    return runtimeManager.openworkServerInfo();
   },
-  "desktopNotificationShow": async (event, ...args) => {
-      return showDesktopNotification(args[0] ?? {});
+  openworkServerRestart: async (event, ...args) => {
+    return runtimeManager.openworkServerRestart(args[0] ?? {});
   },
-  "getUiControlBridgeInfo": async (event, ...args) => {
-      try {
-        const raw = await readFile(path.join(app.getPath("userData"), "openwork-ui-control.json"), "utf8");
-        return JSON.parse(raw);
-      } catch {
-        return null;
+  pickDirectory: async (event, ...args) => {
+    const options = args[0] ?? {};
+    /** @type {import("electron").OpenDialogOptions["properties"]} */
+    const properties = options.multiple
+      ? ["openDirectory", "createDirectory", "multiSelections"]
+      : ["openDirectory", "createDirectory"];
+    const result = await dialog.showOpenDialog(activeWindowFromEvent(event), {
+      title: options.title,
+      defaultPath: options.defaultPath,
+      properties,
+    });
+    if (result.canceled) return null;
+    return options.multiple ? result.filePaths : (result.filePaths[0] ?? null);
+  },
+  pickFile: async (event, ...args) => {
+    const options = args[0] ?? {};
+    /** @type {import("electron").OpenDialogOptions["properties"]} */
+    const properties = options.multiple
+      ? ["openFile", "multiSelections"]
+      : ["openFile"];
+    const result = await dialog.showOpenDialog(activeWindowFromEvent(event), {
+      title: options.title,
+      defaultPath: options.defaultPath,
+      filters: options.filters,
+      properties,
+    });
+    if (result.canceled) return null;
+    return options.multiple ? result.filePaths : (result.filePaths[0] ?? null);
+  },
+  saveFile: async (event, ...args) => {
+    const options = args[0] ?? {};
+    const result = await dialog.showSaveDialog(activeWindowFromEvent(event), {
+      title: options.title,
+      defaultPath: options.defaultPath,
+      filters: options.filters,
+    });
+    return result.canceled ? null : (result.filePath ?? null);
+  },
+  importSkill: async (event, ...args) => {
+    const projectDir = String(args[0] ?? "").trim();
+    const sourceDir = String(args[1] ?? "").trim();
+    const overwrite = args[2]?.overwrite === true;
+    if (!projectDir || !sourceDir) {
+      throw new Error("projectDir and sourceDir are required");
+    }
+    const skillRoot = await ensureProjectSkillRoot(projectDir);
+    const name = validateSkillName(path.basename(sourceDir));
+    const destination = path.join(skillRoot, name);
+    if (await pathExists(destination)) {
+      if (!overwrite) {
+        return execResult(false, "", `Skill already exists at ${destination}`);
       }
+      await rm(destination, { recursive: true, force: true });
+    }
+    await cp(sourceDir, destination, { recursive: true });
+    return execResult(true, `Imported skill to ${destination}`);
   },
-  "getOpenworkUiMcpCommand": async (event, ...args) => {
-      if (process.env.OPENWORK_DEV_MODE === "1") {
-        return ["node", path.resolve(__dirname, "../../..", "packages/openwork-ui-mcp/index.mjs")];
+  installSkillTemplate: async (event, ...args) => {
+    const projectDir = String(args[0] ?? "").trim();
+    const name = validateSkillName(args[1]);
+    const content = String(args[2] ?? "");
+    const overwrite = args[3]?.overwrite === true;
+    const skillRoot = await ensureProjectSkillRoot(projectDir);
+    const destination = path.join(skillRoot, name);
+    if (await pathExists(destination)) {
+      if (!overwrite) {
+        return execResult(false, "", `Skill already exists at ${destination}`);
       }
-      return ["npx", "-y", "openwork-ui-mcp"];
+      await rm(destination, { recursive: true, force: true });
+    }
+    await mkdir(destination, { recursive: true });
+    await writeFile(path.join(destination, "SKILL.md"), content, "utf8");
+    return execResult(true, `Installed skill to ${destination}`);
   },
-  "getComputerUseMcpCommand": async (event, ...args) => {
-      return getComputerUseMcpCommand();
+  listLocalSkills: async (event, ...args) => {
+    return listLocalSkills(String(args[0] ?? "").trim());
   },
-  "checkComputerUsePermissions": async (event, ...args) => {
-      // Spawn --check → fresh TCC read → always accurate.
-      return checkComputerUsePermissions();
+  readLocalSkill: async (event, ...args) => {
+    const projectDir = String(args[0] ?? "").trim();
+    const skillPath = await findSkillFile(projectDir, args[1]);
+    if (!skillPath) {
+      throw new Error("Skill not found");
+    }
+    return { path: skillPath, content: await readFile(skillPath, "utf8") };
   },
-  "listRunningApps": async (event, ...args) => {
-      // Running regular macOS apps for composer @App mentions.
-      return listRunningApps();
+  writeLocalSkill: async (event, ...args) => {
+    const projectDir = String(args[0] ?? "").trim();
+    const skillPath = await findSkillFile(projectDir, args[1]);
+    if (!skillPath) {
+      return execResult(false, "", "Skill not found");
+    }
+    const content = String(args[2] ?? "");
+    const next = content.endsWith("\n") ? content : `${content}\n`;
+    await writeFile(skillPath, next, "utf8");
+    return execResult(
+      true,
+      `Saved skill ${path.basename(path.dirname(skillPath))}`,
+    );
   },
-  "openComputerUsePermissionSetup": async (event, ...args) => {
-      // Open the GUI app. Returns immediately — React shows "verify" CTA.
-      await openComputerUseSetupApp();
-      // Return a fresh check so the UI shows the current state.
-      return checkComputerUsePermissions();
+  uninstallSkill: async (event, ...args) => {
+    const projectDir = String(args[0] ?? "").trim();
+    const skillPath = await findSkillFile(projectDir, args[1]);
+    if (!skillPath) {
+      return execResult(
+        false,
+        "",
+        "Skill not found in .opencode/skills or .claude/skills",
+      );
+    }
+    await rm(path.dirname(skillPath), { recursive: true, force: true });
+    return execResult(true, `Removed skill ${args[1]}`);
   },
-  "openComputerUsePermissionSettings": async (event, ...args) => {
-      // Legacy: open the setup app (same as above).
-      await openComputerUseSetupApp();
-      return checkComputerUsePermissions();
+  updaterEnvironment: async (event, ...args) => {
+    const executablePath = app.isPackaged
+      ? app.getPath("exe")
+      : process.execPath;
+    return {
+      supported: true,
+      reason: null,
+      executablePath,
+      appBundlePath:
+        process.platform === "darwin"
+          ? path.resolve(executablePath, "../../..")
+          : path.dirname(executablePath),
+    };
   },
-  "getOpenworkUiMcpEnvironment": async (event, ...args) => {
-      return {
-        OPENWORK_UI_CONTROL_DISCOVERY: path.join(app.getPath("userData"), "openwork-ui-control.json"),
-      };
+  readOpencodeConfig: async (event, ...args) => {
+    return readOpencodeConfig(
+      String(args[0] ?? "").trim(),
+      String(args[1] ?? "").trim(),
+    );
   },
-  "getDesktopBootstrapConfig": async (event, ...args) => {
-      return workspaceStore.getDesktopBootstrapConfig();
+  writeOpencodeConfig: async (event, ...args) => {
+    return writeOpencodeConfig(
+      String(args[0] ?? "").trim(),
+      String(args[1] ?? "").trim(),
+      String(args[2] ?? ""),
+    );
   },
-  "debugDesktopBootstrapConfig": async (event, ...args) => {
-      return workspaceStore.debugDesktopBootstrapConfig();
+  resetOpenworkState: async (event, ...args) => {
+    return workspaceStore.resetOpenworkState();
   },
-  "clearDesktopBootstrapConfig": async (event, ...args) => {
-      return workspaceStore.clearDesktopBootstrapConfig();
+  resetOpencodeCache: async (event, ...args) => {
+    return { removed: [], missing: [], errors: [] };
   },
-  "setDesktopBootstrapConfig": async (event, ...args) => {
-      return workspaceStore.setDesktopBootstrapConfig(args[0] ?? {});
+  opencodeMcpAuth: async (event, ...args) => {
+    return runtimeManager.opencodeMcpAuth(
+      String(args[0] ?? "").trim(),
+      String(args[1] ?? "").trim(),
+    );
   },
-  "nukeOpenworkAndOpencodeConfigAndExit": async (event, ...args) => {
-      await rm(app.getPath("userData"), { recursive: true, force: true });
-      app.exit(0);
+  setWindowDecorations: async (event, ...args) => {
+    return undefined;
+  },
+  __openPath: async (event, ...args) => {
+    const target = String(args[0] ?? "").trim();
+    if (!target) return "Path is required.";
+    return shell.openPath(target);
+  },
+  __revealItemInDir: async (event, ...args) => {
+    const target = String(args[0] ?? "").trim();
+    if (!target) return "Path is required.";
+    if (existsSync(target)) {
+      shell.showItemInFolder(target);
       return undefined;
+    }
+    // The exact file may not exist yet (or path is slightly off); fall back to
+    // opening the containing directory so the user still lands in the right place.
+    const parent = path.dirname(target);
+    if (parent && parent !== target && existsSync(parent)) {
+      const error = await shell.openPath(parent);
+      return error && error.trim() ? error : undefined;
+    }
+    return `Could not find "${target}" on disk.`;
   },
-  "orchestratorStartDetached": async (event, ...args) => {
-      return runtimeManager.orchestratorStartDetached(args[0] ?? {});
+  __getFileIcon: async (event, ...args) => {
+    const target = String(args[0] ?? "").trim();
+    if (!target) return null;
+    const requestedSize = args[1];
+    /** @type {"small" | "normal" | "large"} */
+    let validSize = "normal";
+    if (
+      requestedSize === "small" ||
+      requestedSize === "normal" ||
+      requestedSize === "large"
+    ) {
+      validSize = requestedSize;
+    }
+    try {
+      const image = await app.getFileIcon(target, { size: validSize });
+      return image.isEmpty() ? null : image.toDataURL();
+    } catch {
+      return null;
+    }
   },
-  "sandboxDoctor": async (event, ...args) => {
-      return runtimeManager.sandboxDoctor();
-  },
-  "sandboxStop": async (event, ...args) => {
-      return runtimeManager.sandboxStop(String(args[0] ?? "").trim());
-  },
-  "sandboxCleanupOpenworkContainers": async (event, ...args) => {
-      return runtimeManager.sandboxCleanupOpenworkContainers();
-  },
-  "sandboxDebugProbe": async (event, ...args) => {
-      return runtimeManager.sandboxDebugProbe();
-  },
-  "openworkServerInfo": async (event, ...args) => {
-      return runtimeManager.openworkServerInfo();
-  },
-  "openworkServerRestart": async (event, ...args) => {
-      return runtimeManager.openworkServerRestart(args[0] ?? {});
-  },
-  "pickDirectory": async (event, ...args) => {
-      const options = args[0] ?? {};
-      /** @type {import("electron").OpenDialogOptions["properties"]} */
-      const properties = options.multiple
-        ? ["openDirectory", "createDirectory", "multiSelections"]
-        : ["openDirectory", "createDirectory"];
-      const result = await dialog.showOpenDialog(activeWindowFromEvent(event), {
-        title: options.title,
-        defaultPath: options.defaultPath,
-        properties,
-      });
-      if (result.canceled) return null;
-      return options.multiple ? result.filePaths : (result.filePaths[0] ?? null);
-  },
-  "pickFile": async (event, ...args) => {
-      const options = args[0] ?? {};
-      /** @type {import("electron").OpenDialogOptions["properties"]} */
-      const properties = options.multiple ? ["openFile", "multiSelections"] : ["openFile"];
-      const result = await dialog.showOpenDialog(activeWindowFromEvent(event), {
-        title: options.title,
-        defaultPath: options.defaultPath,
-        filters: options.filters,
-        properties,
-      });
-      if (result.canceled) return null;
-      return options.multiple ? result.filePaths : (result.filePaths[0] ?? null);
-  },
-  "saveFile": async (event, ...args) => {
-      const options = args[0] ?? {};
-      const result = await dialog.showSaveDialog(activeWindowFromEvent(event), {
-        title: options.title,
-        defaultPath: options.defaultPath,
-        filters: options.filters,
-      });
-      return result.canceled ? null : (result.filePath ?? null);
-  },
-  "importSkill": async (event, ...args) => {
-      const projectDir = String(args[0] ?? "").trim();
-      const sourceDir = String(args[1] ?? "").trim();
-      const overwrite = args[2]?.overwrite === true;
-      if (!projectDir || !sourceDir) {
-        throw new Error("projectDir and sourceDir are required");
-      }
-      const skillRoot = await ensureProjectSkillRoot(projectDir);
-      const name = validateSkillName(path.basename(sourceDir));
-      const destination = path.join(skillRoot, name);
-      if (await pathExists(destination)) {
-        if (!overwrite) {
-          return execResult(false, "", `Skill already exists at ${destination}`);
-        }
-        await rm(destination, { recursive: true, force: true });
-      }
-      await cp(sourceDir, destination, { recursive: true });
-      return execResult(true, `Imported skill to ${destination}`);
-  },
-  "installSkillTemplate": async (event, ...args) => {
-      const projectDir = String(args[0] ?? "").trim();
-      const name = validateSkillName(args[1]);
-      const content = String(args[2] ?? "");
-      const overwrite = args[3]?.overwrite === true;
-      const skillRoot = await ensureProjectSkillRoot(projectDir);
-      const destination = path.join(skillRoot, name);
-      if (await pathExists(destination)) {
-        if (!overwrite) {
-          return execResult(false, "", `Skill already exists at ${destination}`);
-        }
-        await rm(destination, { recursive: true, force: true });
-      }
-      await mkdir(destination, { recursive: true });
-      await writeFile(path.join(destination, "SKILL.md"), content, "utf8");
-      return execResult(true, `Installed skill to ${destination}`);
-  },
-  "listLocalSkills": async (event, ...args) => {
-      return listLocalSkills(String(args[0] ?? "").trim());
-  },
-  "readLocalSkill": async (event, ...args) => {
-      const projectDir = String(args[0] ?? "").trim();
-      const skillPath = await findSkillFile(projectDir, args[1]);
-      if (!skillPath) {
-        throw new Error("Skill not found");
-      }
-      return { path: skillPath, content: await readFile(skillPath, "utf8") };
-  },
-  "writeLocalSkill": async (event, ...args) => {
-      const projectDir = String(args[0] ?? "").trim();
-      const skillPath = await findSkillFile(projectDir, args[1]);
-      if (!skillPath) {
-        return execResult(false, "", "Skill not found");
-      }
-      const content = String(args[2] ?? "");
-      const next = content.endsWith("\n") ? content : `${content}\n`;
-      await writeFile(skillPath, next, "utf8");
-      return execResult(true, `Saved skill ${path.basename(path.dirname(skillPath))}`);
-  },
-  "uninstallSkill": async (event, ...args) => {
-      const projectDir = String(args[0] ?? "").trim();
-      const skillPath = await findSkillFile(projectDir, args[1]);
-      if (!skillPath) {
-        return execResult(false, "", "Skill not found in .opencode/skills or .claude/skills");
-      }
-      await rm(path.dirname(skillPath), { recursive: true, force: true });
-      return execResult(true, `Removed skill ${args[1]}`);
-  },
-  "updaterEnvironment": async (event, ...args) => {
-      const executablePath = app.isPackaged ? app.getPath("exe") : process.execPath;
-      return {
-        supported: true,
-        reason: null,
-        executablePath,
-        appBundlePath:
-          process.platform === "darwin"
-            ? path.resolve(executablePath, "../../..")
-            : path.dirname(executablePath),
-      };
-  },
-  "readOpencodeConfig": async (event, ...args) => {
-      return readOpencodeConfig(String(args[0] ?? "").trim(), String(args[1] ?? "").trim());
-  },
-  "writeOpencodeConfig": async (event, ...args) => {
-      return writeOpencodeConfig(
-        String(args[0] ?? "").trim(),
-        String(args[1] ?? "").trim(),
-        String(args[2] ?? ""),
-      );
-  },
-  "resetOpenworkState": async (event, ...args) => {
-      return workspaceStore.resetOpenworkState();
-  },
-  "resetOpencodeCache": async (event, ...args) => {
-      return { removed: [], missing: [], errors: [] };
-  },
-  "opencodeMcpAuth": async (event, ...args) => {
-      return runtimeManager.opencodeMcpAuth(String(args[0] ?? "").trim(), String(args[1] ?? "").trim());
-  },
-  "setWindowDecorations": async (event, ...args) => {
-      return undefined;
-  },
-  "__openPath": async (event, ...args) => {
-      const target = String(args[0] ?? "").trim();
-      if (!target) return "Path is required.";
-      return shell.openPath(target);
-  },
-  "__revealItemInDir": async (event, ...args) => {
-      const target = String(args[0] ?? "").trim();
-      if (!target) return "Path is required.";
-      if (existsSync(target)) {
-        shell.showItemInFolder(target);
-        return undefined;
-      }
-      // The exact file may not exist yet (or path is slightly off); fall back to
-      // opening the containing directory so the user still lands in the right place.
-      const parent = path.dirname(target);
-      if (parent && parent !== target && existsSync(parent)) {
-        const error = await shell.openPath(parent);
-        return error && error.trim() ? error : undefined;
-      }
-      return `Could not find "${target}" on disk.`;
-  },
-  "__getFileIcon": async (event, ...args) => {
-      const target = String(args[0] ?? "").trim();
-      if (!target) return null;
-      const requestedSize = args[1];
-      /** @type {"small" | "normal" | "large"} */
-      let validSize = "normal";
-      if (requestedSize === "small" || requestedSize === "normal" || requestedSize === "large") {
-        validSize = requestedSize;
-      }
-      try {
-        const image = await app.getFileIcon(target, { size: validSize });
-        return image.isEmpty() ? null : image.toDataURL();
-      } catch {
-        return null;
-      }
-  },
-  "__applyBrandAppName": async (event, ...args) => {
-      const requested = args[0] === null ? "" : String(args[0] ?? "").trim();
-      currentDisplayAppName = requested.slice(0, 64) || APP_NAME;
+  __applyBrandAppName: async (event, ...args) => {
+    const requested = args[0] === null ? "" : String(args[0] ?? "").trim();
+    currentDisplayAppName = requested.slice(0, 64) || APP_NAME;
     applicationMenu.setAppName(currentDisplayAppName);
     mainWindow?.setTitle(currentDisplayAppName);
     if (process.platform === "win32") {
@@ -1806,133 +2057,162 @@ const desktopCommandHandlers = {
     }
     return { ok: true, appName: currentDisplayAppName };
   },
-  "__applyBrandIcon": async (event, ...args) => {
-      const value = args[0] === null ? null : String(args[0] ?? "");
-      return applyBrandIconUrl(value);
+  __applyBrandIcon: async (event, ...args) => {
+    const value = args[0] === null ? null : String(args[0] ?? "");
+    return applyBrandIconUrl(value);
   },
-  "__getBrandIconState": async (event, ...args) => {
-      return getBrandIconState();
+  __getBrandIconState: async (event, ...args) => {
+    return getBrandIconState();
   },
-  "__getApplicationsForFile": async (event, ...args) => {
-      const target = String(args[0] ?? "").trim();
-      if (!target) return [];
-      const platform = process.platform;
-      const results = [];
+  __getApplicationsForFile: async (event, ...args) => {
+    const target = String(args[0] ?? "").trim();
+    if (!target) return [];
+    const platform = process.platform;
+    const results = [];
 
-      try {
-        if (platform === "darwin") {
-          // Scan /Applications and /System/Applications for .app bundles
-          const appDirs = ["/Applications", "/System/Applications", "/Applications/Utilities", `${os.homedir()}/Applications`];
-          const seen = new Set();
-          for (const dir of appDirs) {
-            let entries;
-            try { entries = await readdir(dir); } catch { continue; }
-            for (const entry of entries) {
-              if (!entry.endsWith(".app")) continue;
-              const appPath = path.join(dir, entry);
-              if (seen.has(appPath)) continue;
-              seen.add(appPath);
-              const name = entry.replace(/\.app$/i, "");
+    try {
+      if (platform === "darwin") {
+        // Scan /Applications and /System/Applications for .app bundles
+        const appDirs = [
+          "/Applications",
+          "/System/Applications",
+          "/Applications/Utilities",
+          `${os.homedir()}/Applications`,
+        ];
+        const seen = new Set();
+        for (const dir of appDirs) {
+          let entries;
+          try {
+            entries = await readdir(dir);
+          } catch {
+            continue;
+          }
+          for (const entry of entries) {
+            if (!entry.endsWith(".app")) continue;
+            const appPath = path.join(dir, entry);
+            if (seen.has(appPath)) continue;
+            seen.add(appPath);
+            const name = entry.replace(/\.app$/i, "");
+            let icon = null;
+            try {
+              const img = await app.getFileIcon(appPath, { size: "small" });
+              icon = img.isEmpty() ? null : img.toDataURL();
+            } catch {}
+            results.push({ name, appPath, icon });
+          }
+        }
+      } else if (platform === "linux") {
+        // Parse .desktop files in standard directories
+        const desktopDirs = [
+          "/usr/share/applications",
+          "/usr/local/share/applications",
+          `${os.homedir()}/.local/share/applications`,
+        ];
+        const seen = new Set();
+        for (const dir of desktopDirs) {
+          let entries;
+          try {
+            entries = await readdir(dir);
+          } catch {
+            continue;
+          }
+          for (const entry of entries) {
+            if (!entry.endsWith(".desktop")) continue;
+            const filePath = path.join(dir, entry);
+            if (seen.has(filePath)) continue;
+            seen.add(filePath);
+            try {
+              const content = await readFile(filePath, "utf-8");
+              const nameMatch = content.match(/^Name=(.+)$/m);
+              const execMatch = content.match(/^Exec=(.+)$/m);
+              if (!nameMatch || !execMatch) continue;
+              const name = nameMatch[1].trim();
+              const appPath = execMatch[1]
+                .trim()
+                .replace(/%[fFuU]/g, "")
+                .trim();
+              if (!appPath) continue;
               let icon = null;
               try {
-                const img = await app.getFileIcon(appPath, { size: "small" });
+                const img = await app.getFileIcon(filePath, { size: "small" });
                 icon = img.isEmpty() ? null : img.toDataURL();
               } catch {}
               results.push({ name, appPath, icon });
-            }
-          }
-        } else if (platform === "linux") {
-          // Parse .desktop files in standard directories
-          const desktopDirs = ["/usr/share/applications", "/usr/local/share/applications", `${os.homedir()}/.local/share/applications`];
-          const seen = new Set();
-          for (const dir of desktopDirs) {
-            let entries;
-            try { entries = await readdir(dir); } catch { continue; }
-            for (const entry of entries) {
-              if (!entry.endsWith(".desktop")) continue;
-              const filePath = path.join(dir, entry);
-              if (seen.has(filePath)) continue;
-              seen.add(filePath);
-              try {
-                const content = await readFile(filePath, "utf-8");
-                const nameMatch = content.match(/^Name=(.+)$/m);
-                const execMatch = content.match(/^Exec=(.+)$/m);
-                if (!nameMatch || !execMatch) continue;
-                const name = nameMatch[1].trim();
-                const appPath = execMatch[1].trim().replace(/%[fFuU]/g, "").trim();
-                if (!appPath) continue;
-                let icon = null;
-                try {
-                  const img = await app.getFileIcon(filePath, { size: "small" });
-                  icon = img.isEmpty() ? null : img.toDataURL();
-                } catch {}
-                results.push({ name, appPath, icon });
-              } catch {}
-            }
+            } catch {}
           }
         }
-      } catch {}
+      }
+    } catch {}
 
-      return results;
+    return results;
   },
-  "__openWithApp": async (event, ...args) => {
-      const target = String(args[0] ?? "").trim();
-      const appPath = String(args[1] ?? "").trim();
-      if (!target || !appPath) return "Target and app path are required.";
-      const platform = process.platform;
-      try {
-        if (platform === "darwin") {
-          execFileSync("open", ["-a", appPath, target]);
-        } else if (platform === "linux") {
-          const child = spawn(appPath, [target], { detached: true, stdio: "ignore" });
-          child.unref();
-        } else {
-          return `Open with app is not supported on ${platform}`;
-        }
-      } catch (err) {
-        return String(err?.message ?? err);
+  __openWithApp: async (event, ...args) => {
+    const target = String(args[0] ?? "").trim();
+    const appPath = String(args[1] ?? "").trim();
+    if (!target || !appPath) return "Target and app path are required.";
+    const platform = process.platform;
+    try {
+      if (platform === "darwin") {
+        execFileSync("open", ["-a", appPath, target]);
+      } else if (platform === "linux") {
+        const child = spawn(appPath, [target], {
+          detached: true,
+          stdio: "ignore",
+        });
+        child.unref();
+      } else {
+        return `Open with app is not supported on ${platform}`;
       }
+    } catch (err) {
+      return String(err?.message ?? err);
+    }
   },
-  "__fetch": async (event, ...args) => {
-      const url = String(args[0] ?? "").trim();
-      const init = args[1] ?? {};
-      if (!url) throw new Error("URL is required.");
-      const timeoutMs = Number(init.timeoutMs);
-      const response = await electronNet.fetch(url, {
-        method: typeof init.method === "string" ? init.method : undefined,
-        headers: init.headers && typeof init.headers === "object" ? init.headers : undefined,
-        body: typeof init.body === "string" ? init.body : undefined,
-        signal: Number.isFinite(timeoutMs) && timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined,
-        credentials: "omit",
-        cache: "no-store",
-      });
-      return {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Array.from(response.headers.entries()),
-        body: await response.text(),
-      };
+  __fetch: async (event, ...args) => {
+    const url = String(args[0] ?? "").trim();
+    const init = args[1] ?? {};
+    if (!url) throw new Error("URL is required.");
+    const timeoutMs = Number(init.timeoutMs);
+    const response = await electronNet.fetch(url, {
+      method: typeof init.method === "string" ? init.method : undefined,
+      headers:
+        init.headers && typeof init.headers === "object"
+          ? init.headers
+          : undefined,
+      body: typeof init.body === "string" ? init.body : undefined,
+      signal:
+        Number.isFinite(timeoutMs) && timeoutMs > 0
+          ? AbortSignal.timeout(timeoutMs)
+          : undefined,
+      credentials: "omit",
+      cache: "no-store",
+    });
+    return {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Array.from(response.headers.entries()),
+      body: await response.text(),
+    };
   },
-  "__homeDir": async (event, ...args) => {
-      return os.homedir();
+  __homeDir: async (event, ...args) => {
+    return os.homedir();
   },
-  "__joinPath": async (event, ...args) => {
-      return path.join(...args.map((value) => String(value ?? "")));
+  __joinPath: async (event, ...args) => {
+    return path.join(...args.map((value) => String(value ?? "")));
   },
-  "__setZoomFactor": async (event, ...args) => {
-      const factor = Number(args[0]);
-      const window = activeWindowFromEvent(event);
-      if (!window || !Number.isFinite(factor) || factor <= 0) {
-        return false;
-      }
-      window.webContents.setZoomFactor(factor);
-      return true;
+  __setZoomFactor: async (event, ...args) => {
+    const factor = Number(args[0]);
+    const window = activeWindowFromEvent(event);
+    if (!window || !Number.isFinite(factor) || factor <= 0) {
+      return false;
+    }
+    window.webContents.setZoomFactor(factor);
+    return true;
   },
-  "__setNativeTheme": async (event, ...args) => {
-      return applyNativeTheme(String(args[0]));
+  __setNativeTheme: async (event, ...args) => {
+    return applyNativeTheme(String(args[0]));
   },
-  "__setApplicationMenuVisible": async (event, ...args) => {
-      return applicationMenu.setVisible(args[0]);
+  __setApplicationMenuVisible: async (event, ...args) => {
+    return applicationMenu.setVisible(args[0]);
   },
 };
 
@@ -1961,10 +2241,14 @@ if (isDevMode) {
 function desktopErrorMessageSegment(error, includeName = false) {
   try {
     if (error && (typeof error === "object" || typeof error === "function")) {
-      const message = typeof error.message === "string" ? error.message.trim() : "";
+      const message =
+        typeof error.message === "string" ? error.message.trim() : "";
       if (message) {
         const name = typeof error.name === "string" ? error.name.trim() : "";
-        return includeName && name && name !== "Error" && !message.startsWith(`${name}:`)
+        return includeName &&
+          name &&
+          name !== "Error" &&
+          !message.startsWith(`${name}:`)
           ? `${name}: ${message}`
           : message;
       }
@@ -1977,7 +2261,9 @@ function desktopErrorMessageSegment(error, includeName = false) {
 
 function desktopErrorCause(error) {
   try {
-    return error && (typeof error === "object" || typeof error === "function") ? error.cause : undefined;
+    return error && (typeof error === "object" || typeof error === "function")
+      ? error.cause
+      : undefined;
   } catch {
     return undefined;
   }
@@ -2011,7 +2297,9 @@ function desktopErrorMessageWithCauses(error) {
 async function handleDesktopInvoke(event, command, ...args) {
   const handler = desktopCommandHandlers[command];
   if (!handler) {
-    throw new Error(`Electron desktop bridge method is not implemented yet: ${command}`);
+    throw new Error(
+      `Electron desktop bridge method is not implemented yet: ${command}`,
+    );
   }
   try {
     return await handler(event, ...args);
@@ -2019,7 +2307,6 @@ async function handleDesktopInvoke(event, command, ...args) {
     throw new Error(desktopErrorMessageWithCauses(error), { cause: error });
   }
 }
-
 
 async function createMainWindow() {
   if (mainWindow) return mainWindow;
@@ -2036,22 +2323,72 @@ async function createMainWindow() {
   }
 
   const bootSidecar = await readBrandIconSidecar();
-  const bootSourceUrl = typeof bootSidecar?.sourceUrl === "string" ? bootSidecar.sourceUrl : null;
+  const bootSourceUrl =
+    typeof bootSidecar?.sourceUrl === "string" ? bootSidecar.sourceUrl : null;
   const cachedBrandImage = bootSourceUrl ? resolveBrandIconImage() : null;
   const windowIconImage = cachedBrandImage ?? APP_ICON_IMAGE;
   if (process.platform === "win32" && cachedBrandImage && bootSourceUrl) {
     try {
       const taskbarIconPath = await ensureWindowsBrandIcon(cachedBrandImage);
-      const taskbarAppId = windowsBrandAppUserModelId(APP_IDENTIFIER, bootSourceUrl);
+      const taskbarAppId = windowsBrandAppUserModelId(
+        APP_IDENTIFIER,
+        bootSourceUrl,
+      );
       await registerWindowsBrandShortcut(taskbarAppId, taskbarIconPath);
       app.setAppUserModelId(taskbarAppId);
     } catch (error) {
-      console.warn("[brand-icon] failed to register cached Windows shortcut before window creation", error);
+      console.warn(
+        "[brand-icon] failed to register cached Windows shortcut before window creation",
+        error,
+      );
     }
   }
-  if (process.platform === "darwin" && windowIconImage && !windowIconImage.isEmpty() && app.dock) {
+  if (
+    process.platform === "darwin" &&
+    windowIconImage &&
+    !windowIconImage.isEmpty() &&
+    app.dock
+  ) {
     app.dock.setIcon(windowIconImage);
   }
+
+  // Bypass CORS for external Sprintnex API calls. Without this the renderer's
+  // fetch() to https://platform.sprintnex.com would be blocked by the browser.
+  // We inject CORS headers only for Sprintnex requests — the local OpenWork
+  // server already handles its own CORS correctly.
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    if (!details.url.startsWith("https://platform.sprintnex.com")) {
+      callback({ responseHeaders: details.responseHeaders ?? {} });
+      return;
+    }
+    callback({
+      responseHeaders: {
+        "Access-Control-Allow-Origin": ["*"],
+        "Access-Control-Allow-Methods": [
+          "GET, POST, PATCH, PUT, DELETE, OPTIONS",
+        ],
+        "Access-Control-Allow-Headers": [
+          "Content-Type",
+          "Authorization",
+          "X-Tenant-Id",
+          "X-Team-Space-Id",
+          "X-Workspace-Id",
+          "X-Organization-Id",
+          "X-User-Id",
+        ],
+        ...Object.fromEntries(
+          Object.entries(details.responseHeaders ?? {}).filter(
+            ([k]) =>
+              ![
+                "access-control-allow-origin",
+                "access-control-allow-methods",
+                "access-control-allow-headers",
+              ].includes(k.toLowerCase()),
+          ),
+        ),
+      },
+    });
+  });
 
   mainWindow = new BrowserWindow({
     width: 1180,
@@ -2060,7 +2397,9 @@ async function createMainWindow() {
     show: false,
     ...(process.platform === "win32" ? { skipTaskbar: true } : {}),
     ...windowAppearanceOptions,
-    ...(windowIconImage && !windowIconImage.isEmpty() ? { icon: windowIconImage } : {}),
+    ...(windowIconImage && !windowIconImage.isEmpty()
+      ? { icon: windowIconImage }
+      : {}),
     webPreferences: {
       // The renderer owns session dispatch + event streams; keep it running
       // while hidden/minimized so background tasks are not interrupted.
@@ -2109,8 +2448,7 @@ async function createMainWindow() {
     }
 
     const local =
-      url.startsWith("http://127.0.0.1") ||
-      url.startsWith("http://localhost");
+      url.startsWith("http://127.0.0.1") || url.startsWith("http://localhost");
     if (!local) {
       void openExternalUrl(url);
       return { action: "deny" };
@@ -2130,24 +2468,35 @@ async function createMainWindow() {
   // to replace the entire workspace UI with the website, with no way back
   // (#2000). Catch those at `did-start-navigation`, cancel the load, and
   // reroute the URL into a built-in browser tab instead.
-  mainWindow.webContents.on("did-start-navigation", (_event, url, isInPlace, isMainFrame) => {
-    if (!isMainFrame || isInPlace) return;
-    if (browserPanel.isMainWindowAllowedNavigation(url)) return;
-    try {
-      mainWindow?.webContents.stop();
-    } catch {
-      // best effort — routing below still gives the user a way back
-    }
-    browserPanel.routeBlockedMainWindowNavigation(url);
-  });
+  mainWindow.webContents.on(
+    "did-start-navigation",
+    (_event, url, isInPlace, isMainFrame) => {
+      if (!isMainFrame || isInPlace) return;
+      if (browserPanel.isMainWindowAllowedNavigation(url)) return;
+      try {
+        mainWindow?.webContents.stop();
+      } catch {
+        // best effort — routing below still gives the user a way back
+      }
+      browserPanel.routeBlockedMainWindowNavigation(url);
+    },
+  );
 
-  const startUrl = process.env.OPENWORK_ELECTRON_START_URL?.trim() || process.env.ELECTRON_START_URL?.trim();
+  const startUrl =
+    process.env.OPENWORK_ELECTRON_START_URL?.trim() ||
+    process.env.ELECTRON_START_URL?.trim();
   if (startUrl) {
     await mainWindow.loadURL(startUrl);
   } else {
-    const packagedIndexPath = path.join(process.resourcesPath, "app-dist", "index.html");
+    const packagedIndexPath = path.join(
+      process.resourcesPath,
+      "app-dist",
+      "index.html",
+    );
     const devIndexPath = path.resolve(__dirname, "../../app/dist/index.html");
-    await mainWindow.loadFile(app.isPackaged ? packagedIndexPath : devIndexPath);
+    await mainWindow.loadFile(
+      app.isPackaged ? packagedIndexPath : devIndexPath,
+    );
   }
 
   return mainWindow;
@@ -2164,13 +2513,20 @@ ipcMain.handle("openwork:shell:relaunch", async () => {
   app.relaunch();
   app.exit(0);
 });
-ipcMain.handle("openwork:system:architecture", async () => resolveArchitectureInfo());
+ipcMain.handle("openwork:system:architecture", async () =>
+  resolveArchitectureInfo(),
+);
 ipcMain.handle("openwork:system:microphoneStatus", async () => {
-  if (process.platform !== "darwin") return { platform: process.platform, status: "not-mac" };
-  return { platform: process.platform, status: systemPreferences.getMediaAccessStatus("microphone") };
+  if (process.platform !== "darwin")
+    return { platform: process.platform, status: "not-mac" };
+  return {
+    platform: process.platform,
+    status: systemPreferences.getMediaAccessStatus("microphone"),
+  };
 });
 ipcMain.handle("openwork:system:askMicrophoneAccess", async () => {
-  if (process.platform !== "darwin") return { platform: process.platform, granted: true, status: "not-mac" };
+  if (process.platform !== "darwin")
+    return { platform: process.platform, granted: true, status: "not-mac" };
   const before = systemPreferences.getMediaAccessStatus("microphone");
   const granted = await systemPreferences.askForMediaAccess("microphone");
   const after = systemPreferences.getMediaAccessStatus("microphone");
@@ -2180,8 +2536,12 @@ ipcMain.handle("openwork:system:askMicrophoneAccess", async () => {
 // ── Terminal IPC ────────────────────────────────────────────────────────
 ipcMain.handle("openwork:terminal:create", async (event, options = {}) => {
   const cwd = await resolveTerminalCwd(options?.cwd);
-  const cols = Number.isFinite(options?.cols) ? Math.max(20, Math.floor(options.cols)) : 80;
-  const rows = Number.isFinite(options?.rows) ? Math.max(5, Math.floor(options.rows)) : 24;
+  const cols = Number.isFinite(options?.cols)
+    ? Math.max(20, Math.floor(options.cols))
+    : 80;
+  const rows = Number.isFinite(options?.rows)
+    ? Math.max(5, Math.floor(options.rows))
+    : 24;
   const terminalId = `term_${nextTerminalId++}`;
   const shellPath = defaultTerminalShell();
   const child = pty.spawn(shellPath, [], {
@@ -2197,8 +2557,13 @@ ipcMain.handle("openwork:terminal:create", async (event, options = {}) => {
     },
   });
 
-  terminalProcesses.set(terminalId, { process: child, webContentsId: event.sender.id });
-  event.sender.once("destroyed", () => killTerminalsForWebContents(event.sender.id));
+  terminalProcesses.set(terminalId, {
+    process: child,
+    webContentsId: event.sender.id,
+  });
+  event.sender.once("destroyed", () =>
+    killTerminalsForWebContents(event.sender.id),
+  );
   child.onData((data) => {
     if (event.sender.isDestroyed()) return;
     event.sender.send("openwork:terminal:data", { terminalId, data });
@@ -2206,7 +2571,11 @@ ipcMain.handle("openwork:terminal:create", async (event, options = {}) => {
   child.onExit(({ exitCode, signal }) => {
     terminalProcesses.delete(terminalId);
     if (event.sender.isDestroyed()) return;
-    event.sender.send("openwork:terminal:exit", { terminalId, exitCode, signal });
+    event.sender.send("openwork:terminal:exit", {
+      terminalId,
+      exitCode,
+      signal,
+    });
   });
 
   return { terminalId };
@@ -2219,7 +2588,10 @@ ipcMain.handle("openwork:terminal:write", (event, terminalId, data) => {
 ipcMain.handle("openwork:terminal:resize", (event, terminalId, cols, rows) => {
   const terminal = terminalForSender(event, terminalId);
   if (!terminal || !Number.isFinite(cols) || !Number.isFinite(rows)) return;
-  terminal.process.resize(Math.max(20, Math.floor(cols)), Math.max(5, Math.floor(rows)));
+  terminal.process.resize(
+    Math.max(20, Math.floor(cols)),
+    Math.max(5, Math.floor(rows)),
+  );
 });
 ipcMain.handle("openwork:terminal:kill", (event, terminalId) => {
   const terminal = terminalForSender(event, terminalId);
@@ -2230,7 +2602,11 @@ ipcMain.handle("openwork:terminal:kill", (event, terminalId) => {
 browserPanel.registerIpc(ipcMain);
 
 registerMigrationIpc({ app, ipcMain });
-const { ensureAutoUpdater } = registerUpdaterIpc({ app, ipcMain, getMainWindow: () => mainWindow });
+const { ensureAutoUpdater } = registerUpdaterIpc({
+  app,
+  ipcMain,
+  getMainWindow: () => mainWindow,
+});
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -2240,7 +2616,10 @@ if (!app.requestSingleInstanceLock()) {
     event.preventDefault();
     if (runtimeDisposeInProgress) return;
     showShutdownScreen();
-    void Promise.all([disposeRuntimeBeforeQuit(), uiControlServer.stop()]).finally(() => app.quit());
+    void Promise.all([
+      disposeRuntimeBeforeQuit(),
+      uiControlServer.stop(),
+    ]).finally(() => app.quit());
   });
 
   app.on("second-instance", async (_event, argv) => {
@@ -2263,7 +2642,8 @@ if (!app.requestSingleInstanceLock()) {
     installMediaPermissionHandlers(session, () => mainWindow);
     await workspaceStore.importBundledDesktopBootstrapConfigIfPreferred();
     const bootstrapConfig = await workspaceStore.getDesktopBootstrapConfig();
-    currentDisplayAppName = bootstrapConfig.brandAppName?.slice(0, 64) || APP_NAME;
+    currentDisplayAppName =
+      bootstrapConfig.brandAppName?.slice(0, 64) || APP_NAME;
     app.setName(currentDisplayAppName);
     applicationMenu.setAppName(currentDisplayAppName);
     if (process.platform === "win32") {
@@ -2282,10 +2662,12 @@ if (!app.requestSingleInstanceLock()) {
     await uiControlServer.start().catch((error) => {
       console.warn("[ui-control] failed to start", error);
     });
-    runtimeBootstrapPromise = bootRuntimeForSelectedWorkspace().catch((error) => ({
-      ok: false,
-      error: error instanceof Error ? error.message : String(error),
-    }));
+    runtimeBootstrapPromise = bootRuntimeForSelectedWorkspace().catch(
+      (error) => ({
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    );
 
     queueDeepLinks(forwardedDeepLinks(process.argv));
     const win = await createMainWindow();

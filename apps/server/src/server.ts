@@ -61,6 +61,7 @@ import { registerFileRoutes } from "./routes/files.js";
 import { registerOperationRoutes } from "./routes/operations.js";
 import { addRoute, matchRoute, type AuthMode, type RequestContext, type Route } from "./routes/registry.js";
 import { registerSessionRoutes } from "./routes/sessions.js";
+import { registerSprintnexTaskRoutes } from "./routes/sprintnex-tasks.js";
 import { registerWorkspaceRoutes } from "./routes/workspaces.js";
 import {
   mergeOpencodeConfigs,
@@ -1353,6 +1354,16 @@ function createRoutes(
     resolveWorkspace,
     createWorkspaceOpencodeClient,
     unwrapOpencodeResult,
+  });
+
+  registerSprintnexTaskRoutes({
+    routes,
+    config,
+    jsonResponse,
+    readJsonBody,
+    ensureWritable,
+    requireClientScope,
+    resolveWorkspace,
   });
 
   addRoute(routes, "GET", "/workspace/:id/config", "client", async (ctx) => {
