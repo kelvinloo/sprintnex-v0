@@ -631,7 +631,7 @@ export function SessionRoute() {
     const mappedId = getMappedWorkspaceForSprintnexProject(
       currentScope.projectId,
     );
-    if (!mappedId) return workspaceSessionGroups;
+    if (!mappedId) return [];
     return workspaceSessionGroups.filter((g) => g.workspace.id === mappedId);
   }, [workspaceSessionGroups, sprintnexScope.projectId]);
   useSessionGroupSync({ workspaces, endpointForWorkspace });
@@ -1150,28 +1150,26 @@ export function SessionRoute() {
             noReply: true,
           });
 
-          // 2. Classify + fire real prompt in background (don't await — we
-          //    return immediately so the composer clears the draft)
-          const blockMsg =
-            "This request requires the Sprintnex main delivery flow. Please log it as a new task.";
+          // 2. Classify in background. If blocked, do NOT send any follow-up
+          //    promptAsync — the first noReply call already rendered the
+          //    message. Sending even a gatekeeper prompt still wastes a model
+          //    call and risks the model ignoring instructions.
           if (draftText.trim()) {
             classifySprintnexRequest(draftText)
               .then(async (c) => {
                 await step1;
-                const blocked = c.blocked;
+                if (c.blocked) return; // <-- absolutely no model call
                 await opencodeClient.session.promptAsync({
                   sessionID: targetSessionId,
                   parts: [
                     {
                       type: "text" as const,
-                      text: blocked
-                        ? "."
-                        : "Continue with the previous request.",
+                      text: "Continue with the previous request.",
                     },
                   ],
-                  system: blocked
-                    ? `You are a Sprintnex gatekeeper.\nThe user's previous request was classified as requiring the Sprintnex main delivery flow.\nRespond with: "${blockMsg}"\nDo NOT perform any implementation, analysis, or work.\nDo NOT ask follow-up questions.`
-                    : combinedSystem,
+                  model: local.prefs.defaultModel ?? undefined,
+                  ...(modelVariantValue ? { variant: modelVariantValue } : {}),
+                  system: combinedSystem,
                 });
               })
               .catch(() => {});

@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ArrowLeft, ListChecks, MessageSquare, Workflow } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -29,13 +29,6 @@ export function SprintnexTasksPage() {
   const intakeRefreshRef = useRef<(() => void) | null>(null);
 
   const scope = readSprintnexAicoeScope();
-
-  useEffect(() => {
-    const handler = () => setScopeVersion((v) => v + 1);
-    window.addEventListener("sprintnex-workspace-scope-changed", handler);
-    return () =>
-      window.removeEventListener("sprintnex-workspace-scope-changed", handler);
-  }, []);
 
   const handleOpenExecutionSession = useCallback(
     async (task: SprintnexAicoeTask) => {
@@ -220,14 +213,16 @@ export function SprintnexTasksPage() {
               </p>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/session")}
-          >
-            <ArrowLeft className="size-4" />
-            Back to session
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/session")}
+            >
+              <ArrowLeft className="size-4" />
+              Back to session
+            </Button>
+          </div>
         </div>
         <div className="mt-3 inline-flex rounded-lg border border-dls-border bg-dls-surface p-0.5">
           <button

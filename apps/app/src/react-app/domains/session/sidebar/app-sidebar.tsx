@@ -17,6 +17,7 @@ import {
   Search,
   Share2,
   Trash2,
+  HelpCircle,
   RefreshCw,
   RotateCcw,
   Settings,
@@ -40,6 +41,11 @@ import {
   type SprintnexTenantWorkspaceNode,
 } from "../../../../app/lib/sprintnex-aicoe-api";
 import { OpenWorkDenHelpLink } from "../../workspace/openwork-den-help-link";
+import {
+  SprintnexOnboardingTour,
+  hasOnboardingTourBeenShown,
+  markOnboardingTourShown,
+} from "../../sprintnex/sprintnex-onboarding-tour";
 import { useSprintnexAuth } from "../../auth/sprintnex-auth-provider";
 import {
   useSprintnexTask,
@@ -1146,6 +1152,16 @@ export function AppSidebar(props: AppSidebarProps) {
     expandedSessionIds,
   };
 
+  const [tourOpen, setTourOpen] = React.useState(false);
+
+  // Show Sprintnex onboarding tour on first visit
+  React.useEffect(() => {
+    if (!hasOnboardingTourBeenShown()) {
+      setTourOpen(true);
+      markOnboardingTourShown();
+    }
+  }, []);
+
   const brandLogoUrl = useBrandLogoUrl();
 
   return (
@@ -1244,6 +1260,12 @@ export function AppSidebar(props: AppSidebarProps) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => setTourOpen(true)}>
+                <HelpCircle className="size-4" />
+                Guide
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton onClick={() => props.onOpenCreateWorkspace()}>
                 <FolderPlus className="size-4" />
                 Create workspace
@@ -1282,6 +1304,7 @@ export function AppSidebar(props: AppSidebarProps) {
           }
           onPointerDown={props.onStartResize}
         />
+        <SprintnexOnboardingTour open={tourOpen} onOpenChange={setTourOpen} />
       </Sidebar>
     </SidebarContext.Provider>
   );
