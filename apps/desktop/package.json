@@ -16,8 +16,23 @@
     "build:electron": "node ./scripts/electron-build.mjs",
     "package:electron": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml",
     "package:electron:dir": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --dir",
+    "package:mac:arm64": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --mac --arm64 --dir",
+    "package:mac:arm64:installer": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --mac --arm64",
+    "package:mac:x64": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --mac --x64 --dir",
+    "package:mac:x64:installer": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --mac --x64",
+    "package:win:x64": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --win --x64 --dir",
+    "package:win:x64:installer": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --win --x64",
+    "package:win:arm64": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --win --arm64 --dir",
+    "package:win:arm64:installer": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --win --arm64",
+    "package:linux:x64": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --linux --x64 --dir",
+    "package:linux:x64:installer": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --linux --x64",
+    "package:linux:arm64": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --linux --arm64 --dir",
+    "package:linux:arm64:installer": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --linux --arm64",
+    "package:all": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --mac --arm64 --dir && pnpm exec electron-builder --config electron-builder.yml --mac --x64 --dir && pnpm exec electron-builder --config electron-builder.yml --win --x64 --dir && pnpm exec electron-builder --config electron-builder.yml --win --arm64 --dir && pnpm exec electron-builder --config electron-builder.yml --linux --x64 --dir && pnpm exec electron-builder --config electron-builder.yml --linux --arm64 --dir",
+    "package:all:installers": "pnpm run build:electron && pnpm exec electron-builder --config electron-builder.yml --mac --arm64 && pnpm exec electron-builder --config electron-builder.yml --mac --x64 && pnpm exec electron-builder --config electron-builder.yml --win --x64 && pnpm exec electron-builder --config electron-builder.yml --win --arm64 && pnpm exec electron-builder --config electron-builder.yml --linux --x64 && pnpm exec electron-builder --config electron-builder.yml --linux --arm64",
     "electron": "pnpm exec electron ./electron/main.mjs",
     "check:electron": "node ./scripts/check-electron-bridge.mjs",
+    "clean": "rm -rf dist-electron/*/ dist-electron/*.yml dist-electron/*.yaml dist-electron/*.zip dist-electron/*.blockmap",
     "typecheck:electron": "pnpm --dir ../server exec tsc -p ../desktop/tsconfig.electron.json --noEmit",
     "prepare:sidecar": "node ./scripts/prepare-sidecar.mjs",
     "test": "node --test electron/brand-icon-windows.test.mjs electron/open-external.test.mjs electron/runtime.test.mjs electron/runtime-ca.test.mjs electron/updater.test.mjs electron/remote-workspace.test.mjs electron/workspace-store.test.mjs"
@@ -32,6 +47,10 @@
     "node-pty": "npm:@lydell/node-pty@1.2.0-beta.12",
     "yaml": "^2.6.1",
     "zod": "^4.3.6"
+  },
+  "optionalDependencies": {
+    "@lydell/node-pty-darwin-arm64": "1.2.0-beta.12",
+    "@lydell/node-pty-darwin-x64": "1.2.0-beta.12"
   },
   "devDependencies": {
     "@openwork/types": "workspace:*",

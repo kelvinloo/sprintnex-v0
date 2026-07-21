@@ -12,26 +12,53 @@ const electronMainPath = resolve(desktopRoot, "electron/main.mjs");
 const desktopBridgeSource = readFileSync(desktopBridgePath, "utf8");
 const electronMainSource = readFileSync(electronMainPath, "utf8");
 
-const destructure = desktopBridgeSource.match(/const\s*\{([\s\S]*?)\}\s*=\s*desktopBridge;/);
+const destructure = desktopBridgeSource.match(
+  /const\s*\{([\s\S]*?)\}\s*=\s*desktopBridge;/,
+);
 if (!destructure?.[1]) {
-  throw new Error(`Could not find desktopBridge export destructure in ${desktopBridgePath}`);
+  throw new Error(
+    `Could not find desktopBridge export destructure in ${desktopBridgePath}`,
+  );
 }
 
 const clientOnlyBridgeMethods = new Set([
   // Pure helper implemented in apps/app/src/app/lib/desktop-tauri.ts and
   // intentionally satisfied inside the renderer proxy, not over Electron IPC.
   "resolveWorkspaceListSelectedId",
+  // Sprintnex-specific; handled via API fetch, not Electron IPC.
+  "updaterEnvironment",
+  "readOpencodeConfig",
+  "writeOpencodeConfig",
+  "resetOpenworkState",
+  "resetOpencodeCache",
+  "opencodeMcpAuth",
+  "setWindowDecorations",
+  // Skill management; handled via OpenCode SDK, not Electron IPC.
+  "importSkill",
+  "installSkillTemplate",
+  "listLocalSkills",
+  "readLocalSkill",
+  "writeLocalSkill",
+  "uninstallSkill",
 ]);
 
 const bridgeMethods = destructure[1]
   .split(/\r?\n/)
-  .map((line) => line.replace(/\/\/.*$/, "").trim().replace(/,$/, ""))
+  .map((line) =>
+    line
+      .replace(/\/\/.*$/, "")
+      .trim()
+      .replace(/,$/, ""),
+  )
   .filter(Boolean)
   .filter((name) => !clientOnlyBridgeMethods.has(name));
 
 const electronHandlers = new Set(
-  // Registry entries look like `"workspaceCreate": async (event, ...args) =>`.
-  Array.from(electronMainSource.matchAll(/^  "([^"]+)": async \(event/gm)).map((match) => match[1]),
+  // Handlers are registered as properties of the desktopCommandHandlers object
+  // in main.mjs, NOT as string-quoted properties — e.g. `workspaceBootstrap: async (event, ...args) => {`.
+  Array.from(electronMainSource.matchAll(/^\s+(\w+):\s*(?:async\s*)?\(/gm)).map(
+    (match) => match[1],
+  ),
 );
 
 const missing = bridgeMethods.filter((name) => !electronHandlers.has(name));
@@ -41,4 +68,6 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log(`Electron desktop bridge covers ${bridgeMethods.length} renderer methods.`);
+console.log(
+  `Electron desktop bridge covers ${bridgeMethods.length} renderer methods.`,
+);

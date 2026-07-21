@@ -82,7 +82,10 @@ function readStoredUser(): SprintnexUser | null {
         typeof parsed.organizationId === "string" &&
         parsed.organizationId.trim()
           ? parsed.organizationId.trim()
-          : null,
+          : typeof parsed.organizationCode === "string" &&
+              parsed.organizationCode.trim()
+            ? parsed.organizationCode.trim()
+            : null,
       organizationCode:
         typeof parsed.organizationCode === "string" &&
         parsed.organizationCode.trim()
@@ -153,7 +156,7 @@ export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
       }
       if (
         normalizedOrganizationCode &&
-        !/^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$/.test(normalizedOrganizationCode)
+        !/^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$/.test(normalizedOrganizationCode)
       ) {
         return { ok: false, error: "Enter a valid organization code." };
       }
@@ -205,7 +208,8 @@ export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
         window.localStorage.getItem("userId")?.trim() ||
         normalizedEmail;
       const tenantId = backendUser.tenantId || "default";
-      const organizationId = backendUser.organizationId || null;
+      const organizationId =
+        backendUser.organizationId || normalizedOrganizationCode || null;
 
       window.localStorage.setItem("auth_token", accessToken);
       window.localStorage.setItem("accessToken", accessToken);

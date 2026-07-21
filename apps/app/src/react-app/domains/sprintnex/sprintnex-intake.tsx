@@ -108,12 +108,15 @@ function mapMessage(
         typeof parsedPlan.message === "string"
           ? parsedPlan.message
           : `Delivery Plan — ${tasks.length} tasks across ${phaseCount} phases. Review and approve to create tasks.`;
-    } else if (
-      root &&
-      typeof root === "object" &&
-      typeof (root as Record<string, unknown>).message === "string"
-    ) {
-      displayText = (root as Record<string, unknown>).message as string;
+    } else if (root && typeof root === "object") {
+      const rootMsg = (root as Record<string, unknown>).message;
+      if (rootMsg !== undefined && rootMsg !== null) {
+        displayText =
+          typeof rootMsg === "string"
+            ? rootMsg
+            : JSON.stringify(rootMsg);
+      }
+      // else keep displayText = item.text (message was nested deeper)
     }
   } catch {
     planData = undefined;
@@ -470,9 +473,16 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
                         Clarification needed:
                       </p>
                       <ol className="list-inside list-decimal space-y-1.5 text-sm text-dls-text">
-                        {(msg.planData.questions as string[]).map((q, qi) => (
-                          <li key={qi}>{q}</li>
-                        ))}
+                        {(msg.planData.questions as unknown[]).map((q, qi) => {
+                          const text =
+                            q && typeof q === "object"
+                              ? String(
+                                  (q as Record<string, unknown>).question ??
+                                    JSON.stringify(q),
+                                )
+                              : String(q ?? "");
+                          return <li key={qi}>{text}</li>;
+                        })}
                       </ol>
                     </div>
                   ) : null}

@@ -4,8 +4,8 @@ import { ArrowRight, LockKeyhole, Workflow } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useSprintnexAuth } from "./sprintnex-auth-provider";
+import { useBootState } from "../../shell/boot-state";
 
 type LocationState = {
   from?: {
@@ -16,6 +16,7 @@ type LocationState = {
 };
 
 export function SprintnexLoginPage() {
+  const { markRouteReady } = useBootState();
   const auth = useSprintnexAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -27,6 +28,11 @@ export function SprintnexLoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Dismiss the full-screen boot overlay so it stops blocking form clicks
+  useEffect(() => {
+    markRouteReady();
+  }, [markRouteReady]);
 
   useEffect(() => {
     if (auth.isSignedIn) {
@@ -61,7 +67,9 @@ export function SprintnexLoginPage() {
               <Workflow size={20} />
             </div>
             <div>
-              <div className="text-sm font-semibold tracking-wide">Sprintnex</div>
+              <div className="text-sm font-semibold tracking-wide">
+                Sprintnex
+              </div>
               <div className="text-xs text-[#667085]">Execution Workbench</div>
             </div>
           </div>
@@ -84,11 +92,13 @@ export function SprintnexLoginPage() {
 
             <form className="space-y-4" onSubmit={handleSubmit}>
               <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-[#344054]">Email</span>
-                <Input
+                <span className="text-sm font-medium text-[#344054]">
+                  Email
+                </span>
+                <input
                   autoComplete="email"
                   autoFocus
-                  className="h-11 border-[#d0d5dd] bg-white text-[#101828]"
+                  className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
                   inputMode="email"
                   onChange={(event) => setEmail(event.currentTarget.value)}
                   placeholder="Enter your email"
@@ -98,10 +108,12 @@ export function SprintnexLoginPage() {
               </label>
 
               <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-[#344054]">Password</span>
-                <Input
+                <span className="text-sm font-medium text-[#344054]">
+                  Password
+                </span>
+                <input
                   autoComplete="current-password"
-                  className="h-11 border-[#d0d5dd] bg-white text-[#101828]"
+                  className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
                   onChange={(event) => setPassword(event.currentTarget.value)}
                   placeholder="Enter your password"
                   type="password"
@@ -111,17 +123,23 @@ export function SprintnexLoginPage() {
 
               <div className="flex items-center gap-3 py-1">
                 <div className="h-px flex-1 bg-[#d0d5dd]" />
-                <span className="text-xs text-[#98a2b3]">Organization Access</span>
+                <span className="text-xs text-[#98a2b3]">
+                  Organization Access
+                </span>
                 <div className="h-px flex-1 bg-[#d0d5dd]" />
               </div>
 
               <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-[#344054]">Organization Code</span>
-                <Input
+                <span className="text-sm font-medium text-[#344054]">
+                  Organization Code
+                </span>
+                <input
                   autoCapitalize="characters"
                   autoComplete="organization"
-                  className="h-11 border-[#d0d5dd] bg-white text-[#101828]"
-                  onChange={(event) => setOrganizationCode(event.currentTarget.value)}
+                  className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
+                  onChange={(event) =>
+                    setOrganizationCode(event.currentTarget.value)
+                  }
                   placeholder="e.g. default"
                   value={organizationCode}
                 />
@@ -136,7 +154,11 @@ export function SprintnexLoginPage() {
                 </div>
               ) : null}
 
-              <Button className="h-11 w-full rounded-xl" disabled={busy} type="submit">
+              <Button
+                className="h-11 w-full rounded-xl"
+                disabled={busy}
+                type="submit"
+              >
                 {busy ? "Signing in" : "Sign in"}
                 <ArrowRight size={15} />
               </Button>
@@ -147,7 +169,9 @@ export function SprintnexLoginPage() {
             </p>
           </div>
 
-          <div className="text-xs text-[#98a2b3]">Sprintnex local development</div>
+          <div className="text-xs text-[#98a2b3]">
+            Sprintnex local development
+          </div>
         </section>
 
         <section className="hidden min-h-screen bg-[#111827] p-8 text-white lg:block">
@@ -160,7 +184,8 @@ export function SprintnexLoginPage() {
                 Run structured tasks without losing control of the workflow.
               </h2>
               <p className="mt-4 max-w-lg text-sm leading-6 text-white/65">
-                Sprintnex keeps the workspace, skills, MCP rules, artifacts, and verification steps visible while the engine executes.
+                Sprintnex keeps the workspace, skills, MCP rules, artifacts, and
+                verification steps visible while the engine executes.
               </p>
             </div>
 
@@ -170,9 +195,14 @@ export function SprintnexLoginPage() {
                 ["Execution", "Strict runtime with visible runs"],
                 ["Evidence", "Artifacts, commands, and verification"],
               ].map(([title, body]) => (
-                <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                <div
+                  key={title}
+                  className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                >
                   <div className="text-sm font-medium">{title}</div>
-                  <div className="mt-2 text-xs leading-5 text-white/55">{body}</div>
+                  <div className="mt-2 text-xs leading-5 text-white/55">
+                    {body}
+                  </div>
                 </div>
               ))}
             </div>

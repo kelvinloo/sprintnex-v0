@@ -1,5 +1,12 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, cpSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  cpSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,8 +37,47 @@ function run(command, args, cwd, env) {
   }
 }
 
-run(nodeCmd, [resolve(__dirname, "prepare-sidecar.mjs"), "--force", "--outdir", electronSidecarDir], desktopRoot);
-run(nodeCmd, [resolve(__dirname, "prepare-computer-use-helper.mjs"), "--force", "--outdir", electronHelperDir], desktopRoot);
+run(
+  nodeCmd,
+  [
+    resolve(__dirname, "prepare-computer-use-helper.mjs"),
+    "--force",
+    "--outdir",
+    electronHelperDir,
+  ],
+  desktopRoot,
+);
+// Pre-download sidecars for ALL target platforms so cross-compiled builds
+// (e.g. `--win --x64` from macOS) have the correct opencode/orchestrator binaries.
+const ALL_TARGET_TRIPLES = [
+  "aarch64-apple-darwin",
+  "x86_64-apple-darwin",
+  "x86_64-pc-windows-msvc",
+  "aarch64-pc-windows-msvc",
+  "x86_64-unknown-linux-gnu",
+  "aarch64-unknown-linux-gnu",
+];
+for (const triple of ALL_TARGET_TRIPLES) {
+  run(
+    nodeCmd,
+    [
+      resolve(__dirname, "prepare-sidecar.mjs"),
+      "--force",
+      "--outdir",
+      electronSidecarDir,
+    ],
+    desktopRoot,
+    { TARGET: triple },
+  );
+}
+// Pre-download all @lydell/node-pty-* platform binaries so the packaged
+// app works on darwin-x64, darwin-arm64, win32-x64, win32-arm64, etc.
+// pnpm only installs the variant matching the build machine's CPU/OS.
+run(
+  nodeCmd,
+  [resolve(__dirname, "prepare-node-pty-platforms.mjs")],
+  desktopRoot,
+);
 // Build the server TS → JS so Electron can import it in-process
 run(pnpmCmd, ["--filter", "openwork-server", "build"], repoRoot);
 // OPENWORK_ELECTRON_BUILD tells Vite to emit relative asset paths so
@@ -56,8 +102,13 @@ if (patched !== serverJsSrc) {
 }
 rmSync(packagedServerRoot, { recursive: true, force: true });
 cpSync(serverDistDir, resolve(packagedServerRoot, "dist"), { recursive: true });
-copyFileSync(resolve(repoRoot, "apps", "server", "package.json"), resolve(packagedServerRoot, "package.json"));
-for (const fileName of readdirSync(electronRoot).filter((name) => name.endsWith(".mjs")).sort()) {
+copyFileSync(
+  resolve(repoRoot, "apps", "server", "package.json"),
+  resolve(packagedServerRoot, "package.json"),
+);
+for (const fileName of readdirSync(electronRoot)
+  .filter((name) => name.endsWith(".mjs"))
+  .sort()) {
   run(nodeCmd, ["--check", resolve(electronRoot, fileName)], repoRoot);
 }
 run(nodeCmd, [resolve(__dirname, "check-electron-bridge.mjs")], repoRoot);

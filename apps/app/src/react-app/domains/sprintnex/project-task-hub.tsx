@@ -188,10 +188,12 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
     : "";
   const scopeReady = missingScopeFields.length === 0;
   const ensureScopeReady = useCallback(() => {
-    if (scopeReady) return true;
-    setError(missingScopeMessage);
-    return false;
-  }, [missingScopeMessage, scopeReady]);
+    return scopeReady;
+  }, [scopeReady]);
+  const missingScopeWarning =
+    missingScopeFields.length > 0
+      ? `Missing Sprintnex context: ${missingScopeFields.join(", ")}. Select a project in the left sidebar.`
+      : null;
 
   useEffect(() => {
     let cancelled = false;
