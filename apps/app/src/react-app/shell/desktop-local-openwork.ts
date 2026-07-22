@@ -5,7 +5,10 @@ import {
   type EngineInfo,
   type OpenworkServerInfo,
 } from "../../app/lib/desktop";
-import { readOpenworkServerSettings, writeOpenworkServerSettings } from "../../app/lib/openwork-server";
+import {
+  readOpenworkServerSettings,
+  writeOpenworkServerSettings,
+} from "../../app/lib/openwork-server";
 import { safeStringify } from "../../app/utils";
 import { recordInspectorEvent } from "../../app/lib/app-inspector";
 
@@ -49,7 +52,8 @@ export async function ensureDesktopLocalOpenworkConnection(
   const workspacePaths = Array.from(
     new Set(
       options.allWorkspaces.flatMap((item) => {
-        const path = item.workspaceType === "local" ? item.path?.trim() ?? "" : "";
+        const path =
+          item.workspaceType === "local" ? (item.path?.trim() ?? "") : "";
         return path ? [path] : [];
       }),
     ),
@@ -65,18 +69,21 @@ export async function ensureDesktopLocalOpenworkConnection(
   });
 
   try {
-    const engine = await engineInfo().catch(() => null) as EngineInfo | null;
+    const engine = (await engineInfo().catch(() => null)) as EngineInfo | null;
     if (!engine?.running || !engine.baseUrl) {
       await engineStart(workspaceRoot, {
         runtime: "direct",
         workspacePaths,
-        openworkRemoteAccess: readOpenworkServerSettings().remoteAccessEnabled === true,
+        openworkRemoteAccess:
+          readOpenworkServerSettings().remoteAccessEnabled === true,
       });
     }
 
-    const info = await openworkServerInfo() as OpenworkServerInfo | null;
+    const info = (await openworkServerInfo()) as OpenworkServerInfo | null;
     if (!info?.baseUrl) {
-      throw new Error("OpenWork server did not report a base URL after activation.");
+      throw new Error(
+        "Sprintnex server did not report a base URL after activation.",
+      );
     }
 
     writeOpenworkServerSettings({
@@ -98,7 +105,10 @@ export async function ensureDesktopLocalOpenworkConnection(
     return info;
   } catch (error) {
     const message = describeError(error);
-    console.error(`[${options.route}-route] local workspace reconnect failed`, error);
+    console.error(
+      `[${options.route}-route] local workspace reconnect failed`,
+      error,
+    );
     recordInspectorEvent("route.local_openwork.ensure.error", {
       route: options.route,
       workspaceId: workspace.id,

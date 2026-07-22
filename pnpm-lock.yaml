@@ -291,7 +291,7 @@ importers:
         version: 0.1.77(solid-js@1.9.9)(stage-js@1.0.0-alpha.17)(typescript@5.9.3)(web-tree-sitter@0.25.10)
       openwork-server:
         specifier: 0.17.24
-        version: link:../server
+        version: 0.17.24(@opentelemetry/api@1.9.1)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(bun-types@1.3.6)(kysely@0.28.17)(mysql2@3.17.4)
       solid-js:
         specifier: 1.9.9
         version: 1.9.9
@@ -8218,6 +8218,10 @@ packages:
 
   openapi-types@12.1.3:
     resolution: {integrity: sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw==}
+
+  openwork-server@0.17.24:
+    resolution: {integrity: sha512-ICGMbItef/WMG7/YOzdx2IstgwMq34PX2VvjymEeaVsIg37B+VUHlOHQ4oluhjqhdP/3/d28bOQA/MfZ6DTkVA==}
+    hasBin: true
 
   ora@8.2.0:
     resolution: {integrity: sha512-weP+BZ8MVNnlCm8c0Qdc1WSWq4Qn7I+9CJGm7Qali6g44e/PUzbjNqJX5NJ9ljlNMosfJvg1fKEGILklK9cwnw==}
@@ -17792,6 +17796,45 @@ snapshots:
 
   openapi-types@12.1.3: {}
 
+  openwork-server@0.17.24(@opentelemetry/api@1.9.1)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(bun-types@1.3.6)(kysely@0.28.17)(mysql2@3.17.4):
+    dependencies:
+      '@opencode-ai/sdk': 1.17.11
+      better-sqlite3: 11.10.0
+      drizzle-orm: 0.45.1(@opentelemetry/api@1.9.1)(@planetscale/database@1.19.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)(bun-types@1.3.6)(kysely@0.28.17)(mysql2@3.17.4)
+      jsonc-parser: 3.3.1
+      minimatch: 10.2.5
+      yaml: 2.9.0
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@cloudflare/workers-types'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@tidbcloud/serverless'
+      - '@types/better-sqlite3'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - bun-types
+      - expo-sqlite
+      - gel
+      - knex
+      - kysely
+      - mysql2
+      - pg
+      - postgres
+      - prisma
+      - sql.js
+      - sqlite3
+
   ora@8.2.0:
     dependencies:
       chalk: 5.6.2
@@ -17995,7 +18038,7 @@ snapshots:
   postcss-load-config@4.0.2(postcss@8.4.38):
     dependencies:
       lilconfig: 3.1.3
-      yaml: 2.8.2
+      yaml: 2.9.0
     optionalDependencies:
       postcss: 8.4.38
 

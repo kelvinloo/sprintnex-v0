@@ -1,11 +1,6 @@
 /** @jsxImportSource react */
 import { CheckCircle2, ExternalLink, Loader2 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -17,12 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollAreaViewport } from "@/components/ui/scroll-area";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { ExtensionKind } from "@/app/constants";
 import { MarkdownBlock } from "../domains/session/surface/markdown";
@@ -93,15 +83,18 @@ const kindLabel: Record<ExtensionKind, string> = {
   plugin: "Plugin",
   skill: "Skill",
   "ui-control": "UI Control",
-  extension: "OpenWork Extension",
+  extension: "Sprintnex Extension",
 };
 
 const kindDesc: Record<ExtensionKind, string> = {
   mcp: "Connects as a Model Context Protocol server, giving your agent access to external tools and data.",
-  plugin: "Extends OpenWork with additional capabilities managed by your organization.",
+  plugin:
+    "Extends Sprintnex with additional capabilities managed by your organization.",
   skill: "A reusable workflow that your agent can execute on demand.",
-  "ui-control": "Lets another MCP client inspect and drive this OpenWork desktop UI through a local stdio wrapper.",
-  extension: "An OpenWork extension that adds tools, providers, or integrations to your workspace.",
+  "ui-control":
+    "Lets another MCP client inspect and drive this Sprintnex desktop UI through a local stdio wrapper.",
+  extension:
+    "A Sprintnex extension that adds tools, providers, or integrations to your workspace.",
 };
 
 const uiControlClientConfig = `{
@@ -113,17 +106,24 @@ const uiControlClientConfig = `{
   }
 }`;
 
-function uiControlOpencodeConfig(command: string[], environment?: Record<string, string>) {
-  return JSON.stringify({
-    mcp: {
-      "openwork-ui": {
-        type: "local",
-        command,
-        ...(environment ? { environment } : {}),
-        enabled: true,
+function uiControlOpencodeConfig(
+  command: string[],
+  environment?: Record<string, string>,
+) {
+  return JSON.stringify(
+    {
+      mcp: {
+        "openwork-ui": {
+          type: "local",
+          command,
+          ...(environment ? { environment } : {}),
+          enabled: true,
+        },
       },
     },
-  }, null, 2);
+    null,
+    2,
+  );
 }
 
 const fallbackUiControlCommand = ["npx", "-y", "openwork-ui-mcp"];
@@ -216,7 +216,11 @@ export function ExtensionDetailModal({
   size = "default",
 }: ExtensionDetailModalProps) {
   "use memo";
-  const resolvedIconSrc = resolveExtensionIconUrl({ iconSrc, iconSlug, serviceUrl: url });
+  const resolvedIconSrc = resolveExtensionIconUrl({
+    iconSrc,
+    iconSlug,
+    serviceUrl: url,
+  });
 
   return (
     <Dialog
@@ -238,12 +242,21 @@ export function ExtensionDetailModal({
               <div
                 className={cn(
                   "flex size-12 items-center justify-center rounded-xl border",
-                  connected ? "border-green-6 bg-green-2" : "border-dls-border bg-dls-hover",
+                  connected
+                    ? "border-green-6 bg-green-2"
+                    : "border-dls-border bg-dls-hover",
                 )}
               >
                 {resolvedIconSrc ? (
                   <div className="flex size-8 items-center justify-center rounded-md bg-white">
-                    <img src={resolvedIconSrc} alt="" width={20} height={20} loading="lazy" style={{ display: "block" }} />
+                    <img
+                      src={resolvedIconSrc}
+                      alt=""
+                      width={20}
+                      height={20}
+                      loading="lazy"
+                      style={{ display: "block" }}
+                    />
                   </div>
                 ) : (
                   <ExtensionMeshAvatar
@@ -255,7 +268,11 @@ export function ExtensionDetailModal({
               </div>
               {connected ? (
                 <div className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full border-2 border-dls-surface bg-green-9">
-                  <CheckCircle2 size={11} className="text-white" strokeWidth={3} />
+                  <CheckCircle2
+                    size={11}
+                    className="text-white"
+                    strokeWidth={3}
+                  />
                 </div>
               ) : null}
             </div>
@@ -283,196 +300,251 @@ export function ExtensionDetailModal({
         <ScrollArea className="flex min-h-0 flex-1 flex-col">
           <ScrollAreaViewport className="min-h-0 flex-1 h-auto!">
             <div className="space-y-5 px-px">
-            {/* Description */}
-            <div className="text-sm leading-relaxed text-card-foreground">
-              {description}
-            </div>
+              {/* Description */}
+              <div className="text-sm leading-relaxed text-card-foreground">
+                {description}
+              </div>
 
-            {setupInstructions ? (
+              {setupInstructions ? (
+                <Card variant="outline" size="sm">
+                  <CardHeader>
+                    <CardTitle>Setup</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm leading-relaxed text-muted-foreground">
+                      {setupInstructions}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
+
+              {resourceLabels.length > 0 || contributionLabels.length > 0 ? (
+                <Card variant="outline" size="sm">
+                  <CardHeader>
+                    <CardTitle>Extension manifest</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 text-sm">
+                      {resourceLabels.length > 0 ? (
+                        <div>
+                          <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            Resources
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {resourceLabels.map((label) => (
+                              <span
+                                key={label}
+                                className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {contributionLabels.length > 0 ? (
+                        <div>
+                          <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                            Contributions
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {contributionLabels.map((label) => (
+                              <span
+                                key={label}
+                                className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
+
+              {/* Details */}
               <Card variant="outline" size="sm">
                 <CardHeader>
-                  <CardTitle>Setup</CardTitle>
+                  <CardTitle>Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm leading-relaxed text-muted-foreground">
-                    {setupInstructions}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
-
-            {resourceLabels.length > 0 || contributionLabels.length > 0 ? (
-              <Card variant="outline" size="sm">
-                <CardHeader>
-                  <CardTitle>Extension manifest</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 text-sm">
-                    {resourceLabels.length > 0 ? (
-                      <div>
-                        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Resources</div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {resourceLabels.map((label) => (
-                            <span key={label} className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">{label}</span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {contributionLabels.length > 0 ? (
-                      <div>
-                        <div className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Contributions</div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {contributionLabels.map((label) => (
-                            <span key={label} className="rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground">{label}</span>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
-
-            {/* Details */}
-            <Card variant="outline" size="sm">
-              <CardHeader>
-                <CardTitle>Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Type</span>
-                    <span className="font-medium text-card-foreground">{kindLabel[kind]}</span>
-                  </div>
-
-                  {url ? (
+                  <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Endpoint</span>
-                      <span className="flex items-center gap-1.5 truncate font-mono text-xs text-card-foreground">
-                        {url.replace(/^https?:\/\//, "").slice(0, 40)}
-                        <ExternalLink size={10} className="shrink-0 text-muted-foreground" />
+                      <span className="text-muted-foreground">Type</span>
+                      <span className="font-medium text-card-foreground">
+                        {kindLabel[kind]}
                       </span>
                     </div>
-                  ) : null}
 
-                  {kind === "ui-control" ? (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Launch</span>
-                      <span className="max-w-[300px] truncate font-mono text-xs text-card-foreground">{(launchCommand ?? fallbackUiControlCommand).join(" ")}</span>
-                    </div>
-                  ) : null}
+                    {url ? (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Endpoint</span>
+                        <span className="flex items-center gap-1.5 truncate font-mono text-xs text-card-foreground">
+                          {url.replace(/^https?:\/\//, "").slice(0, 40)}
+                          <ExternalLink
+                            size={10}
+                            className="shrink-0 text-muted-foreground"
+                          />
+                        </span>
+                      </div>
+                    ) : null}
 
-                  {path && onReveal ? (
+                    {kind === "ui-control" ? (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Launch</span>
+                        <span className="max-w-[300px] truncate font-mono text-xs text-card-foreground">
+                          {(launchCommand ?? fallbackUiControlCommand).join(
+                            " ",
+                          )}
+                        </span>
+                      </div>
+                    ) : null}
+
+                    {path && onReveal ? (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Location</span>
+                        <Button variant="link" size="xs" onClick={onReveal}>
+                          Reveal in Finder
+                          <ExternalLink data-icon="inline-end" />
+                        </Button>
+                      </div>
+                    ) : null}
+
+                    {oauth ? (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Authentication
+                        </span>
+                        <span className="font-medium text-card-foreground">
+                          OAuth required
+                        </span>
+                      </div>
+                    ) : null}
+
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Location</span>
-                      <Button
-                        variant="link"
-                        size="xs"
-                        onClick={onReveal}
+                      <span className="text-muted-foreground">Status</span>
+                      <span
+                        className={cn(
+                          "font-medium",
+                          connected ? "text-green-11" : "text-muted-foreground",
+                        )}
                       >
-                        Reveal in Finder
-                        <ExternalLink data-icon="inline-end" />
-                      </Button>
+                        {connected
+                          ? (connectedLabel ??
+                            (kind === "skill" || kind === "plugin"
+                              ? "Installed"
+                              : "Connected"))
+                          : connecting
+                            ? connectingLabel
+                            : (disconnectedLabel ??
+                              (kind === "skill" || kind === "plugin"
+                                ? "Not installed"
+                                : "Not connected"))}
+                      </span>
                     </div>
-                  ) : null}
 
-                  {oauth ? (
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Authentication</span>
-                      <span className="font-medium text-card-foreground">OAuth required</span>
+                      <span className="text-muted-foreground">Visibility</span>
+                      <span className="font-medium text-card-foreground">
+                        {hidden ? "Hidden" : "Shown"}
+                      </span>
                     </div>
-                  ) : null}
 
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Status</span>
-                    <span className={cn("font-medium", connected ? "text-green-11" : "text-muted-foreground")}>
-                      {connected
-                        ? connectedLabel ?? (kind === "skill" || kind === "plugin" ? "Installed" : "Connected")
-                        : connecting
-                          ? connectingLabel
-                          : disconnectedLabel ?? (kind === "skill" || kind === "plugin" ? "Not installed" : "Not connected")}
-                    </span>
-                  </div>
+                    {preview ? (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Release stage
+                        </span>
+                        <span className="font-medium text-blue-11">
+                          Preview
+                        </span>
+                      </div>
+                    ) : null}
 
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Visibility</span>
-                    <span className="font-medium text-card-foreground">{hidden ? "Hidden" : "Shown"}</span>
-                  </div>
+                    {beta ? (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Release stage
+                        </span>
+                        <span className="font-medium text-amber-11">Alpha</span>
+                      </div>
+                    ) : null}
 
-                  {preview ? (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Release stage</span>
-                      <span className="font-medium text-blue-11">Preview</span>
-                    </div>
-                  ) : null}
-
-                  {beta ? (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Release stage</span>
-                      <span className="font-medium text-amber-11">Alpha</span>
-                    </div>
-                  ) : null}
-
-                  {disabledReason ? (
-                    <div className="flex items-center justify-between gap-4 text-sm">
-                      <span className="text-muted-foreground">Availability</span>
-                      <span className="text-right font-medium text-amber-11">{disabledReason}</span>
-                    </div>
-                  ) : null}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Skill-specific: trigger + content preview */}
-            {kind === "ui-control" ? <UiControlConnectionDetails launchCommand={launchCommand} environment={environment} /> : null}
-
-            {kind === "skill" && trigger ? (
-              <Card variant="outline" size="sm">
-                <CardHeader>
-                  <CardTitle>Trigger</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm leading-relaxed text-card-foreground">
-                    {trigger}
+                    {disabledReason ? (
+                      <div className="flex items-center justify-between gap-4 text-sm">
+                        <span className="text-muted-foreground">
+                          Availability
+                        </span>
+                        <span className="text-right font-medium text-amber-11">
+                          {disabledReason}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 </CardContent>
               </Card>
-            ) : null}
 
-            {kind === "skill" && contentPreview ? (() => {
-              const body = stripSkillFrontmatter(contentPreview);
+              {/* Skill-specific: trigger + content preview */}
+              {kind === "ui-control" ? (
+                <UiControlConnectionDetails
+                  launchCommand={launchCommand}
+                  environment={environment}
+                />
+              ) : null}
 
-              if (!body) {
-                return null;
-              }
+              {kind === "skill" && trigger ? (
+                <Card variant="outline" size="sm">
+                  <CardHeader>
+                    <CardTitle>Trigger</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm leading-relaxed text-card-foreground">
+                      {trigger}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
 
-              return (
-                <div className="flex flex-col gap-2">
-                  <div className="text-sm font-medium text-card-foreground">
-                    Skill content
-                  </div>
-                  <div className="max-h-[300px] overflow-y-auto rounded-xl border border-border bg-card p-4 text-sm leading-relaxed text-card-foreground">
-                    <MarkdownBlock text={body} />
-                  </div>
-                </div>
-              );
-            })() : null}
+              {kind === "skill" && contentPreview
+                ? (() => {
+                    const body = stripSkillFrontmatter(contentPreview);
 
-            {/* What this enables (generic, for non-skills or skills without preview) */}
-            {showEnablementCard && ((kind !== "skill" && kind !== "ui-control") || (!trigger && !contentPreview && kind !== "ui-control")) ? (
-              <Card variant="outline" size="sm">
-                <CardHeader>
-                  <CardTitle>What this enables</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm leading-relaxed text-muted-foreground">
-                    {kindDesc[kind]}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
+                    if (!body) {
+                      return null;
+                    }
 
-            {configSlot}
+                    return (
+                      <div className="flex flex-col gap-2">
+                        <div className="text-sm font-medium text-card-foreground">
+                          Skill content
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto rounded-xl border border-border bg-card p-4 text-sm leading-relaxed text-card-foreground">
+                          <MarkdownBlock text={body} />
+                        </div>
+                      </div>
+                    );
+                  })()
+                : null}
+
+              {/* What this enables (generic, for non-skills or skills without preview) */}
+              {showEnablementCard &&
+              ((kind !== "skill" && kind !== "ui-control") ||
+                (!trigger && !contentPreview && kind !== "ui-control")) ? (
+                <Card variant="outline" size="sm">
+                  <CardHeader>
+                    <CardTitle>What this enables</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm leading-relaxed text-muted-foreground">
+                      {kindDesc[kind]}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
+
+              {configSlot}
             </div>
           </ScrollAreaViewport>
         </ScrollArea>
@@ -516,17 +588,18 @@ export function ExtensionDetailModal({
                   onClose();
                 }}
               >
-                {uninstallLabel ?? (kind === "skill" ? "Uninstall" : "Disconnect")}
+                {uninstallLabel ??
+                  (kind === "skill" ? "Uninstall" : "Disconnect")}
               </Button>
             ) : null}
             {!connected && onConnect ? (
-              <Button
-                onClick={onConnect}
-                disabled={connecting}
-              >
+              <Button onClick={onConnect} disabled={connecting}>
                 {connecting ? (
                   <>
-                    <Loader2 data-icon="inline-start" className="animate-spin" />
+                    <Loader2
+                      data-icon="inline-start"
+                      className="animate-spin"
+                    />
                     {connectingLabel}
                   </>
                 ) : (
@@ -549,7 +622,9 @@ interface UiControlConnectionDetailsProps {
 function UiControlConnectionDetails(props: UiControlConnectionDetailsProps) {
   "use memo";
 
-  const opencodeConfig = props.launchCommand ? uiControlOpencodeConfig(props.launchCommand, props.environment) : fallbackUiControlOpencodeConfig;
+  const opencodeConfig = props.launchCommand
+    ? uiControlOpencodeConfig(props.launchCommand, props.environment)
+    : fallbackUiControlOpencodeConfig;
 
   return (
     <div className="space-y-4">
@@ -559,9 +634,20 @@ function UiControlConnectionDetails(props: UiControlConnectionDetailsProps) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2 text-sm leading-relaxed text-muted-foreground">
-            <div>OpenWork desktop starts a private localhost bridge automatically.</div>
-            <div>Your MCP client starts <span className="font-mono text-card-foreground">openwork-ui-mcp</span> over stdio; the wrapper discovers the bridge and proxies UI tools to it.</div>
-            <div>Do not point clients at the random localhost bridge URL directly.</div>
+            <div>
+              OpenWork desktop starts a private localhost bridge automatically.
+            </div>
+            <div>
+              Your MCP client starts{" "}
+              <span className="font-mono text-card-foreground">
+                openwork-ui-mcp
+              </span>{" "}
+              over stdio; the wrapper discovers the bridge and proxies UI tools
+              to it.
+            </div>
+            <div>
+              Do not point clients at the random localhost bridge URL directly.
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -601,7 +687,10 @@ function UiControlConnectionDetails(props: UiControlConnectionDetailsProps) {
                     Production discovery file
                   </TableCell>
                   <TableCell className="py-2 whitespace-normal">
-                    <span className="font-mono text-xs break-all">~/Library/Application Support/com.differentai.openwork/openwork-ui-control.json</span>
+                    <span className="font-mono text-xs break-all">
+                      ~/Library/Application
+                      Support/com.differentai.openwork/openwork-ui-control.json
+                    </span>
                   </TableCell>
                 </TableRow>
                 <TableRow className="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
@@ -609,7 +698,10 @@ function UiControlConnectionDetails(props: UiControlConnectionDetailsProps) {
                     Dev discovery file
                   </TableCell>
                   <TableCell className="py-2 whitespace-normal">
-                    <span className="font-mono text-xs break-all">~/Library/Application Support/com.differentai.openwork.dev/openwork-ui-control.json</span>
+                    <span className="font-mono text-xs break-all">
+                      ~/Library/Application
+                      Support/com.differentai.openwork.dev/openwork-ui-control.json
+                    </span>
                   </TableCell>
                 </TableRow>
                 <TableRow className="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
@@ -617,7 +709,9 @@ function UiControlConnectionDetails(props: UiControlConnectionDetailsProps) {
                     Override
                   </TableCell>
                   <TableCell className="py-2 whitespace-normal">
-                    <span className="font-mono text-xs break-all">OPENWORK_UI_CONTROL_DISCOVERY=/path/to/openwork-ui-control.json</span>
+                    <span className="font-mono text-xs break-all">
+                      OPENWORK_UI_CONTROL_DISCOVERY=/path/to/openwork-ui-control.json
+                    </span>
                   </TableCell>
                 </TableRow>
                 {props.environment?.OPENWORK_UI_CONTROL_DISCOVERY ? (
@@ -626,7 +720,9 @@ function UiControlConnectionDetails(props: UiControlConnectionDetailsProps) {
                       Current override
                     </TableCell>
                     <TableCell className="py-2 whitespace-normal">
-                      <span className="font-mono text-xs break-all">{props.environment.OPENWORK_UI_CONTROL_DISCOVERY}</span>
+                      <span className="font-mono text-xs break-all">
+                        {props.environment.OPENWORK_UI_CONTROL_DISCOVERY}
+                      </span>
                     </TableCell>
                   </TableRow>
                 ) : null}

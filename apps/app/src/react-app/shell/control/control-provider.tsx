@@ -11,7 +11,11 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export type OpenworkControlSideEffect = "none" | "navigation" | "mutation" | "external";
+export type OpenworkControlSideEffect =
+  | "none"
+  | "navigation"
+  | "mutation"
+  | "external";
 
 export type OpenworkControlActionArg = {
   name: string;
@@ -67,7 +71,10 @@ export type OpenworkControlAction = {
   previewArgs?: unknown;
   disabled?: boolean;
   targetRef?: OpenworkControlTargetRef;
-  execute: (args: unknown, helpers: OpenworkControlHelpers) => unknown | Promise<unknown>;
+  execute: (
+    args: unknown,
+    helpers: OpenworkControlHelpers,
+  ) => unknown | Promise<unknown>;
 };
 
 type ControlActionRef = {
@@ -95,7 +102,10 @@ type OpenworkControlContextValue = {
   busyActionId: string | null;
   actions: OpenworkControlActionMetadata[];
   registerAction: (actionId: string, actionRef: ControlActionRef) => () => void;
-  executeAction: (actionId: string, args?: unknown) => Promise<OpenworkControlResult>;
+  executeAction: (
+    actionId: string,
+    args?: unknown,
+  ) => Promise<OpenworkControlResult>;
   snapshot: () => OpenworkControlSnapshot;
 };
 
@@ -105,7 +115,9 @@ type OpenworkControlAPI = {
   listActions: () => OpenworkControlActionMetadata[];
   execute: (actionId: string, args?: unknown) => Promise<OpenworkControlResult>;
   setEnabled: (enabled: boolean) => void;
-  subscribe: (listener: (snapshot: OpenworkControlSnapshot) => void) => () => void;
+  subscribe: (
+    listener: (snapshot: OpenworkControlSnapshot) => void,
+  ) => () => void;
 };
 
 declare global {
@@ -115,7 +127,8 @@ declare global {
 }
 
 const CONTROL_API_VERSION = 1;
-const OpenworkControlContext = createContext<OpenworkControlContextValue | null>(null);
+const OpenworkControlContext =
+  createContext<OpenworkControlContextValue | null>(null);
 const SPOTLIGHT_TIMING_MS = Object.freeze({
   missingTarget: 80,
   scrollIntoView: 180,
@@ -125,10 +138,13 @@ const SPOTLIGHT_TIMING_MS = Object.freeze({
   done: 280,
 });
 
-const wait = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
+const wait = (ms: number) =>
+  new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function describeError(error: unknown) {
-  return error instanceof Error ? error.message : String(error || "Unknown error");
+  return error instanceof Error
+    ? error.message
+    : String(error || "Unknown error");
 }
 
 function returnedActionError(result: unknown) {
@@ -144,7 +160,10 @@ function isBrowser() {
   return typeof window !== "undefined" && typeof document !== "undefined";
 }
 
-function metadataForAction(registered: RegisteredAction, busyActionId: string | null): OpenworkControlActionMetadata {
+function metadataForAction(
+  registered: RegisteredAction,
+  busyActionId: string | null,
+): OpenworkControlActionMetadata {
   const action = registered.ref.current;
   return {
     id: registered.id,
@@ -183,158 +202,218 @@ function ControlModeSpotlight({ spotlight }: { spotlight: SpotlightState }) {
 export function OpenworkControlProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const actionsRef = useRef(new Map<string, RegisteredAction>());
-  const listenersRef = useRef(new Set<(snapshot: OpenworkControlSnapshot) => void>());
+  const listenersRef = useRef(
+    new Set<(snapshot: OpenworkControlSnapshot) => void>(),
+  );
   const nextOrderRef = useRef(1);
   const [version, setVersion] = useState(0);
   const [enabledState, setEnabledState] = useState(false);
   const [busyActionId, setBusyActionId] = useState<string | null>(null);
   const [narration, setNarration] = useState("Control mode is off.");
-  const [spotlight, setSpotlight] = useState<SpotlightState>({ visible: false, phase: "target", rect: null });
+  const [spotlight, setSpotlight] = useState<SpotlightState>({
+    visible: false,
+    phase: "target",
+    rect: null,
+  });
   const busyActionIdRef = useRef<string | null>(null);
   const spotlightRunRef = useRef(0);
 
   const route = `${location.pathname}${location.search}${location.hash}`;
   const enabled = enabledState;
-  const status: OpenworkControlSnapshot["status"] = !enabled ? "off" : busyActionId ? "acting" : "ready";
+  const status: OpenworkControlSnapshot["status"] = !enabled
+    ? "off"
+    : busyActionId
+      ? "acting"
+      : "ready";
 
   const setEnabled = useCallback((nextEnabled: boolean) => {
     setEnabledState(nextEnabled);
   }, []);
 
-  const listActionMetadata = useCallback((nextBusyActionId = busyActionId) => {
-    return Array.from(actionsRef.current.values())
-      .sort((left, right) => left.order - right.order)
-      .map((action) => metadataForAction(action, nextBusyActionId));
-  }, [busyActionId, version]);
+  const listActionMetadata = useCallback(
+    (nextBusyActionId = busyActionId) => {
+      return Array.from(actionsRef.current.values())
+        .sort((left, right) => left.order - right.order)
+        .map((action) => metadataForAction(action, nextBusyActionId));
+    },
+    [busyActionId, version],
+  );
 
   const actions = useMemo(() => {
     return listActionMetadata();
   }, [listActionMetadata]);
 
-  const snapshot = useCallback((): OpenworkControlSnapshot => ({
-    version: CONTROL_API_VERSION,
-    enabled,
-    route,
-    status,
-    busyActionId,
-    narration,
-    actions: listActionMetadata(),
-  }), [busyActionId, enabled, listActionMetadata, narration, route, status]);
+  const snapshot = useCallback(
+    (): OpenworkControlSnapshot => ({
+      version: CONTROL_API_VERSION,
+      enabled,
+      route,
+      status,
+      busyActionId,
+      narration,
+      actions: listActionMetadata(),
+    }),
+    [busyActionId, enabled, listActionMetadata, narration, route, status],
+  );
 
-  const registerAction = useCallback((actionId: string, actionRef: ControlActionRef) => {
-    const token = Symbol(actionId);
-    const previous = actionsRef.current.get(actionId);
-    actionsRef.current.set(actionId, {
-      id: actionId,
-      order: previous?.order ?? nextOrderRef.current++,
-      token,
-      ref: actionRef,
-    });
-    setVersion((current) => current + 1);
+  const registerAction = useCallback(
+    (actionId: string, actionRef: ControlActionRef) => {
+      const token = Symbol(actionId);
+      const previous = actionsRef.current.get(actionId);
+      actionsRef.current.set(actionId, {
+        id: actionId,
+        order: previous?.order ?? nextOrderRef.current++,
+        token,
+        ref: actionRef,
+      });
+      setVersion((current) => current + 1);
 
-    return () => {
-      const current = actionsRef.current.get(actionId);
-      if (current?.token === token) {
-        actionsRef.current.delete(actionId);
-        setVersion((value) => value + 1);
+      return () => {
+        const current = actionsRef.current.get(actionId);
+        if (current?.token === token) {
+          actionsRef.current.delete(actionId);
+          setVersion((value) => value + 1);
+        }
+      };
+    },
+    [],
+  );
+
+  const playTargetChoreography = useCallback(
+    async (action: OpenworkControlAction, runId: number) => {
+      if (!isBrowser()) return;
+      const stillCurrent = () => spotlightRunRef.current === runId;
+      const target = action.targetRef?.current;
+      if (!target) {
+        await wait(SPOTLIGHT_TIMING_MS.missingTarget);
+        return;
       }
-    };
-  }, []);
 
-  const playTargetChoreography = useCallback(async (action: OpenworkControlAction, runId: number) => {
-    if (!isBrowser()) return;
-    const stillCurrent = () => spotlightRunRef.current === runId;
-    const target = action.targetRef?.current;
-    if (!target) {
-      await wait(SPOTLIGHT_TIMING_MS.missingTarget);
-      return;
-    }
+      target.scrollIntoView({
+        block: "center",
+        inline: "nearest",
+        behavior: "smooth",
+      });
+      await wait(SPOTLIGHT_TIMING_MS.scrollIntoView);
+      if (!stillCurrent() || !target.isConnected) return;
+      const rect = target.getBoundingClientRect();
+      setSpotlight({
+        visible: true,
+        phase: "target",
+        rect: {
+          x: rect.left,
+          y: rect.top,
+          width: rect.width,
+          height: rect.height,
+        },
+      });
+      await wait(SPOTLIGHT_TIMING_MS.target);
+      if (!stillCurrent()) return;
+      setSpotlight((current) => ({ ...current, phase: "press" }));
+      await wait(SPOTLIGHT_TIMING_MS.press);
+      if (!stillCurrent()) return;
+      setSpotlight((current) => ({ ...current, phase: "target" }));
+      await wait(SPOTLIGHT_TIMING_MS.release);
+    },
+    [],
+  );
 
-    target.scrollIntoView({ block: "center", inline: "nearest", behavior: "smooth" });
-    await wait(SPOTLIGHT_TIMING_MS.scrollIntoView);
-    if (!stillCurrent() || !target.isConnected) return;
-    const rect = target.getBoundingClientRect();
-    setSpotlight({
-      visible: true,
-      phase: "target",
-      rect: {
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-        height: rect.height,
-      },
-    });
-    await wait(SPOTLIGHT_TIMING_MS.target);
-    if (!stillCurrent()) return;
-    setSpotlight((current) => ({ ...current, phase: "press" }));
-    await wait(SPOTLIGHT_TIMING_MS.press);
-    if (!stillCurrent()) return;
-    setSpotlight((current) => ({ ...current, phase: "target" }));
-    await wait(SPOTLIGHT_TIMING_MS.release);
-  }, []);
+  const executeAction = useCallback(
+    async (
+      actionId: string,
+      args?: unknown,
+    ): Promise<OpenworkControlResult> => {
+      const registered = actionsRef.current.get(actionId);
+      const action = registered?.ref.current;
+      if (!registered || !action)
+        return { ok: false, actionId, error: `Unknown action: ${actionId}` };
+      if (action.disabled)
+        return {
+          ok: false,
+          actionId,
+          error: `Action is disabled: ${action.label}`,
+        };
+      if (busyActionIdRef.current)
+        return {
+          ok: false,
+          actionId,
+          error: `Already acting: ${busyActionIdRef.current}`,
+        };
 
-  const executeAction = useCallback(async (actionId: string, args?: unknown): Promise<OpenworkControlResult> => {
-    const registered = actionsRef.current.get(actionId);
-    const action = registered?.ref.current;
-    if (!registered || !action) return { ok: false, actionId, error: `Unknown action: ${actionId}` };
-    if (action.disabled) return { ok: false, actionId, error: `Action is disabled: ${action.label}` };
-    if (busyActionIdRef.current) return { ok: false, actionId, error: `Already acting: ${busyActionIdRef.current}` };
+      if (action.requiresConfirmation && isBrowser()) {
+        const confirmed = window.confirm(
+          `Allow Control Mode to ${action.label}?`,
+        );
+        if (!confirmed)
+          return { ok: false, actionId, error: "User cancelled action." };
+      }
 
-    if (action.requiresConfirmation && isBrowser()) {
-      const confirmed = window.confirm(`Allow Control Mode to ${action.label}?`);
-      if (!confirmed) return { ok: false, actionId, error: "User cancelled action." };
-    }
+      const runId = spotlightRunRef.current + 1;
+      spotlightRunRef.current = runId;
+      busyActionIdRef.current = action.id;
+      setEnabled(true);
+      setBusyActionId(action.id);
+      setNarration(`Moving to ${action.label}…`);
 
-    const runId = spotlightRunRef.current + 1;
-    spotlightRunRef.current = runId;
-    busyActionIdRef.current = action.id;
-    setEnabled(true);
-    setBusyActionId(action.id);
-    setNarration(`Moving to ${action.label}…`);
-
-    try {
-      await playTargetChoreography(action, runId);
-      setNarration(`Running ${action.label}…`);
-      const effectiveArgs = args === undefined ? action.previewArgs : args;
-      const result = await action.execute(effectiveArgs, { setNarration });
-      const resultError = returnedActionError(result);
-      if (resultError) {
-        setNarration(`Could not ${action.label}: ${resultError}`);
+      try {
+        await playTargetChoreography(action, runId);
+        setNarration(`Running ${action.label}…`);
+        const effectiveArgs = args === undefined ? action.previewArgs : args;
+        const result = await action.execute(effectiveArgs, { setNarration });
+        const resultError = returnedActionError(result);
+        if (resultError) {
+          setNarration(`Could not ${action.label}: ${resultError}`);
+          if (spotlightRunRef.current === runId) {
+            setSpotlight({ visible: false, phase: "target", rect: null });
+          }
+          return { ok: false, actionId, error: resultError };
+        }
+        setNarration(`Done: ${action.label}`);
+        await wait(SPOTLIGHT_TIMING_MS.done);
         if (spotlightRunRef.current === runId) {
           setSpotlight({ visible: false, phase: "target", rect: null });
         }
-        return { ok: false, actionId, error: resultError };
+        return { ok: true, actionId, result };
+      } catch (error) {
+        const message = describeError(error);
+        setNarration(`Could not ${action.label}: ${message}`);
+        if (spotlightRunRef.current === runId) {
+          setSpotlight({ visible: false, phase: "target", rect: null });
+        }
+        return { ok: false, actionId, error: message };
+      } finally {
+        if (busyActionIdRef.current === action.id)
+          busyActionIdRef.current = null;
+        setBusyActionId(null);
       }
-      setNarration(`Done: ${action.label}`);
-      await wait(SPOTLIGHT_TIMING_MS.done);
-      if (spotlightRunRef.current === runId) {
-        setSpotlight({ visible: false, phase: "target", rect: null });
-      }
-      return { ok: true, actionId, result };
-    } catch (error) {
-      const message = describeError(error);
-      setNarration(`Could not ${action.label}: ${message}`);
-      if (spotlightRunRef.current === runId) {
-        setSpotlight({ visible: false, phase: "target", rect: null });
-      }
-      return { ok: false, actionId, error: message };
-    } finally {
-      if (busyActionIdRef.current === action.id) busyActionIdRef.current = null;
-      setBusyActionId(null);
-    }
-  }, [playTargetChoreography, setEnabled]);
+    },
+    [playTargetChoreography, setEnabled],
+  );
 
-  const value = useMemo<OpenworkControlContextValue>(() => ({
-    enabled,
-    setEnabled,
-    route,
-    narration,
-    busyActionId,
-    actions,
-    registerAction,
-    executeAction,
-    snapshot,
-  }), [actions, busyActionId, enabled, executeAction, narration, registerAction, route, setEnabled, snapshot]);
+  const value = useMemo<OpenworkControlContextValue>(
+    () => ({
+      enabled,
+      setEnabled,
+      route,
+      narration,
+      busyActionId,
+      actions,
+      registerAction,
+      executeAction,
+      snapshot,
+    }),
+    [
+      actions,
+      busyActionId,
+      enabled,
+      executeAction,
+      narration,
+      registerAction,
+      route,
+      setEnabled,
+      snapshot,
+    ],
+  );
 
   useEffect(() => {
     if (!enabled) {
@@ -391,7 +470,9 @@ export function useOpenworkControl() {
   return use(OpenworkControlContext);
 }
 
-export function useControlAction(action: OpenworkControlAction | null | false | undefined) {
+export function useControlAction(
+  action: OpenworkControlAction | null | false | undefined,
+) {
   const control = useOpenworkControl();
   const registerAction = control?.registerAction;
   const latestActionRef = useRef<OpenworkControlAction | null>(action || null);
@@ -415,7 +496,9 @@ export function useControlActions(actions: readonly OpenworkControlAction[]) {
   const registerAction = control?.registerAction;
 
   // One ref per action id, so executeAction always sees the freshest closure.
-  const refsById = useRef<Map<string, { current: OpenworkControlAction | null }>>(new Map());
+  const refsById = useRef<
+    Map<string, { current: OpenworkControlAction | null }>
+  >(new Map());
   for (const action of actions) {
     const existing = refsById.current.get(action.id);
     if (existing) {
@@ -452,114 +535,164 @@ const SETTINGS_TABS: ReadonlySet<string> = new Set<string>(SETTINGS_TAB_VALUES);
 export function OpenworkRouteControlActions() {
   const navigate = useNavigate();
 
-  const actions = useMemo<OpenworkControlAction[]>(() => [
-    {
-      id: "route.session",
-      label: "Open sessions",
-      description: "Navigate to the main session view.",
-      sideEffect: "navigation",
-      execute: () => navigate("/session"),
-    },
-    {
-      id: "route.settings.general",
-      label: "Open general settings",
-      description: "Navigate to general settings.",
-      sideEffect: "navigation",
-      execute: () => navigate("/settings/general"),
-    },
-    {
-      id: "route.settings.skills",
-      label: "Open skills settings",
-      description: "Navigate to skills settings.",
-      sideEffect: "navigation",
-      execute: () => navigate("/settings/skills"),
-    },
-    {
-      id: "route.settings.providers",
-      label: "Open provider settings",
-      description: "Navigate to AI provider settings.",
-      sideEffect: "navigation",
-      execute: () => navigate("/settings/ai"),
-    },
-    {
-      id: "route.settings.authorized_folders",
-      label: "Open authorized folder settings",
-      description: "Navigate to authorized folders and file access settings.",
-      sideEffect: "navigation",
-      execute: () => navigate("/settings/permissions"),
-    },
-    {
-      id: "route.settings.appearance",
-      label: "Open appearance settings",
-      description: "Navigate to appearance settings.",
-      sideEffect: "navigation",
-      execute: () => navigate("/settings/appearance"),
-    },
-    {
-      id: "settings.panel.open",
-      label: "Open a settings panel",
-      description: "Navigate to a specific settings panel by tab id.",
-      sideEffect: "navigation",
-      requiresArgs: true,
-      args: [
-        {
-          name: "panel",
-          type: "string",
-          required: true,
-          description:
-            "Settings tab: general | ai | preferences | permissions | shell | extensions | skills | environment | advanced | appearance | updates | recovery | debug | cloud-account | cloud-providers | cloud-marketplaces",
-        },
-      ],
-      previewArgs: { panel: "ai" },
-      execute: (args) => {
-        const requested = (args as { panel?: unknown } | undefined)?.panel;
-        const panel = typeof requested === "string" ? requested.trim() : "";
-        if (!SETTINGS_TABS.has(panel)) {
-          return {
-            ok: false,
-            error: `Unknown settings panel: ${panel || "(empty)"}. Expected one of ${Array.from(SETTINGS_TABS).join(", ")}.`,
-          };
-        }
-        navigate(`/settings/${panel}`);
-        return { ok: true, panel };
+  const actions = useMemo<OpenworkControlAction[]>(
+    () => [
+      {
+        id: "route.session",
+        label: "Open sessions",
+        description: "Navigate to the main session view.",
+        sideEffect: "navigation",
+        execute: () => navigate("/session"),
       },
-    },
-    {
-      id: "route.back",
-      label: "Go back",
-      description: "Navigate back one entry in history.",
-      sideEffect: "navigation",
-      execute: () => navigate(-1),
-    },
-    {
-      id: "route.forward",
-      label: "Go forward",
-      description: "Navigate forward one entry in history.",
-      sideEffect: "navigation",
-      execute: () => navigate(1),
-    },
-    {
-      id: "help.capabilities",
-      label: "What can OpenWork do?",
-      description: "List the main capabilities of OpenWork.",
-      sideEffect: "none",
-      execute: () => ({
-        capabilities: [
-          { id: "browse", label: "Browse the web", description: "Control a browser to navigate, scrape, and automate web tasks." },
-          { id: "providers", label: "AI model providers", description: "Connect Anthropic, OpenAI, Google, OpenRouter, Ollama, or other LLM providers." },
-          { id: "extensions", label: "MCP extensions", description: "Add MCP servers for Google Workspace, GitHub, databases, and more." },
-          { id: "voice", label: "Voice mode", description: "Talk to OpenWork with real-time voice using OpenAI Realtime." },
-          { id: "files", label: "File management", description: "Read, write, and organize files in your workspace." },
-          { id: "code", label: "Write and run code", description: "Generate, edit, and execute code with full tool access." },
-          { id: "computer-use", label: "Computer use", description: "Control your computer with screenshots and mouse/keyboard actions." },
-          { id: "skills", label: "Skills", description: "Install specialized skill packs for specific workflows." },
-          { id: "automations", label: "Automations", description: "Schedule recurring tasks and background agents." },
-          { id: "sharing", label: "Share sessions", description: "Share workspace sessions with collaborators." },
+      {
+        id: "route.settings.general",
+        label: "Open general settings",
+        description: "Navigate to general settings.",
+        sideEffect: "navigation",
+        execute: () => navigate("/settings/general"),
+      },
+      {
+        id: "route.settings.skills",
+        label: "Open skills settings",
+        description: "Navigate to skills settings.",
+        sideEffect: "navigation",
+        execute: () => navigate("/settings/skills"),
+      },
+      {
+        id: "route.settings.providers",
+        label: "Open provider settings",
+        description: "Navigate to AI provider settings.",
+        sideEffect: "navigation",
+        execute: () => navigate("/settings/ai"),
+      },
+      {
+        id: "route.settings.authorized_folders",
+        label: "Open authorized folder settings",
+        description: "Navigate to authorized folders and file access settings.",
+        sideEffect: "navigation",
+        execute: () => navigate("/settings/permissions"),
+      },
+      {
+        id: "route.settings.appearance",
+        label: "Open appearance settings",
+        description: "Navigate to appearance settings.",
+        sideEffect: "navigation",
+        execute: () => navigate("/settings/appearance"),
+      },
+      {
+        id: "settings.panel.open",
+        label: "Open a settings panel",
+        description: "Navigate to a specific settings panel by tab id.",
+        sideEffect: "navigation",
+        requiresArgs: true,
+        args: [
+          {
+            name: "panel",
+            type: "string",
+            required: true,
+            description:
+              "Settings tab: general | ai | preferences | permissions | shell | extensions | skills | environment | advanced | appearance | updates | recovery | debug | cloud-account | cloud-providers | cloud-marketplaces",
+          },
         ],
-        hint: "Use settings.panel.open to configure any of these. For example: settings.panel.open({panel:'ai'}) for providers, settings.panel.open({panel:'extensions'}) for MCPs.",
-      }),
-    },
-  ], [navigate]);
+        previewArgs: { panel: "ai" },
+        execute: (args) => {
+          const requested = (args as { panel?: unknown } | undefined)?.panel;
+          const panel = typeof requested === "string" ? requested.trim() : "";
+          if (!SETTINGS_TABS.has(panel)) {
+            return {
+              ok: false,
+              error: `Unknown settings panel: ${panel || "(empty)"}. Expected one of ${Array.from(SETTINGS_TABS).join(", ")}.`,
+            };
+          }
+          navigate(`/settings/${panel}`);
+          return { ok: true, panel };
+        },
+      },
+      {
+        id: "route.back",
+        label: "Go back",
+        description: "Navigate back one entry in history.",
+        sideEffect: "navigation",
+        execute: () => navigate(-1),
+      },
+      {
+        id: "route.forward",
+        label: "Go forward",
+        description: "Navigate forward one entry in history.",
+        sideEffect: "navigation",
+        execute: () => navigate(1),
+      },
+      {
+        id: "help.capabilities",
+        label: "What can Sprintnex do?",
+        description: "List the main capabilities of Sprintnex.",
+        sideEffect: "none",
+        execute: () => ({
+          capabilities: [
+            {
+              id: "browse",
+              label: "Browse the web",
+              description:
+                "Control a browser to navigate, scrape, and automate web tasks.",
+            },
+            {
+              id: "providers",
+              label: "AI model providers",
+              description:
+                "Connect Anthropic, OpenAI, Google, OpenRouter, Ollama, or other LLM providers.",
+            },
+            {
+              id: "extensions",
+              label: "MCP extensions",
+              description:
+                "Add MCP servers for Google Workspace, GitHub, databases, and more.",
+            },
+            {
+              id: "voice",
+              label: "Voice mode",
+              description:
+                "Talk to Sprintnex with real-time voice using OpenAI Realtime.",
+            },
+            {
+              id: "files",
+              label: "File management",
+              description: "Read, write, and organize files in your workspace.",
+            },
+            {
+              id: "code",
+              label: "Write and run code",
+              description:
+                "Generate, edit, and execute code with full tool access.",
+            },
+            {
+              id: "computer-use",
+              label: "Computer use",
+              description:
+                "Control your computer with screenshots and mouse/keyboard actions.",
+            },
+            {
+              id: "skills",
+              label: "Skills",
+              description:
+                "Install specialized skill packs for specific workflows.",
+            },
+            {
+              id: "automations",
+              label: "Automations",
+              description: "Schedule recurring tasks and background agents.",
+            },
+            {
+              id: "sharing",
+              label: "Share sessions",
+              description: "Share workspace sessions with collaborators.",
+            },
+          ],
+          hint: "Use settings.panel.open to configure any of these. For example: settings.panel.open({panel:'ai'}) for providers, settings.panel.open({panel:'extensions'}) for MCPs.",
+        }),
+      },
+    ],
+    [navigate],
+  );
 
   useControlActions(actions);
   return null;

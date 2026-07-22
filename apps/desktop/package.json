@@ -1,11 +1,11 @@
 {
   "name": "@openwork/desktop",
   "private": true,
-  "version": "0.17.24",
-  "description": "OpenWork desktop shell",
+  "version": "0.1.0",
+  "description": "Sprintnex Desktop",
   "author": {
-    "name": "OpenWork",
-    "email": "support@openworklabs.com"
+    "name": "Sprintnex",
+    "email": "support@sprintnex.com"
   },
   "main": "electron/main.mjs",
   "type": "module",

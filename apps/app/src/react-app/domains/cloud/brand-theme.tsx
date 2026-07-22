@@ -1,6 +1,9 @@
 /** @jsxImportSource react */
 import { useEffect, useRef, type ReactNode } from "react";
-import { desktopPolicyKeys, type BrandAccentColor } from "@openwork/types/den/desktop-policies";
+import {
+  desktopPolicyKeys,
+  type BrandAccentColor,
+} from "@openwork/types/den/desktop-policies";
 
 import { useNotificationStore } from "../../kernel/notification-store";
 import { useOrgRestrictions } from "./desktop-config-provider";
@@ -16,7 +19,12 @@ import { useOrgRestrictions } from "./desktop-config-provider";
 // The foreground is always white except for very light scales (yellow, lime,
 // mint, sky) where dark text is more legible.
 
-const LIGHT_FG_COLORS = new Set<BrandAccentColor>(["yellow", "lime", "mint", "sky"]);
+const LIGHT_FG_COLORS = new Set<BrandAccentColor>([
+  "yellow",
+  "lime",
+  "mint",
+  "sky",
+]);
 
 function applyBrandAccent(color: BrandAccentColor) {
   const root = document.documentElement;
@@ -24,7 +32,10 @@ function applyBrandAccent(color: BrandAccentColor) {
   // Set the main accent variables referencing existing Radix CSS vars.
   root.style.setProperty("--dls-accent", `var(--${color}-9)`);
   root.style.setProperty("--dls-accent-hover", `var(--${color}-10)`);
-  root.style.setProperty("--dls-accent-fg", LIGHT_FG_COLORS.has(color) ? "#000000" : "#ffffff");
+  root.style.setProperty(
+    "--dls-accent-fg",
+    LIGHT_FG_COLORS.has(color) ? "#000000" : "#ffffff",
+  );
 
   // Compute --dls-accent-rgb from the resolved color so rgba() usages work.
   const probe = document.createElement("div");
@@ -37,7 +48,10 @@ function applyBrandAccent(color: BrandAccentColor) {
 
   const match = computed.match(/(\d+),\s*(\d+),\s*(\d+)/);
   if (match) {
-    root.style.setProperty("--dls-accent-rgb", `${match[1]} ${match[2]} ${match[3]}`);
+    root.style.setProperty(
+      "--dls-accent-rgb",
+      `${match[1]} ${match[2]} ${match[3]}`,
+    );
   }
 
   root.dataset.brandAccent = color;
@@ -86,7 +100,7 @@ export function useBrandLogoUrl(): string | undefined {
 
 /** Organization-managed display name. It does not change the signed app identity. */
 export function useBrandAppName(): string {
-  return useOrgRestrictions().brandAppName ?? "OpenWork";
+  return useOrgRestrictions().brandAppName ?? "Sprintnex";
 }
 
 const POLICY_NOTIFICATION_DEDUPE = "desktop-policy-active";
@@ -106,7 +120,9 @@ function DesktopPolicyNotificationEffect() {
     const hasRestriction = desktopPolicyKeys.some(
       (key) => config[key] === false,
     );
-    const hasBranding = Boolean(config.brandAppName ?? config.brandLogoUrl ?? config.brandAccentColor);
+    const hasBranding = Boolean(
+      config.brandAppName ?? config.brandLogoUrl ?? config.brandAccentColor,
+    );
     if (!hasRestriction && !hasBranding) return;
 
     firedRef.current = true;

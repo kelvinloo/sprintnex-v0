@@ -53,13 +53,17 @@ export function workspaceLabel(workspace: OpenworkWorkspaceInfo) {
 }
 
 export function workspaceExportFilename(workspace: OpenworkWorkspaceInfo) {
-  const slug = workspaceLabel(workspace).replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+  const slug = workspaceLabel(workspace)
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   return `${slug || "workspace"}-openwork-export.json`;
 }
 
 export function downloadWorkspaceJson(filename: string, payload: unknown) {
   if (typeof document === "undefined") return;
-  const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: "application/json" });
+  const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
@@ -91,7 +95,9 @@ export function describeRouteError(error: unknown) {
     return error.message;
   }
   const serialized = safeStringify(error);
-  return serialized && serialized !== "{}" ? serialized : t("app.unknown_error");
+  return serialized && serialized !== "{}"
+    ? serialized
+    : t("app.unknown_error");
 }
 
 export function describeWorkspaceCreateError(error: unknown) {
@@ -102,7 +108,7 @@ export function describeWorkspaceCreateError(error: unknown) {
     lower.includes("os error 60") ||
     lower.includes("etimedout")
   ) {
-    return `${message}\n\nOpenWork could not read the workspace config before the filesystem timed out. This often happens when the folder is still syncing from iCloud Drive or another remote folder. Wait for the folder to finish downloading, move the workspace to a local folder, or try again.`;
+    return `${message}\n\nSprintnex could not read the workspace config before the filesystem timed out. This often happens when the folder is still syncing from iCloud Drive or another remote folder. Wait for the folder to finish downloading, move the workspace to a local folder, or try again.`;
   }
   return message;
 }
@@ -111,7 +117,9 @@ export function mergeRouteWorkspaces(
   serverWorkspaces: OpenworkWorkspaceInfo[],
   desktopWorkspaces: RouteWorkspace[],
 ): RouteWorkspace[] {
-  const desktopById = new Map(desktopWorkspaces.map((workspace) => [workspace.id, workspace]));
+  const desktopById = new Map(
+    desktopWorkspaces.map((workspace) => [workspace.id, workspace]),
+  );
   const desktopByPath = new Map(
     desktopWorkspaces.flatMap((workspace) => {
       const path = normalizeDirectoryPath(workspace.path ?? "");
@@ -126,9 +134,13 @@ export function mergeRouteWorkspaces(
   // remote routing fields and send workspace-scoped requests back to the
   // local server.
   const remoteDesktopIds = new Set(
-    desktopWorkspaces.flatMap((workspace) => workspace.workspaceType === "remote" ? [workspace.id] : []),
+    desktopWorkspaces.flatMap((workspace) =>
+      workspace.workspaceType === "remote" ? [workspace.id] : [],
+    ),
   );
-  const filteredServer = serverWorkspaces.filter((workspace) => !remoteDesktopIds.has(workspace.id));
+  const filteredServer = serverWorkspaces.filter(
+    (workspace) => !remoteDesktopIds.has(workspace.id),
+  );
 
   const mergedServer = filteredServer.map((workspace) => {
     const match =
@@ -170,10 +182,15 @@ export function mergeRouteWorkspaces(
   return [...mergedServer, ...missingDesktop];
 }
 
-export function orderRouteWorkspaces(workspaces: RouteWorkspace[], orderIds: string[]): RouteWorkspace[] {
+export function orderRouteWorkspaces(
+  workspaces: RouteWorkspace[],
+  orderIds: string[],
+): RouteWorkspace[] {
   if (orderIds.length === 0) return workspaces;
 
-  const workspaceById = new Map(workspaces.map((workspace) => [workspace.id, workspace]));
+  const workspaceById = new Map(
+    workspaces.map((workspace) => [workspace.id, workspace]),
+  );
   const ordered: RouteWorkspace[] = [];
   const usedIds = new Set<string>();
 
@@ -211,10 +228,16 @@ export function toSessionGroups(
 }
 
 export function isActiveSessionStatus(status: unknown) {
-  return status === "running" || status === "retry" || status === "busy" || status === "streaming";
+  return (
+    status === "running" ||
+    status === "retry" ||
+    status === "busy" ||
+    status === "streaming"
+  );
 }
 
 export function getSessionStatus(session: RouteSession | null | undefined) {
-  const status = session?.status ?? session?.state ?? session?.runStatus ?? null;
+  const status =
+    session?.status ?? session?.state ?? session?.runStatus ?? null;
   return typeof status === "string" ? status : normalizeSessionStatus(status);
 }

@@ -22,7 +22,11 @@ import {
   readOpenworkServerSettings,
   writeOpenworkServerSettings,
 } from "../../app/lib/openwork-server";
-import { isDesktopRuntime, isElectronRuntime, safeStringify } from "../../app/utils";
+import {
+  isDesktopRuntime,
+  isElectronRuntime,
+  safeStringify,
+} from "../../app/utils";
 import { useServer } from "../kernel/server-provider";
 import { useBootState } from "./boot-state";
 
@@ -41,15 +45,17 @@ type BootOpenworkServerInfo = {
   remoteAccessEnabled?: boolean;
 };
 
-function isOpenworkServerInfoLike(info: unknown): info is BootOpenworkServerInfo {
+function isOpenworkServerInfoLike(
+  info: unknown,
+): info is BootOpenworkServerInfo {
   return typeof info === "object" && info !== null;
 }
 
 function isOpenworkServerReady(info?: BootOpenworkServerInfo) {
   return Boolean(
     info?.running === true &&
-      info.baseUrl?.trim() &&
-      (info.ownerToken?.trim() || info.clientToken?.trim()),
+    info.baseUrl?.trim() &&
+    (info.ownerToken?.trim() || info.clientToken?.trim()),
   );
 }
 
@@ -89,13 +95,18 @@ export function useDesktopRuntimeBoot() {
           const hydrated = await ingestMigrationSnapshotOnElectronBoot();
           if (hydrated > 0) {
             // eslint-disable-next-line no-console -- valuable one-time signal
-            console.info(`[migration] hydrated ${hydrated} localStorage keys from Tauri snapshot`);
+            console.info(
+              `[migration] hydrated ${hydrated} localStorage keys from Tauri snapshot`,
+            );
           }
         }
         hydrateOpenworkServerSettingsFromEnv();
-        const preferredRemoteAccess = readOpenworkServerSettings().remoteAccessEnabled === true;
+        const preferredRemoteAccess =
+          readOpenworkServerSettings().remoteAccessEnabled === true;
 
-        const publishOpenworkServerInfo = (serverInfo: BootOpenworkServerInfo | null | undefined) => {
+        const publishOpenworkServerInfo = (
+          serverInfo: BootOpenworkServerInfo | null | undefined,
+        ) => {
           if (!serverInfo?.baseUrl) return;
           writeOpenworkServerSettings({
             urlOverride: serverInfo.baseUrl,
@@ -108,7 +119,9 @@ export function useDesktopRuntimeBoot() {
             remoteAccessEnabled: serverInfo.remoteAccessEnabled === true,
           });
           try {
-            window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
+            window.dispatchEvent(
+              new CustomEvent("openwork-server-settings-changed"),
+            );
           } catch {
             /* ignore */
           }
@@ -116,12 +129,19 @@ export function useDesktopRuntimeBoot() {
 
         const startServerWithoutDesktopWorkspace = async () => {
           setPhase("starting-engine", "Starting OpenWork server");
-          const serverInfo = await openworkServerRestart({ remoteAccessEnabled: preferredRemoteAccess }).catch((error) => {
+          const serverInfo = await openworkServerRestart({
+            remoteAccessEnabled: preferredRemoteAccess,
+          }).catch((error) => {
             console.warn("[desktop-boot] openworkServerRestart failed:", error);
             return null;
           });
-          if (!isOpenworkServerInfoLike(serverInfo) || !isOpenworkServerReady(serverInfo)) {
-            setError("OpenWork server did not finish starting. Please restart OpenWork.");
+          if (
+            !isOpenworkServerInfoLike(serverInfo) ||
+            !isOpenworkServerReady(serverInfo)
+          ) {
+            setError(
+              "OpenWork server did not finish starting. Please restart OpenWork.",
+            );
             return;
           }
           publishOpenworkServerInfo(serverInfo);
@@ -129,7 +149,9 @@ export function useDesktopRuntimeBoot() {
         };
 
         setPhase("bootstrapping-workspaces");
-        const list = await workspaceBootstrap().catch(() => null) as WorkspaceList | null;
+        const list = (await workspaceBootstrap().catch(
+          () => null,
+        )) as WorkspaceList | null;
         if (!list) {
           await startServerWithoutDesktopWorkspace();
           return;
@@ -154,7 +176,8 @@ export function useDesktopRuntimeBoot() {
           setPhase("starting-engine", "Starting your workspace");
           const boot = (await runtimeBootstrap().catch((error) => ({
             ok: false,
-            error: error instanceof Error ? error.message : safeStringify(error),
+            error:
+              error instanceof Error ? error.message : safeStringify(error),
           }))) as {
             ok?: boolean;
             skipped?: boolean;
@@ -164,12 +187,14 @@ export function useDesktopRuntimeBoot() {
           };
 
           if (boot.ok === false) {
-            setError(boot.error || "Failed to start OpenWork runtime");
+            setError(boot.error || "Failed to start Sprintnex runtime");
             return;
           }
 
           if (!boot.skipped && !isOpenworkServerReady(boot.openworkServer)) {
-            setError("OpenWork server did not finish starting. Please restart OpenWork.");
+            setError(
+              "OpenWork server did not finish starting. Please restart OpenWork.",
+            );
             return;
           }
 
@@ -177,9 +202,17 @@ export function useDesktopRuntimeBoot() {
             setActive(boot.engine.baseUrl);
           }
           let serverInfo = boot.openworkServer;
-          if (preferredRemoteAccess && serverInfo?.remoteAccessEnabled !== true) {
-            const restarted = await openworkServerRestart({ remoteAccessEnabled: true }).catch((error) => {
-              console.warn("[desktop-boot] openworkServerRestart failed:", error);
+          if (
+            preferredRemoteAccess &&
+            serverInfo?.remoteAccessEnabled !== true
+          ) {
+            const restarted = await openworkServerRestart({
+              remoteAccessEnabled: true,
+            }).catch((error) => {
+              console.warn(
+                "[desktop-boot] openworkServerRestart failed:",
+                error,
+              );
               return null;
             });
             if (isOpenworkServerInfoLike(restarted)) serverInfo = restarted;
@@ -195,10 +228,12 @@ export function useDesktopRuntimeBoot() {
         // This mirrors Solid's bootstrap at context/workspace.ts:3883-3907
         // ("localAttachExisting"), which never restarts a running stack.
         try {
-          const engine = await engineInfo() as EngineInfo | null;
+          const engine = (await engineInfo()) as EngineInfo | null;
           if (engine?.running && engine.baseUrl) {
             setActive(engine.baseUrl);
-            const fresh = await openworkServerInfo().catch(() => null) as OpenworkServerInfo | null;
+            const fresh = (await openworkServerInfo().catch(
+              () => null,
+            )) as OpenworkServerInfo | null;
             if (fresh?.baseUrl) {
               writeOpenworkServerSettings({
                 urlOverride: fresh.baseUrl,
@@ -229,7 +264,8 @@ export function useDesktopRuntimeBoot() {
         // No running engine. Tauri now mirrors Electron: engine_start boots
         // openwork-server and lets that server manage OpenCode.
         const localPaths = list.workspaces.flatMap((entry: WorkspaceInfo) => {
-          const path = entry.workspaceType !== "remote" ? entry.path?.trim() ?? "" : "";
+          const path =
+            entry.workspaceType !== "remote" ? (entry.path?.trim() ?? "") : "";
           return path ? [path] : [];
         });
         const workspacePathsFor = (root: string) => {
@@ -244,39 +280,55 @@ export function useDesktopRuntimeBoot() {
         };
 
         setPhase("starting-engine", "Starting your workspace");
-        let engineStartResult = await engineStart(workspaceRoot, {
+        let engineStartResult = (await engineStart(workspaceRoot, {
           runtime: "direct",
           workspacePaths: workspacePathsFor(workspaceRoot),
-          openworkRemoteAccess: readOpenworkServerSettings().remoteAccessEnabled === true,
+          openworkRemoteAccess:
+            readOpenworkServerSettings().remoteAccessEnabled === true,
         }).catch((error) => {
           console.warn("[desktop-boot] engineStart failed:", error);
           return null;
-        }) as EngineInfo | null;
+        })) as EngineInfo | null;
 
         if (!engineStartResult) {
           const fallback = list.workspaces.find((entry) => {
             const path = entry.path?.trim() ?? "";
-            return entry.workspaceType !== "remote" && path && path !== workspaceRoot;
+            return (
+              entry.workspaceType !== "remote" && path && path !== workspaceRoot
+            );
           });
           const fallbackRoot = fallback?.path?.trim() ?? "";
           if (fallback && fallbackRoot) {
-            console.warn("[desktop-boot] selected workspace failed; trying fallback workspace", {
-              selectedWorkspaceId: workspace.id,
-              fallbackWorkspaceId: fallback.id,
-            });
+            console.warn(
+              "[desktop-boot] selected workspace failed; trying fallback workspace",
+              {
+                selectedWorkspaceId: workspace.id,
+                fallbackWorkspaceId: fallback.id,
+              },
+            );
             setPhase("starting-engine", "Starting another workspace");
-            engineStartResult = await engineStart(fallbackRoot, {
+            engineStartResult = (await engineStart(fallbackRoot, {
               runtime: "direct",
-              workspacePaths: workspacePathsFor(fallbackRoot).filter((path) => path !== workspaceRoot),
-              openworkRemoteAccess: readOpenworkServerSettings().remoteAccessEnabled === true,
+              workspacePaths: workspacePathsFor(fallbackRoot).filter(
+                (path) => path !== workspaceRoot,
+              ),
+              openworkRemoteAccess:
+                readOpenworkServerSettings().remoteAccessEnabled === true,
             }).catch((error) => {
-              console.warn("[desktop-boot] fallback engineStart failed:", error);
-              setError(error instanceof Error ? error.message : safeStringify(error));
+              console.warn(
+                "[desktop-boot] fallback engineStart failed:",
+                error,
+              );
+              setError(
+                error instanceof Error ? error.message : safeStringify(error),
+              );
               return null;
-            }) as EngineInfo | null;
+            })) as EngineInfo | null;
             if (engineStartResult) {
               void workspaceSetSelected(fallback.id).catch(() => undefined);
-              void workspaceSetRuntimeActive(fallback.id).catch(() => undefined);
+              void workspaceSetRuntimeActive(fallback.id).catch(
+                () => undefined,
+              );
             }
           } else {
             setError("Failed to start the selected workspace.");
@@ -288,7 +340,8 @@ export function useDesktopRuntimeBoot() {
             setActive(engineStartResult.baseUrl);
           }
           try {
-            const freshInfo = await openworkServerInfo() as OpenworkServerInfo | null;
+            const freshInfo =
+              (await openworkServerInfo()) as OpenworkServerInfo | null;
             if (freshInfo?.baseUrl) {
               writeOpenworkServerSettings({
                 urlOverride: freshInfo.baseUrl,
@@ -301,13 +354,18 @@ export function useDesktopRuntimeBoot() {
                 remoteAccessEnabled: freshInfo.remoteAccessEnabled === true,
               });
               try {
-                window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
+                window.dispatchEvent(
+                  new CustomEvent("openwork-server-settings-changed"),
+                );
               } catch {
                 /* ignore */
               }
             }
           } catch (error) {
-            console.warn("[desktop-boot] post-engineStart openworkServerInfo failed:", error);
+            console.warn(
+              "[desktop-boot] post-engineStart openworkServerInfo failed:",
+              error,
+            );
           }
         }
 

@@ -1135,7 +1135,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
     async (apiKey: string) => {
       const resolvedApiKey = apiKey.trim();
       if (!openworkClient) {
-        setImageExtensionError("OpenWork server is not connected.");
+        setImageExtensionError("Sprintnex server is not connected.");
         return;
       }
       if (!resolvedApiKey) {
@@ -1262,7 +1262,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
 
   const testVoiceSession = useCallback(async () => {
     if (!openworkClient) {
-      setVoiceError("OpenWork server is not connected.");
+      setVoiceError("Sprintnex server is not connected.");
       return;
     }
     setVoiceBusy(true);

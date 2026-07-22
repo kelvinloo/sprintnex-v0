@@ -1,5 +1,12 @@
 /** @jsxImportSource react */
-import { createContext, useCallback, use, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  use,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -37,7 +44,7 @@ export type ShellConfig = {
 /* ------------------------------------------------------------------ */
 
 export const DEFAULT_SHELL_CONFIG: ShellConfig = {
-  appName: "OpenWork",
+  appName: "Sprintnex",
   statusBar: true,
   sidebar: true,
   docsButton: true,
@@ -88,7 +95,9 @@ type ShellConfigContextValue = {
   reset: () => void;
 };
 
-const ShellConfigContext = createContext<ShellConfigContextValue | undefined>(undefined);
+const ShellConfigContext = createContext<ShellConfigContextValue | undefined>(
+  undefined,
+);
 
 export function ShellConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<ShellConfig>(readShellConfig);

@@ -21,6 +21,11 @@ import {
   DELIVERY_AGENT_PROMPT,
 } from "@/app/lib/sprintnex-agent-prompts";
 
+// ── Concurrency guard ────────────────────────────────────────────────────
+// Tracks active stage execution loops by taskId so we never run two loops
+// for the same task simultaneously.
+const activeLoops = new Map<string, boolean>();
+
 export function SprintnexTasksPage() {
   const navigate = useNavigate();
   const [scopeVersion, setScopeVersion] = useState(0);
@@ -94,10 +99,19 @@ export function SprintnexTasksPage() {
           /* not critical */
         }
 
-        // Start the multi-stage execution loop in the background
-        executeStageLoop(task.taskId, sessionId, opencodeClient).catch(
-          () => {},
-        );
+        // Start the multi-stage execution loop in the background.
+        // Use concurrency guard to prevent multiple loops for the same task.
+        if (
+          !executeStageLoop(task.taskId, sessionId, opencodeClient, {
+            baseUrl: normalizedBaseUrl,
+            token: resolvedToken,
+          })
+        ) {
+          console.warn(
+            "[sprintnex] Loop already running for task, skipping duplicate",
+            task.taskId,
+          );
+        }
       } catch (err) {
         console.error("[sprintnex] Failed to create execution session", err);
       }
@@ -114,17 +128,46 @@ export function SprintnexTasksPage() {
    * 4. Notify n8n that stage is complete
    * 5. Loop — n8n stores next stage, poll again
    * 6. Break when no more stages (poll returns null)
+   *
+   * Returns true if loop was started, false if one was already running for this taskId.
    */
-  async function executeStageLoop(
+  function executeStageLoop(
     taskId: string,
     sessionId: string,
     client: ReturnType<typeof createClient>,
+    openworkConnection?: { baseUrl: string; token: string },
+  ): boolean {
+    if (activeLoops.get(taskId)) {
+      return false;
+    }
+    activeLoops.set(taskId, true);
+    runLoop(taskId, sessionId, client, openworkConnection).finally(() => {
+      activeLoops.delete(taskId);
+    });
+    return true;
+  }
+
+  async function runLoop(
+    taskId: string,
+    sessionId: string,
+    client: ReturnType<typeof createClient>,
+    openworkConnection?: { baseUrl: string; token: string },
   ) {
     const {
       pollSprintnexTaskStage,
       markSprintnexStageComplete,
       notifySprintnexStageComplete,
     } = await import("@/app/lib/sprintnex-aicoe-api");
+
+    // Create the OpenWork server client for snapshot polling
+    const serverClient = openworkConnection
+      ? createOpenworkServerClient({
+          baseUrl: openworkConnection.baseUrl,
+          token: openworkConnection.token,
+        })
+      : null;
+    const scope = readSprintnexAicoeScope();
+    const mappedWsId = getMappedWorkspaceForSprintnexProject(scope.projectId);
 
     const loopStartedAt = new Date().toISOString();
     let stageIndex = 0;
@@ -142,27 +185,139 @@ export function SprintnexTasksPage() {
         instructionsLength: stage.instructions.length,
       });
 
-      // 2. Inject instructions with the Delivery Agent system prompt and WAIT
-      try {
-        console.log("[sprintnex] Sending instructions to Delivery Agent...", {
-          stageIndex,
-        });
-        await client.session.prompt({
-          sessionID: sessionId,
-          parts: [{ type: "text", text: stage.instructions }],
-          system: DELIVERY_AGENT_PROMPT,
-        });
-        console.log("[sprintnex] Agent finished processing stage", {
-          stageIndex,
-        });
-      } catch (err) {
-        console.warn("[sprintnex] Agent stage processing failed", err);
+      // 2. Send instructions via promptAsync (fire-and-forget).
+      //    DO NOT use session.prompt() — that posts to /session/{sessionID}/message
+      //    which can trigger a SECOND prompt from the session page that also
+      //    subscribes to the same session's message events.
+      console.log("[sprintnex] Sending instructions to Delivery Agent...", {
+        stageIndex,
+      });
+      const parsed = await client.session.promptAsync({
+        sessionID: sessionId,
+        parts: [{ type: "text", text: stage.instructions }],
+        system: DELIVERY_AGENT_PROMPT,
+      });
+      if (parsed.error) {
+        console.warn("[sprintnex] promptAsync error", parsed.error);
       }
 
-      // 3. Wait for the agent to process the stage instructions.
+      // 3. Poll session snapshot status until it becomes "idle" — this is the
+      //    proper completion trigger from OpenWork indicating the agent finished.
+      console.log("[sprintnex] Waiting for agent via snapshot status...", {
+        stageIndex,
+      });
+      let agentOutput = "";
+      let lastAssistantText = "";
+      const pollStartedAt = Date.now();
+      const POLL_TIMEOUT_MS = 10 * 60 * 1000;
+      while (Date.now() - pollStartedAt < POLL_TIMEOUT_MS) {
+        await new Promise((r) => setTimeout(r, 2000));
+        try {
+          if (!serverClient || !mappedWsId) {
+            // Fallback: poll messages (legacy path)
+            const msgsResult = await client.session.messages({
+              sessionID: sessionId,
+              limit: 10,
+            });
+            const msgsData =
+              msgsResult &&
+              typeof msgsResult === "object" &&
+              "data" in msgsResult
+                ? (msgsResult as { data?: unknown }).data
+                : null;
+            if (!Array.isArray(msgsData)) continue;
+            const assistantMsg = [...msgsData].reverse().find((m: unknown) => {
+              if (!m || typeof m !== "object") return false;
+              const info = (m as Record<string, unknown>).info;
+              return (
+                info &&
+                typeof info === "object" &&
+                (info as Record<string, unknown>).role === "assistant"
+              );
+            });
+            if (!assistantMsg) continue;
+            const parts = (assistantMsg as Record<string, unknown>).parts;
+            if (!Array.isArray(parts)) continue;
+            lastAssistantText = parts
+              .filter(
+                (p: unknown) =>
+                  p &&
+                  typeof p === "object" &&
+                  (p as Record<string, unknown>).type === "text",
+              )
+              .map(
+                (p: unknown) => (p as Record<string, unknown>).text as string,
+              )
+              .filter(Boolean)
+              .join("\n");
+            if (lastAssistantText) {
+              agentOutput = lastAssistantText;
+              break;
+            }
+            continue;
+          }
+
+          // Primary path: poll session snapshot for idle status
+          const snapshot = await serverClient.getSessionSnapshot(
+            mappedWsId,
+            sessionId,
+          );
+          const statusType = snapshot?.item?.status?.type;
+          if (statusType === "busy" || statusType === "retry") {
+            // Agent still running — keep polling
+            continue;
+          }
+          if (statusType !== "idle") {
+            // Unknown status — keep polling
+            continue;
+          }
+          // Session is idle — agent finished. Extract text from the latest
+          // assistant message in the snapshot.
+          const msgs = snapshot?.item?.messages;
+          if (!Array.isArray(msgs)) continue;
+          const assistantMsg = [...msgs].reverse().find((m: unknown) => {
+            if (!m || typeof m !== "object") return false;
+            const info = (m as Record<string, unknown>).info;
+            return (
+              info &&
+              typeof info === "object" &&
+              (info as Record<string, unknown>).role === "assistant"
+            );
+          });
+          if (!assistantMsg) continue;
+          const parts = (assistantMsg as Record<string, unknown>).parts;
+          if (!Array.isArray(parts)) continue;
+          lastAssistantText = parts
+            .filter(
+              (p: unknown) =>
+                p &&
+                typeof p === "object" &&
+                (p as Record<string, unknown>).type === "text",
+            )
+            .map((p: unknown) => (p as Record<string, unknown>).text as string)
+            .filter(Boolean)
+            .join("\n");
+          if (lastAssistantText) {
+            agentOutput = lastAssistantText;
+            console.log("[sprintnex] Agent output extracted from snapshot", {
+              length: agentOutput.length,
+            });
+            break;
+          }
+          // Idle but assistant has no text yet — one more poll
+        } catch (err) {
+          console.warn("[sprintnex] Snapshot poll error", err);
+        }
+      }
+      console.log("[sprintnex] Agent finished processing stage", {
+        stageIndex,
+        agentOutputLength: agentOutput.length,
+      });
+
       const completedAt = new Date().toISOString();
 
-      // 4. Notify n8n that this stage is complete
+      // 4. Notify n8n with the agent's output so the orchestrator can decide
+      //    if the previous stage needs to be re-executed.
       try {
         await notifySprintnexStageComplete(taskId, sessionId, {
           status: "COMPLETED",
@@ -170,9 +325,11 @@ export function SprintnexTasksPage() {
           startedAt: loopStartedAt,
           endedAt: completedAt,
           logs: "",
+          agentOutput,
         });
         console.log("[sprintnex] Stage complete notified to n8n", {
           stageIndex,
+          agentOutputLength: agentOutput.length,
         });
       } catch (err) {
         console.warn("[sprintnex] Failed to notify n8n", err);

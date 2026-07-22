@@ -1,12 +1,12 @@
 # IMPORTANT: appId intentionally matches the Tauri shell so both builds share
 # the same macOS bundle identifier, keychain entries, Launchpad slot, and TCC
 # permissions. In-place migration from Tauri to Electron depends on this.
-appId: com.differentai.openwork
-productName: OpenWork
+appId: com.sprintnex.desktop
+productName: Sprintnex
 protocols:
-  - name: OpenWork
+  - name: Sprintnex
     schemes:
-      - openwork
+      - sprintnex
 directories:
   output: dist-electron
 toolsets:
@@ -53,7 +53,7 @@ mac:
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    NSMicrophoneUsageDescription: OpenWork uses the microphone when you start Voice Mode so you can speak commands to your agent.
+    NSMicrophoneUsageDescription: Sprintnex uses the microphone when you start Voice Mode so you can speak commands to your agent.
   extraResources:
     - from: resources/sidecars
       to: sidecars
@@ -112,4 +112,4 @@ win:
     - nsis
 nsis:
   include: build/installer.nsh
-artifactName: openwork-${os}-${arch}-${version}.${ext}
+artifactName: sprintnex-${os}-${arch}-${version}.${ext}

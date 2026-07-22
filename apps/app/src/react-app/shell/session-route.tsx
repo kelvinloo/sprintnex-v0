@@ -250,7 +250,7 @@ function describeTaskCreateError(error: unknown) {
     lower.includes("internal_error") ||
     lower.includes("unexpected server error")
   ) {
-    return "OpenCode is unavailable for this workspace. Retry once it restarts, or restart OpenWork if the problem continues.";
+    return "OpenCode is unavailable for this workspace. Retry once it restarts, or restart Sprintnex if the problem continues.";
   }
   return message;
 }
@@ -1398,7 +1398,7 @@ export function SessionRoute() {
     try {
       if (!client) {
         toast.error(
-          "OpenWork server is unavailable. Reconnect the server before renaming workspaces.",
+          "Sprintnex server is unavailable. Reconnect the server before renaming workspaces.",
         );
         return;
       }
@@ -1458,7 +1458,7 @@ export function SessionRoute() {
         return;
       }
       throw new Error(
-        "OpenWork server is unavailable. Reconnect the server before exporting workspace config.",
+        "Sprintnex server is unavailable. Reconnect the server before exporting workspace config.",
       );
     },
     [endpointForWorkspace, workspaces],
@@ -2523,7 +2523,7 @@ export function SessionRoute() {
         }
         if (!list) {
           throw new Error(
-            "OpenWork server is unavailable. Start or reconnect the server before creating a workspace.",
+            "Sprintnex server is unavailable. Start or reconnect the server before creating a workspace.",
           );
         }
         const createdId =
@@ -2713,7 +2713,7 @@ export function SessionRoute() {
         }
         if (!list) {
           throw new Error(
-            "OpenWork server is unavailable. Start or reconnect the server before connecting a remote workspace.",
+            "Sprintnex server is unavailable. Start or reconnect the server before connecting a remote workspace.",
           );
         }
         const createdId =

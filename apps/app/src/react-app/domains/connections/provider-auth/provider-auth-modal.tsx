@@ -1,10 +1,5 @@
 /** @jsxImportSource react */
-import {
-  CheckCircle2,
-  ChevronRight,
-  Loader2,
-  Search,
-} from "lucide-react";
+import { CheckCircle2, ChevronRight, Loader2, Search } from "lucide-react";
 import {
   useEffect,
   useMemo,
@@ -68,8 +63,14 @@ export type ProviderAuthModalProps = {
   providers: ProviderAuthProvider[];
   connectedProviderIds: string[];
   authMethods: Record<string, ProviderAuthMethod[]>;
-  onSelect: (providerId: string, methodIndex?: number) => Promise<ProviderOAuthStartResult>;
-  onSubmitApiKey: (providerId: string, apiKey: string) => Promise<string | void>;
+  onSelect: (
+    providerId: string,
+    methodIndex?: number,
+  ) => Promise<ProviderOAuthStartResult>;
+  onSubmitApiKey: (
+    providerId: string,
+    apiKey: string,
+  ) => Promise<string | void>;
   onConnectCloudProvider: (cloudProviderId: string) => Promise<string | void>;
   onSubmitOAuth: (
     providerId: string,
@@ -87,13 +88,24 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
   const isRemoteWorker = workerType === "remote";
 
   const [view, setView] = useState<
-    "list" | "method" | "api" | "cloud" | "oauth-code" | "oauth-auto" | "openwork-subscribe"
+    | "list"
+    | "method"
+    | "api"
+    | "cloud"
+    | "oauth-code"
+    | "oauth-auto"
+    | "openwork-subscribe"
   >("list");
-  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
-  const [selectedCloudMethod, setSelectedCloudMethod] = useState<ProviderAuthMethod | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(
+    null,
+  );
+  const [selectedCloudMethod, setSelectedCloudMethod] =
+    useState<ProviderAuthMethod | null>(null);
   const [apiKeyInput, setApiKeyInput] = useState("");
   const [oauthCodeInput, setOauthCodeInput] = useState("");
-  const [oauthSession, setOauthSession] = useState<ProviderOAuthSession | null>(null);
+  const [oauthSession, setOauthSession] = useState<ProviderOAuthSession | null>(
+    null,
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [activeEntryIndex, setActiveEntryIndex] = useState(0);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -116,7 +128,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     const mapped = PROVIDER_LABELS[normalized.toLowerCase()];
     if (mapped) return mapped;
 
-    const cleaned = normalized.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+    const cleaned = normalized
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
     if (!cleaned) return id;
 
     return cleaned
@@ -134,7 +149,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
 
   const isOpenAiHeadlessMethod = (method: ProviderAuthMethod) => {
     const label = method.label.toLowerCase();
-    return method.type === "oauth" && (label.includes("headless") || label.includes("device"));
+    return (
+      method.type === "oauth" &&
+      (label.includes("headless") || label.includes("device"))
+    );
   };
 
   const isOpenAiProvider = (id: string, fallbackName?: string) => {
@@ -149,7 +167,8 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     return normalizedId === "anthropic" || normalizedName === "anthropic";
   };
 
-  const isOpencodeZenProvider = (id: string) => id.trim().toLowerCase() === "opencode";
+  const isOpencodeZenProvider = (id: string) =>
+    id.trim().toLowerCase() === "opencode";
 
   const OPENCODE_ZEN_KEY_URL = "https://opencode.ai/auth";
 
@@ -164,7 +183,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
 
   const isClaudeProMaxMethod = (method: ProviderAuthMethod) => {
     const label = method.label.toLowerCase();
-    return method.type === "oauth" && (label.includes("pro/max") || label.includes("create an api key"));
+    return (
+      method.type === "oauth" &&
+      (label.includes("pro/max") || label.includes("create an api key"))
+    );
   };
 
   const entries = useMemo<ProviderAuthEntry[]>(() => {
@@ -172,12 +194,17 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     const connected = new Set(props.connectedProviderIds ?? []);
     const providers = props.providers ?? [];
 
-    const providersById = new Map(providers.map((provider) => [provider.id, provider]));
+    const providersById = new Map(
+      providers.map((provider) => [provider.id, provider]),
+    );
     const nextEntries = Object.keys(methods)
       .flatMap((id) => {
         const provider = providersById.get(id);
         const entryMethods = (methods[id] ?? []).filter((method) => {
-          if (isAnthropicProvider(id, provider?.name) && isClaudeProMaxMethod(method)) {
+          if (
+            isAnthropicProvider(id, provider?.name) &&
+            isClaudeProMaxMethod(method)
+          ) {
             return false;
           }
           if (!isOpenAiProvider(id, provider?.name)) return true;
@@ -186,13 +213,15 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
           return !isOpenAiHeadlessMethod(method);
         });
         if (entryMethods.length === 0) return [];
-        return [{
-          id,
-          name: formatProviderName(id, provider?.name),
-          methods: entryMethods,
-          connected: connected.has(id),
-          env: Array.isArray(provider?.env) ? provider.env : [],
-        } satisfies ProviderAuthEntry];
+        return [
+          {
+            id,
+            name: formatProviderName(id, provider?.name),
+            methods: entryMethods,
+            connected: connected.has(id),
+            env: Array.isArray(provider?.env) ? provider.env : [],
+          } satisfies ProviderAuthEntry,
+        ];
       })
       .sort(compareProviders);
 
@@ -206,12 +235,21 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
           connected: connectedToOpenWork,
           env: [],
         },
-        ...nextEntries.filter((entry) => entry.id.trim().toLowerCase() !== OPENWORK_MODELS_PROVIDER_ID),
+        ...nextEntries.filter(
+          (entry) =>
+            entry.id.trim().toLowerCase() !== OPENWORK_MODELS_PROVIDER_ID,
+        ),
       ];
     }
 
     return nextEntries;
-  }, [isRemoteWorker, props.authMethods, props.connectedProviderIds, props.providers, props.showOpenWorkModelsSubscribe]);
+  }, [
+    isRemoteWorker,
+    props.authMethods,
+    props.connectedProviderIds,
+    props.providers,
+    props.showOpenWorkModelsSubscribe,
+  ]);
 
   const selectedEntry = useMemo(
     () => entries.find((entry) => entry.id === selectedProviderId) ?? null,
@@ -225,14 +263,24 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     const query = searchQuery.trim().toLowerCase();
     if (!query) return entries;
     return entries.filter((entry) => {
-      const methodText = entry.methods.map((method) => method.label || (method.type === "oauth" ? "OAuth" : "API key")).join(" ");
-      return `${entry.name} ${entry.id} ${methodText}`.toLowerCase().includes(query);
+      const methodText = entry.methods
+        .map(
+          (method) =>
+            method.label || (method.type === "oauth" ? "OAuth" : "API key"),
+        )
+        .join(" ");
+      return `${entry.name} ${entry.id} ${methodText}`
+        .toLowerCase()
+        .includes(query);
     });
   }, [entries, searchQuery]);
 
-  const oauthInstructions = oauthSession?.authorization.instructions?.trim() ?? "";
+  const oauthInstructions =
+    oauthSession?.authorization.instructions?.trim() ?? "";
   const isOpenAiHeadlessSession = Boolean(
-    oauthSession && oauthSession.providerId === "openai" && oauthSession.methodLabel.toLowerCase().includes("headless"),
+    oauthSession &&
+    oauthSession.providerId === "openai" &&
+    oauthSession.methodLabel.toLowerCase().includes("headless"),
   );
   const shouldStartOauthAutoPolling =
     props.open &&
@@ -256,7 +304,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
   const actionDisabled = props.loading || props.submitting;
 
   const resetState = () => {
-    if (oauthCodeCopiedResetRef.current !== null && typeof window !== "undefined") {
+    if (
+      oauthCodeCopiedResetRef.current !== null &&
+      typeof window !== "undefined"
+    ) {
       window.clearTimeout(oauthCodeCopiedResetRef.current);
       oauthCodeCopiedResetRef.current = null;
     }
@@ -321,9 +372,15 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     if (!props.open || props.loading || resolvedView !== "list") return;
 
     const preferredId = props.preferredProviderId?.trim().toLowerCase() ?? "";
-    if (!preferredId || autoOpenedPreferredProviderIdRef.current === preferredId) return;
+    if (
+      !preferredId ||
+      autoOpenedPreferredProviderIdRef.current === preferredId
+    )
+      return;
 
-    const entry = entries.find((item) => item.id.trim().toLowerCase() === preferredId);
+    const entry = entries.find(
+      (item) => item.id.trim().toLowerCase() === preferredId,
+    );
     if (!entry) return;
 
     autoOpenedPreferredProviderIdRef.current = preferredId;
@@ -349,10 +406,12 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     };
   }, []);
 
-  const isOauthView = resolvedView === "oauth-code" || resolvedView === "oauth-auto";
+  const isOauthView =
+    resolvedView === "oauth-code" || resolvedView === "oauth-auto";
   const activeProviderId = oauthSession?.providerId ?? selectedProviderId;
   const isActiveProviderConnected =
-    !!activeProviderId && (props.connectedProviderIds ?? []).includes(activeProviderId);
+    !!activeProviderId &&
+    (props.connectedProviderIds ?? []).includes(activeProviderId);
 
   const pollProviders = async () => {
     const id = activeProviderId;
@@ -419,13 +478,22 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     }, 2000);
   };
 
-  const submitOauth = async (providerId: string, methodIndex: number, code?: string) => {
+  const submitOauth = async (
+    providerId: string,
+    methodIndex: number,
+    code?: string,
+  ) => {
     const trimmedCode = code?.trim();
     setLocalError(null);
     try {
-      return await props.onSubmitOAuth(providerId, methodIndex, trimmedCode || undefined);
+      return await props.onSubmitOAuth(
+        providerId,
+        methodIndex,
+        trimmedCode || undefined,
+      );
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to complete OAuth";
+      const message =
+        error instanceof Error ? error.message : "Failed to complete OAuth";
       setLocalError(message);
       throw error instanceof Error ? error : new Error(message);
     }
@@ -475,9 +543,13 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     setOauthBrowserOpened(false);
     try {
       const started = await props.onSelect(entry.id, methodIndex);
-      const selectedMethod = entry.methods.find((method) => method.methodIndex === methodIndex);
+      const selectedMethod = entry.methods.find(
+        (method) => method.methodIndex === methodIndex,
+      );
       if (!selectedMethod) {
-        throw new Error(`Selected auth method is unavailable for ${entry.name}.`);
+        throw new Error(
+          `Selected auth method is unavailable for ${entry.name}.`,
+        );
       }
       const nextSession: ProviderOAuthSession = {
         providerId: entry.id,
@@ -499,7 +571,8 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
 
       setView("oauth-auto");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to start OAuth";
+      const message =
+        error instanceof Error ? error.message : "Failed to start OAuth";
       setLocalError(message);
     }
   };
@@ -528,7 +601,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     setLocalError(null);
     setSelectedProviderId(entry.id);
 
-    if (props.showOpenWorkModelsSubscribe && entry.id.trim().toLowerCase() === OPENWORK_MODELS_PROVIDER_ID) {
+    if (
+      props.showOpenWorkModelsSubscribe &&
+      entry.id.trim().toLowerCase() === OPENWORK_MODELS_PROVIDER_ID
+    ) {
       setView("openwork-subscribe");
       return;
     }
@@ -561,7 +637,8 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
       // Close the modal after a successful save
       props.onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to save API key";
+      const message =
+        error instanceof Error ? error.message : "Failed to save API key";
       setLocalError(message);
     }
   };
@@ -574,7 +651,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
       await props.onConnectCloudProvider(selectedCloudMethod.cloudProviderId);
       props.onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to connect organization provider";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to connect organization provider";
       setLocalError(message);
     }
   };
@@ -632,7 +712,8 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     if (resolvedView === "api") return "Saving API key...";
     if (resolvedView === "cloud") return "Connecting organization provider...";
     if (resolvedView === "oauth-code") return "Verifying authorization code...";
-    if (resolvedView === "oauth-auto") return "Waiting for OAuth confirmation...";
+    if (resolvedView === "oauth-auto")
+      return "Waiting for OAuth confirmation...";
     return "Opening authentication...";
   };
 
@@ -661,7 +742,9 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
       return;
     }
     if (event.key === "Enter") {
-      const nativeEvent = event.nativeEvent as globalThis.KeyboardEvent & { keyCode?: number };
+      const nativeEvent = event.nativeEvent as globalThis.KeyboardEvent & {
+        keyCode?: number;
+      };
       if (nativeEvent.isComposing || nativeEvent.keyCode === 229) {
         return;
       }
@@ -677,23 +760,32 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     }
   };
 
-  const methodDescription = (entry: ProviderAuthEntry, method: ProviderAuthMethod) => {
+  const methodDescription = (
+    entry: ProviderAuthEntry,
+    method: ProviderAuthMethod,
+  ) => {
     const label = methodLabel(method).toLowerCase();
-    if (isOpenAiProvider(entry.id, entry.name) && (label.includes("headless") || label.includes("device"))) {
+    if (
+      isOpenAiProvider(entry.id, entry.name) &&
+      (label.includes("headless") || label.includes("device"))
+    ) {
       return isRemoteWorker
         ? "Use OpenAI's device flow for remote workers, where the browser callback may not resolve on your local machine."
         : "Use OpenAI's device flow when the local browser callback is unreliable.";
     }
     if (method.type === "oauth") {
-      return "Continue in the browser and let OpenWork finish the connection automatically.";
+      return "Continue in the browser and let Sprintnex finish the connection automatically.";
     }
     if (method.type === "cloud") {
-      return method.description ?? "Use the provider and credential managed by your organization.";
+      return (
+        method.description ??
+        "Use the provider and credential managed by your organization."
+      );
     }
     if (isOpencodeZenProvider(entry.id)) {
       return "Sign in to OpenCode Zen with an API key to unlock paid models alongside the free tier.";
     }
-    return "Paste a secret key that OpenWork stores locally on this device.";
+    return "Paste a secret key that Sprintnex stores locally on this device.";
   };
 
   return (
@@ -725,7 +817,11 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
           {!props.loading ? (
             <div className="-mr-1 min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
               {resolvedView === "list" ? (
-                <div className="space-y-3" role="presentation" onKeyDown={handleListKeyDown}>
+                <div
+                  className="space-y-3"
+                  role="presentation"
+                  onKeyDown={handleListKeyDown}
+                >
                   <div className="relative flex items-center mb-1">
                     <Search size={16} className="absolute left-3 text-gray-9" />
                     <input
@@ -751,14 +847,20 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                         key={entry.id}
                         type="button"
                         className={`w-full group flex items-start gap-3.5 rounded-xl px-3.5 py-3 text-left transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed ${
-                          index === activeEntryIndex ? "bg-gray-3/60" : "hover:bg-gray-3/30"
+                          index === activeEntryIndex
+                            ? "bg-gray-3/60"
+                            : "hover:bg-gray-3/30"
                         }`}
                         disabled={actionDisabled}
                         onMouseEnter={() => setActiveEntryIndex(index)}
                         onClick={() => handleEntrySelect(entry)}
                       >
                         <div className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gray-5/60 bg-gray-2 shadow-sm overflow-hidden">
-                          <ProviderIcon providerId={entry.id} size={18} className="text-gray-12" />
+                          <ProviderIcon
+                            providerId={entry.id}
+                            size={18}
+                            className="text-gray-12"
+                          />
                         </div>
 
                         <div className="flex-1 min-w-0">
@@ -777,7 +879,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                               ) : (
                                 <div className="text-[12px] font-medium text-gray-9 group-hover:text-gray-12 transition-colors flex items-center gap-0.5 opacity-80 group-hover:opacity-100">
                                   Connect
-                                  <ChevronRight size={14} className="opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200" />
+                                  <ChevronRight
+                                    size={14}
+                                    className="opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all duration-200"
+                                  />
                                 </div>
                               )}
                             </div>
@@ -807,11 +912,15 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                     ))
                   ) : (
                     <div className="text-sm text-gray-10 pt-2">
-                      {entries.length ? "No providers match your search." : "No providers available."}
+                      {entries.length
+                        ? "No providers match your search."
+                        : "No providers available."}
                     </div>
                   )}
 
-                  <div className="text-[11px] text-gray-9">Arrow keys to navigate, Enter to select.</div>
+                  <div className="text-[11px] text-gray-9">
+                    Arrow keys to navigate, Enter to select.
+                  </div>
                 </div>
               ) : null}
 
@@ -819,10 +928,18 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                 <div className="rounded-xl border border-gray-6/40 bg-gray-2/50 shadow-sm p-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-12">{selectedEntry.name}</div>
-                      <div className="text-xs text-gray-10 mt-1">Choose how you'd like to connect.</div>
+                      <div className="text-sm font-medium text-gray-12">
+                        {selectedEntry.name}
+                      </div>
+                      <div className="text-xs text-gray-10 mt-1">
+                        Choose how you'd like to connect.
+                      </div>
                     </div>
-                    <Button variant="outline" onClick={handleBack} disabled={actionDisabled}>
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={actionDisabled}
+                    >
                       Back
                     </Button>
                   </div>
@@ -839,8 +956,12 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                         onClick={() => void handleMethodSelect(method)}
                         disabled={actionDisabled}
                       >
-                        <div className="text-sm font-medium text-gray-12">{methodLabel(method)}</div>
-                        <div className="mt-1 text-xs text-gray-10">{methodDescription(selectedEntry, method)}</div>
+                        <div className="text-sm font-medium text-gray-12">
+                          {methodLabel(method)}
+                        </div>
+                        <div className="mt-1 text-xs text-gray-10">
+                          {methodDescription(selectedEntry, method)}
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -851,26 +972,35 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                 <div className="rounded-xl border border-gray-6/40 bg-gray-2/50 shadow-sm p-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-12">{selectedEntry.name}</div>
+                      <div className="text-sm font-medium text-gray-12">
+                        {selectedEntry.name}
+                      </div>
                       <div className="text-xs text-gray-10 mt-1">
                         {isOpencodeZenProvider(selectedEntry.id)
                           ? "Sign in to OpenCode Zen with an API key from opencode.ai/auth."
                           : "Paste your API key to connect."}
                       </div>
                     </div>
-                    <Button variant="outline" onClick={handleBack} disabled={actionDisabled}>
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={actionDisabled}
+                    >
                       Back
                     </Button>
                   </div>
                   {isOpencodeZenProvider(selectedEntry.id) ? (
                     <div className="rounded-lg border border-indigo-5/30 bg-indigo-3/15 px-3 py-2.5 text-xs text-indigo-12 space-y-1.5">
                       <div>
-                        OpenCode Zen gives you access to the best coding models. Free models keep working without a key.
+                        OpenCode Zen gives you access to the best coding models.
+                        Free models keep working without a key.
                       </div>
                       <button
                         type="button"
                         className="text-indigo-11 hover:text-indigo-12 underline underline-offset-2 font-medium"
-                        onClick={() => void openExternalUrl(OPENCODE_ZEN_KEY_URL)}
+                        onClick={() =>
+                          void openExternalUrl(OPENCODE_ZEN_KEY_URL)
+                        }
                       >
                         Get an API key →
                       </button>
@@ -879,7 +1009,11 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                   <TextInput
                     label="API key"
                     type="password"
-                    placeholder={isOpencodeZenProvider(selectedEntry.id) ? "ock_..." : "sk-..."}
+                    placeholder={
+                      isOpencodeZenProvider(selectedEntry.id)
+                        ? "ock_..."
+                        : "sk-..."
+                    }
                     value={apiKeyInput}
                     onChange={(event) => {
                       setApiKeyInput(event.currentTarget.value);
@@ -892,11 +1026,16 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                   />
                   {selectedEntry.env.length > 0 ? (
                     <div className="text-[11px] text-gray-9">
-                      Env vars: <span className="font-mono">{selectedEntry.env.join(", ")}</span>
+                      Env vars:{" "}
+                      <span className="font-mono">
+                        {selectedEntry.env.join(", ")}
+                      </span>
                     </div>
                   ) : null}
                   <div className="flex items-center justify-between gap-3">
-                    <div className="text-[11px] text-gray-9">Keys are stored locally by OpenCode.</div>
+                    <div className="text-[11px] text-gray-9">
+                      Keys are stored locally by OpenCode.
+                    </div>
                     <Button
                       onClick={handleApiSubmit}
                       disabled={actionDisabled || !apiKeyInput.trim()}
@@ -907,35 +1046,55 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                 </div>
               ) : null}
 
-              {resolvedView === "cloud" && selectedEntry && selectedCloudMethod ? (
+              {resolvedView === "cloud" &&
+              selectedEntry &&
+              selectedCloudMethod ? (
                 <div className="rounded-xl border border-gray-6/40 bg-gray-2/50 shadow-sm p-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-12">{selectedEntry.name}</div>
-                      <div className="text-xs text-gray-10 mt-1">Connect with the provider managed by your organization.</div>
+                      <div className="text-sm font-medium text-gray-12">
+                        {selectedEntry.name}
+                      </div>
+                      <div className="text-xs text-gray-10 mt-1">
+                        Connect with the provider managed by your organization.
+                      </div>
                     </div>
-                    <Button variant="outline" onClick={handleBack} disabled={actionDisabled}>
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={actionDisabled}
+                    >
                       Back
                     </Button>
                   </div>
                   <div className="text-xs text-gray-9">
-                    {selectedCloudMethod.description ?? "Use the provider and credential managed by your organization."}
+                    {selectedCloudMethod.description ??
+                      "Use the provider and credential managed by your organization."}
                   </div>
                   {(selectedCloudMethod.modelCount ?? 0) > 0 ? (
                     <div className="rounded-lg border border-gray-6/60 bg-gray-1/60 px-3 py-2 text-[11px] text-gray-9">
-                      {(selectedCloudMethod.modelCount ?? 0)} curated model{(selectedCloudMethod.modelCount ?? 0) === 1 ? "" : "s"} will be added to this workspace.
+                      {selectedCloudMethod.modelCount ?? 0} curated model
+                      {(selectedCloudMethod.modelCount ?? 0) === 1 ? "" : "s"}{" "}
+                      will be added to this workspace.
                     </div>
                   ) : null}
                   {(selectedCloudMethod.env?.length ?? 0) > 0 ? (
                     <div className="text-[11px] text-gray-9">
-                      Env vars: <span className="font-mono">{selectedCloudMethod.env?.join(", ")}</span>
+                      Env vars:{" "}
+                      <span className="font-mono">
+                        {selectedCloudMethod.env?.join(", ")}
+                      </span>
                     </div>
                   ) : null}
                   <div className="flex items-center justify-between gap-3">
                     <div className="text-[11px] text-gray-9">
-                      OpenWork will install the provider config and use the credential stored for your org.
+                      OpenWork will install the provider config and use the
+                      credential stored for your org.
                     </div>
-                    <Button onClick={handleCloudSubmit} disabled={actionDisabled}>
+                    <Button
+                      onClick={handleCloudSubmit}
+                      disabled={actionDisabled}
+                    >
                       {props.submitting ? "Connecting..." : "Connect provider"}
                     </Button>
                   </div>
@@ -946,31 +1105,51 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                 <div className="rounded-xl border border-blue-6/50 bg-blue-2/25 shadow-sm p-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-12">OpenWork Models</div>
+                      <div className="text-sm font-medium text-gray-12">
+                        OpenWork Models
+                      </div>
                       <div className="text-xs text-gray-10 mt-1">
-                        Frontier intelligence, hand picked for your team&apos;s most ambitious work.
+                        Frontier intelligence, hand picked for your team&apos;s
+                        most ambitious work.
                       </div>
                     </div>
-                    <Button variant="ghost" onClick={handleBack} disabled={actionDisabled}>
+                    <Button
+                      variant="ghost"
+                      onClick={handleBack}
+                      disabled={actionDisabled}
+                    >
                       Back
                     </Button>
                   </div>
                   <div className="flex items-center justify-end">
-                    <Button onClick={() => void props.onSubscribeOpenWorkModels?.()} disabled={actionDisabled}>
+                    <Button
+                      onClick={() => void props.onSubscribeOpenWorkModels?.()}
+                      disabled={actionDisabled}
+                    >
                       Subscribe
                     </Button>
                   </div>
                 </div>
               ) : null}
 
-              {resolvedView === "oauth-code" && selectedEntry && oauthSession ? (
+              {resolvedView === "oauth-code" &&
+              selectedEntry &&
+              oauthSession ? (
                 <div className="rounded-xl border border-gray-6/40 bg-gray-2/50 shadow-sm p-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-12">{selectedEntry.name}</div>
-                      <div className="text-xs text-gray-10 mt-1">Finish OAuth by pasting the authorization code.</div>
+                      <div className="text-sm font-medium text-gray-12">
+                        {selectedEntry.name}
+                      </div>
+                      <div className="text-xs text-gray-10 mt-1">
+                        Finish OAuth by pasting the authorization code.
+                      </div>
                     </div>
-                    <Button variant="outline" onClick={handleBack} disabled={actionDisabled}>
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={actionDisabled}
+                    >
                       Back
                     </Button>
                   </div>
@@ -1014,53 +1193,97 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                       onClick={() => void handleOauthCodeSubmit()}
                       disabled={actionDisabled || !oauthCodeInput.trim()}
                     >
-                      {props.submitting ? "Verifying..." : "Complete connection"}
+                      {props.submitting
+                        ? "Verifying..."
+                        : "Complete connection"}
                     </Button>
                   </div>
                 </div>
               ) : null}
 
-              {resolvedView === "oauth-auto" && selectedEntry && oauthSession ? (
+              {resolvedView === "oauth-auto" &&
+              selectedEntry &&
+              oauthSession ? (
                 <div className="rounded-xl border border-gray-6/40 bg-gray-2/50 shadow-sm p-5 space-y-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <div className="text-sm font-medium text-gray-12">{selectedEntry.name}</div>
-                      <div className="text-xs text-gray-10 mt-1">Waiting for browser confirmation.</div>
+                      <div className="text-sm font-medium text-gray-12">
+                        {selectedEntry.name}
+                      </div>
+                      <div className="text-xs text-gray-10 mt-1">
+                        Waiting for browser confirmation.
+                      </div>
                     </div>
-                    <Button variant="outline" onClick={handleBack} disabled={actionDisabled}>
+                    <Button
+                      variant="outline"
+                      onClick={handleBack}
+                      disabled={actionDisabled}
+                    >
                       Back
                     </Button>
                   </div>
                   {isOpenAiHeadlessSession ? (
                     <div className="space-y-2 text-xs text-gray-9">
-                      <div>You'll need to sign in to your OpenAI account and provide the code below.</div>
-                      <div>The first time you do this you'll need to enable Device auth in your account settings.</div>
-                      <div>ChatGPT &gt; Account Settings &gt; Security &gt; Enable device code authorization</div>
-                      <div>When you're ready, copy the code below, and click &quot;Open Browser&quot;.</div>
+                      <div>
+                        You'll need to sign in to your OpenAI account and
+                        provide the code below.
+                      </div>
+                      <div>
+                        The first time you do this you'll need to enable Device
+                        auth in your account settings.
+                      </div>
+                      <div>
+                        ChatGPT &gt; Account Settings &gt; Security &gt; Enable
+                        device code authorization
+                      </div>
+                      <div>
+                        When you're ready, copy the code below, and click
+                        &quot;Open Browser&quot;.
+                      </div>
                     </div>
                   ) : (
                     <div className="text-xs text-gray-9">
-                      Sign in in the browser tab we just opened. We will complete the connection automatically.
+                      Sign in in the browser tab we just opened. We will
+                      complete the connection automatically.
                     </div>
                   )}
                   {oauthDisplayCode ? (
                     <div className="rounded-xl border border-gray-6/70 bg-gray-2/40 p-3 flex items-center gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="text-[10px] uppercase tracking-wide text-gray-8">Confirmation code</div>
-                        <div className="text-sm text-gray-12 font-mono break-all">{oauthDisplayCode}</div>
+                        <div className="text-[10px] uppercase tracking-wide text-gray-8">
+                          Confirmation code
+                        </div>
+                        <div className="text-sm text-gray-12 font-mono break-all">
+                          {oauthDisplayCode}
+                        </div>
                       </div>
-                      <Button variant="outline" size="sm" className="shrink-0" onClick={() => void copyOauthDisplayCode()}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0"
+                        onClick={() => void copyOauthDisplayCode()}
+                      >
                         {oauthCodeCopied ? "Copied" : "Copy"}
                       </Button>
                     </div>
                   ) : null}
                   {isOpenAiHeadlessSession && !oauthBrowserOpened ? (
                     <div className="flex items-center gap-2 text-xs text-gray-9">
-                      <span>Authorization checks will start after you click Open Browser.</span>
+                      <span>
+                        Authorization checks will start after you click Open
+                        Browser.
+                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-xs text-gray-9">
-                      <Loader2 size={14} className={props.submitting || pollingBusy || oauthAutoBusy ? "animate-spin" : ""} />
+                      <Loader2
+                        size={14}
+                        className={
+                          props.submitting || pollingBusy || oauthAutoBusy
+                            ? "animate-spin"
+                            : ""
+                        }
+                      />
                       <span>Checking connection status automatically…</span>
                     </div>
                   )}

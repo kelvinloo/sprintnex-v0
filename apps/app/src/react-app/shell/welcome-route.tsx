@@ -18,18 +18,33 @@ import { useLocal } from "../kernel/local-provider";
 import { usePlatform } from "../kernel/platform";
 import { WelcomePage } from "../domains/onboarding/welcome-page";
 import { ProviderSelectionStep } from "../domains/onboarding/provider-selection-step";
-import { AttributionStep, type AttributionSource } from "../domains/onboarding/attribution-step";
+import {
+  AttributionStep,
+  type AttributionSource,
+} from "../domains/onboarding/attribution-step";
 import { CreateWorkspaceModal } from "../domains/workspace/create-workspace-modal";
 import type { CreateWorkspaceOptions } from "../domains/workspace/types";
 import { resolveOpenworkConnection } from "./openwork-connection";
 import { captureAnalyticsEvent } from "../../app/lib/analytics";
-import { buildOpenworkWorkspaceBaseUrl, createOpenworkServerClient } from "../../app/lib/openwork-server";
-import { buildDenAuthUrl, clearDenSession, DEFAULT_DEN_BASE_URL, readDenSettings } from "../../app/lib/den";
+import {
+  buildOpenworkWorkspaceBaseUrl,
+  createOpenworkServerClient,
+} from "../../app/lib/openwork-server";
+import {
+  buildDenAuthUrl,
+  clearDenSession,
+  DEFAULT_DEN_BASE_URL,
+  readDenSettings,
+} from "../../app/lib/den";
 import {
   denSettingsChangedEvent,
   dispatchDenSessionUpdated,
 } from "../../app/lib/den-session-events";
-import { writeActiveWorkspaceId, writeLastSessionFor, writeWorkspaceProjectDimension } from "./session-memory";
+import {
+  writeActiveWorkspaceId,
+  writeLastSessionFor,
+  writeWorkspaceProjectDimension,
+} from "./session-memory";
 import { workspaceSessionRoute } from "./workspace-routes";
 import { ensureDesktopLocalOpenworkConnection } from "./desktop-local-openwork";
 import { saveControlPlaneUrl } from "../domains/settings/cloud/control-plane-url";
@@ -84,12 +99,20 @@ const initialWelcomeState: WelcomeState = {
   pendingSessionId: null,
 };
 
-function welcomeReducer(state: WelcomeState, action: WelcomeAction): WelcomeState {
+function welcomeReducer(
+  state: WelcomeState,
+  action: WelcomeAction,
+): WelcomeState {
   switch (action.type) {
     case "open":
       return { ...state, modalOpen: true };
     case "close":
-      return { ...state, modalOpen: false, createError: null, remoteError: null };
+      return {
+        ...state,
+        modalOpen: false,
+        createError: null,
+        remoteError: null,
+      };
     case "create:start":
       return { ...state, createBusy: true, createError: null };
     case "create:error":
@@ -103,9 +126,19 @@ function welcomeReducer(state: WelcomeState, action: WelcomeAction): WelcomeStat
     case "remote:finish":
       return { ...state, remoteBusy: false };
     case "provider-step":
-      return { ...state, providerStep: true, pendingWorkspaceId: action.workspaceId, pendingSessionId: action.sessionId };
+      return {
+        ...state,
+        providerStep: true,
+        pendingWorkspaceId: action.workspaceId,
+        pendingSessionId: action.sessionId,
+      };
     case "attribution-step":
-      return { ...state, providerStep: false, attributionStep: true, pendingRoute: action.route };
+      return {
+        ...state,
+        providerStep: false,
+        attributionStep: true,
+        pendingRoute: action.route,
+      };
   }
 }
 
@@ -123,9 +156,13 @@ export function WelcomeRoute() {
   const platform = usePlatform();
   const [state, dispatch] = useReducer(welcomeReducer, initialWelcomeState);
   const [manualFolder, setManualFolder] = useState("");
-  const [organizationServerUrl, setOrganizationServerUrl] = useState(() => readDenSettings().baseUrl);
+  const [organizationServerUrl, setOrganizationServerUrl] = useState(
+    () => readDenSettings().baseUrl,
+  );
   const [organizationServerBusy, setOrganizationServerBusy] = useState(false);
-  const [organizationServerError, setOrganizationServerError] = useState<string | null>(null);
+  const [organizationServerError, setOrganizationServerError] = useState<
+    string | null
+  >(null);
 
   // If user already completed onboarding, redirect away immediately.
   useEffect(() => {
@@ -139,9 +176,14 @@ export function WelcomeRoute() {
   }, [local]);
 
   useEffect(() => {
-    const handleDenSettingsChanged = () => setOrganizationServerUrl(readDenSettings().baseUrl);
+    const handleDenSettingsChanged = () =>
+      setOrganizationServerUrl(readDenSettings().baseUrl);
     window.addEventListener(denSettingsChangedEvent, handleDenSettingsChanged);
-    return () => window.removeEventListener(denSettingsChangedEvent, handleDenSettingsChanged);
+    return () =>
+      window.removeEventListener(
+        denSettingsChangedEvent,
+        handleDenSettingsChanged,
+      );
   }, []);
 
   const handleOrganizationServerSave = useCallback(async (url: string) => {
@@ -154,12 +196,17 @@ export function WelcomeRoute() {
         return false;
       }
       clearDenSession({ includeBaseUrls: false });
-      dispatchDenSessionUpdated({ status: "signed_out", baseUrl: persisted.baseUrl });
+      dispatchDenSessionUpdated({
+        status: "signed_out",
+        baseUrl: persisted.baseUrl,
+      });
       setOrganizationServerUrl(persisted.baseUrl);
       return true;
     } catch (error) {
       setOrganizationServerError(
-        error instanceof Error ? error.message : t("welcome.organization_server_error"),
+        error instanceof Error
+          ? error.message
+          : t("welcome.organization_server_error"),
       );
       return false;
     } finally {
@@ -168,7 +215,11 @@ export function WelcomeRoute() {
   }, []);
 
   const handleCreateWorkspace = useCallback(
-    async (_preset: string, folder: string | null, options?: CreateWorkspaceOptions) => {
+    async (
+      _preset: string,
+      folder: string | null,
+      options?: CreateWorkspaceOptions,
+    ) => {
       if (!folder) return;
       const projectLabel = options?.projectLabel?.trim() ?? "";
       dispatch({ type: "create:start" });
@@ -198,14 +249,19 @@ export function WelcomeRoute() {
           list = null;
         }
         if (!list) {
-          throw new Error("OpenWork server is unavailable. Start or reconnect the server before creating a workspace.");
+          throw new Error(
+            "Sprintnex server is unavailable. Start or reconnect the server before creating a workspace.",
+          );
         }
         const createdId =
           resolveWorkspaceListSelectedId(list) ||
           list.workspaces[list.workspaces.length - 1]?.id ||
           "";
         let targetWorkspaceId = createdId;
-        let targetWorkspace = list.workspaces.find((workspace: WorkspaceInfo) => workspace.id === createdId) ?? null;
+        let targetWorkspace =
+          list.workspaces.find(
+            (workspace: WorkspaceInfo) => workspace.id === createdId,
+          ) ?? null;
         let targetSessionId: string | null = null;
         if (createdId) {
           await workspaceSetSelected(createdId).catch(() => undefined);
@@ -222,13 +278,18 @@ export function WelcomeRoute() {
         if (targetWorkspaceId && serverBaseUrl && serverToken) {
           try {
             const workspacePath = targetWorkspace?.path?.trim() || folder;
-            const session = unwrap(await createClient(
-              `${(buildOpenworkWorkspaceBaseUrl(serverBaseUrl, targetWorkspaceId) ?? serverBaseUrl).replace(/\/+$/, "")}/opencode`,
-              workspacePath || undefined,
-              { token: serverToken, mode: "openwork" },
-            ).session.create({ directory: workspacePath || undefined }));
+            const session = unwrap(
+              await createClient(
+                `${(buildOpenworkWorkspaceBaseUrl(serverBaseUrl, targetWorkspaceId) ?? serverBaseUrl).replace(/\/+$/, "")}/opencode`,
+                workspacePath || undefined,
+                { token: serverToken, mode: "openwork" },
+              ).session.create({ directory: workspacePath || undefined }),
+            );
             targetSessionId = session.id;
-            captureAnalyticsEvent("task_created", { source: "onboarding", workspace_type: "local" });
+            captureAnalyticsEvent("task_created", {
+              source: "onboarding",
+              workspace_type: "local",
+            });
           } catch {
             // Best-effort first task creation.
           }
@@ -240,17 +301,24 @@ export function WelcomeRoute() {
               label: projectLabel,
             });
           }
-          if (targetSessionId) writeLastSessionFor(targetWorkspaceId, targetSessionId);
+          if (targetSessionId)
+            writeLastSessionFor(targetWorkspaceId, targetSessionId);
         }
         markOnboardingComplete();
         dispatch({ type: "close" });
         // Show the provider selection step before navigating to the session.
-        dispatch({ type: "provider-step", workspaceId: targetWorkspaceId, sessionId: targetSessionId });
-
+        dispatch({
+          type: "provider-step",
+          workspaceId: targetWorkspaceId,
+          sessionId: targetSessionId,
+        });
       } catch (error) {
         dispatch({
           type: "create:error",
-          error: error instanceof Error ? error.message : "Failed to create workspace.",
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to create workspace.",
         });
       } finally {
         dispatch({ type: "create:finish" });
@@ -298,7 +366,9 @@ export function WelcomeRoute() {
           }
         }
         if (!list) {
-          throw new Error("OpenWork server is unavailable. Start or reconnect the server before connecting a remote workspace.");
+          throw new Error(
+            "Sprintnex server is unavailable. Start or reconnect the server before connecting a remote workspace.",
+          );
         }
         const createdId =
           resolveWorkspaceListSelectedId(list) ||
@@ -311,7 +381,9 @@ export function WelcomeRoute() {
         }
         markOnboardingComplete();
         dispatch({ type: "close" });
-        navigate(createdId ? workspaceSessionRoute(createdId) : "/session", { replace: true });
+        navigate(createdId ? workspaceSessionRoute(createdId) : "/session", {
+          replace: true,
+        });
         return true;
       } catch (error) {
         dispatch({
@@ -332,7 +404,9 @@ export function WelcomeRoute() {
       dispatch({ type: "open" });
       return;
     }
-    const picked = await pickDirectory({ title: t("onboarding.authorize_folder") });
+    const picked = await pickDirectory({
+      title: t("onboarding.authorize_folder"),
+    });
     const folder = typeof picked === "string" ? picked : null;
     if (!folder) return;
     await handleCreateWorkspace("starter", folder);
@@ -346,7 +420,9 @@ export function WelcomeRoute() {
 
   const handleTeamSignIn = useCallback(() => {
     const settings = readDenSettings();
-    platform.openLink(buildDenAuthUrl(settings.baseUrl || DEFAULT_DEN_BASE_URL, "sign-in"));
+    platform.openLink(
+      buildDenAuthUrl(settings.baseUrl || DEFAULT_DEN_BASE_URL, "sign-in"),
+    );
   }, [platform]);
 
   const finishOnboarding = useCallback(() => {
@@ -406,22 +482,29 @@ export function WelcomeRoute() {
         remoteError={state.remoteError}
         localDisabled={!isDesktopRuntime()}
         localDisabledReason={
-          isDesktopRuntime()
-            ? undefined
-            : t("app.local_disabled_reason")
+          isDesktopRuntime() ? undefined : t("app.local_disabled_reason")
         }
       />
       {state.providerStep ? (
         <ProviderSelectionStep
           onBringYourOwn={() => {
             const route = state.pendingWorkspaceId
-              ? workspaceSessionRoute(state.pendingWorkspaceId, state.pendingSessionId)
+              ? workspaceSessionRoute(
+                  state.pendingWorkspaceId,
+                  state.pendingSessionId,
+                )
               : "/session";
-            dispatch({ type: "attribution-step", route: `${route}?onboarding=1` });
+            dispatch({
+              type: "attribution-step",
+              route: `${route}?onboarding=1`,
+            });
           }}
           onSkip={() => {
             const route = state.pendingWorkspaceId
-              ? workspaceSessionRoute(state.pendingWorkspaceId, state.pendingSessionId)
+              ? workspaceSessionRoute(
+                  state.pendingWorkspaceId,
+                  state.pendingSessionId,
+                )
               : "/session";
             dispatch({ type: "attribution-step", route });
           }}

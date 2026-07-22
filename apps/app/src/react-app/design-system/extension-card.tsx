@@ -45,7 +45,7 @@ const kindLabel: Record<ExtensionKind, string> = {
   plugin: "Plugin",
   skill: "Skill",
   "ui-control": "UI Control",
-  extension: "OpenWork Extension",
+  extension: "Sprintnex Extension",
 };
 
 const kindStyle: Record<ExtensionKind, string> = {
@@ -86,7 +86,11 @@ export function ExtensionCard(props: ExtensionCardProps) {
   const allMet = enablement ? enablement.every((r) => r.met) : connectedProp;
   const someMet = enablement ? enablement.some((r) => r.met) && !allMet : false;
   const connected = allMet;
-  const resolvedIconSrc = resolveExtensionIconUrl({ iconSrc, iconSlug, serviceUrl: url });
+  const resolvedIconSrc = resolveExtensionIconUrl({
+    iconSrc,
+    iconSlug,
+    serviceUrl: url,
+  });
 
   return (
     <button
@@ -97,8 +101,8 @@ export function ExtensionCard(props: ExtensionCardProps) {
         connected
           ? "border-green-6 bg-green-2"
           : someMet
-          ? "border-amber-6 bg-amber-2"
-          : "border-dls-border bg-dls-surface hover:bg-dls-hover"
+            ? "border-amber-6 bg-amber-2"
+            : "border-dls-border bg-dls-surface hover:bg-dls-hover"
       } ${hidden ? "border-dashed opacity-70" : ""}`}
     >
       <div className="flex items-start gap-3">
@@ -106,14 +110,25 @@ export function ExtensionCard(props: ExtensionCardProps) {
         <div className="relative shrink-0">
           <div
             className={`flex size-10 items-center justify-center rounded-lg border ${
-              connected ? "border-green-6 bg-green-2" : someMet ? "border-amber-6 bg-amber-2" : "border-dls-border bg-dls-hover"
+              connected
+                ? "border-green-6 bg-green-2"
+                : someMet
+                  ? "border-amber-6 bg-amber-2"
+                  : "border-dls-border bg-dls-hover"
             }`}
           >
             {connecting ? (
               <Loader2 size={18} className="animate-spin text-dls-secondary" />
             ) : resolvedIconSrc ? (
               <div className="flex size-6 items-center justify-center rounded-md bg-white">
-                <img src={resolvedIconSrc} alt="" width={16} height={16} loading="lazy" style={{ display: "block" }} />
+                <img
+                  src={resolvedIconSrc}
+                  alt=""
+                  width={16}
+                  height={16}
+                  loading="lazy"
+                  style={{ display: "block" }}
+                />
               </div>
             ) : (
               <ExtensionMeshAvatar
@@ -137,7 +152,9 @@ export function ExtensionCard(props: ExtensionCardProps) {
         {/* Content */}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <h4 className="min-w-0 break-words text-sm font-semibold text-dls-text">{name}</h4>
+            <h4 className="min-w-0 break-words text-sm font-semibold text-dls-text">
+              {name}
+            </h4>
             {connected ? (
               <span className="shrink-0 rounded-md bg-green-3 px-1.5 py-0.5 text-[10px] font-medium text-green-11">
                 {connectedLabel}
@@ -147,7 +164,9 @@ export function ExtensionCard(props: ExtensionCardProps) {
                 Partially set up
               </span>
             ) : (
-              <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium ${kindStyle[kind]}`}>
+              <span
+                className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-medium ${kindStyle[kind]}`}
+              >
                 {kindLabel[kind]}
               </span>
             )}
@@ -172,7 +191,9 @@ export function ExtensionCard(props: ExtensionCardProps) {
               </span>
             ) : null}
           </div>
-          <p className="mt-0.5 line-clamp-2 text-xs text-dls-secondary">{description}</p>
+          <p className="mt-0.5 line-clamp-2 text-xs text-dls-secondary">
+            {description}
+          </p>
           {disabledReason ? (
             <div className="mt-2 text-[11px] font-medium text-amber-11">
               {disabledReason}

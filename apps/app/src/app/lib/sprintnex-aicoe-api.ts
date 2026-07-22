@@ -761,6 +761,7 @@ export async function notifySprintnexStageComplete(
     logs?: string;
     startedAt: string;
     endedAt: string;
+    agentOutput: string;
   },
 ): Promise<void> {
   const N8N_STAGE_COMPLETE_WEBHOOK =
@@ -777,6 +778,7 @@ export async function notifySprintnexStageComplete(
       startedAt: result.startedAt,
       endedAt: result.endedAt,
       queue: "basic",
+      agentOutput: result.agentOutput,
     }),
   });
 }

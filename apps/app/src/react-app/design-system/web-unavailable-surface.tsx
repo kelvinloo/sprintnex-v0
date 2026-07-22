@@ -11,7 +11,7 @@ export type WebUnavailableSurfaceProps = {
 };
 
 const MESSAGE =
-  "This feature is currently unavailable in OpenWork Web, check OpenWork Desktop for full functionality.";
+  "This feature is currently unavailable in Sprintnex Web, check Sprintnex Desktop for full functionality.";
 
 export function WebUnavailableSurface(props: WebUnavailableSurfaceProps) {
   const innerProps = props.unavailable
