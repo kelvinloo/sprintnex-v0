@@ -1,6 +1,6 @@
 /** @jsxImportSource react */
 import { useCallback, useRef, useState } from "react";
-import { ArrowLeft, ListChecks, MessageSquare, Workflow } from "lucide-react";
+import { ArrowLeft, FileText, ListChecks, MessageSquare, Workflow } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
@@ -408,6 +408,14 @@ export function SprintnexTasksPage() {
             <Badge variant="outline" className="h-3.5 px-1 text-[9px]">
               {taskCount}
             </Badge>
+          </button>
+          <button
+            type="button"
+            className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
+            onClick={() => navigate("/sprintnex/knowledge")}
+          >
+            <FileText className="size-3.5" />
+            Knowledge
           </button>
         </div>
       </div>

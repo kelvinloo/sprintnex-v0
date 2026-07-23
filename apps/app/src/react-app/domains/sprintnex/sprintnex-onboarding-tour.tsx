@@ -115,11 +115,10 @@ export function SprintnexOnboardingTour({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg rounded-2xl p-0 sm:max-w-lg">
-        <DialogClose className="absolute right-4 top-4 z-10">
-          <X className="size-4 text-dls-tertiary" />
-        </DialogClose>
-
+      <DialogContent
+        className="max-w-lg rounded-2xl p-0 sm:max-w-lg"
+        style={{ paddingBottom: 0, margin: 16 }}
+      >
         <div className="px-6 pb-6 pt-8">
           {/* Step indicator */}
           <div className="mb-4 flex items-center gap-1.5">
@@ -159,7 +158,10 @@ export function SprintnexOnboardingTour({
           )}
         </div>
 
-        <DialogFooter className="flex items-center justify-between border-t border-dls-border px-6 py-4">
+        <DialogFooter
+          className="flex items-center justify-between border-t border-dls-border px-6 py-4"
+          style={{ paddingBottom: 24, marginBottom: 16, marginRight: 16 }}
+        >
           <div className="text-xs text-dls-tertiary">
             {stepIndex + 1} / {STEPS.length}
           </div>

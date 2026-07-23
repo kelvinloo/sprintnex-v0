@@ -8,6 +8,8 @@ import { evalRelaunchDesktopApp } from "../../app/lib/desktop";
 import { SprintnexLoginPage } from "../domains/auth/sprintnex-login-page";
 import { SprintnexMappingPage } from "../domains/sprintnex/sprintnex-mapping-page";
 import { SprintnexTasksPage } from "../domains/sprintnex/sprintnex-tasks-page";
+import { SprintnexKnowledgePage } from "../domains/sprintnex/sprintnex-knowledge";
+import { SprintnexKnowledgeDetailPage } from "../domains/sprintnex/sprintnex-knowledge-detail";
 import { useSprintnexAuth } from "../domains/auth/sprintnex-auth-provider";
 import { NewProvidersListener } from "./new-providers-listener";
 import { useDesktopFontZoomBehavior } from "./font-zoom";
@@ -218,6 +220,26 @@ export function AppRoot() {
                     <DevProfiler id="SprintnexTasksRoute">
                       <SprintnexAuthGate>
                         <SprintnexTasksPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/knowledge"
+                  element={
+                    <DevProfiler id="SprintnexKnowledgeRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexKnowledgePage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/knowledge/:id"
+                  element={
+                    <DevProfiler id="SprintnexKnowledgeDetailRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexKnowledgeDetailPage />
                       </SprintnexAuthGate>
                     </DevProfiler>
                   }
