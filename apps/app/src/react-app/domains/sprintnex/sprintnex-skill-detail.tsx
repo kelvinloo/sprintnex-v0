@@ -11,16 +11,34 @@ import { AICOE_BASE } from "@/app/lib/api-config";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 
 type SkillRow = {
-  id: string; name: string; category: string; domain: string; role: string;
-  confidenceLevel: string; yearsOfExperience: number; description: string;
-  toolsFrameworks: string[]; reusablePatterns: string[]; realProjectExamples: string[];
-  commonMistakes: string[]; aiCoeUsage: string[]; extractionSource: string;
-  status: string; version: number; rejectionReason?: string; reviewerNotes?: string;
-  createdAt: string; updatedAt: string; raw?: Record<string, unknown>;
+  id: string;
+  name: string;
+  category: string;
+  domain: string;
+  role: string;
+  confidenceLevel: string;
+  yearsOfExperience: number;
+  description: string;
+  toolsFrameworks: string[];
+  reusablePatterns: string[];
+  realProjectExamples: string[];
+  commonMistakes: string[];
+  aiCoeUsage: string[];
+  extractionSource: string;
+  status: string;
+  version: number;
+  rejectionReason?: string;
+  reviewerNotes?: string;
+  createdAt: string;
+  updatedAt: string;
+  raw?: Record<string, unknown>;
 };
 
 function getApiHeaders() {
-  const token = localStorage.getItem("auth_token") || localStorage.getItem("accessToken") || "";
+  const token =
+    localStorage.getItem("auth_token") ||
+    localStorage.getItem("accessToken") ||
+    "";
   const h: Record<string, string> = { "Content-Type": "application/json" };
   if (token) h.Authorization = `Bearer ${token}`;
   return h;
@@ -37,26 +55,44 @@ export function SprintnexSkillDetailPage() {
     if (!id) return;
     setLoading(true);
     fetch(`${AICOE_BASE}/skills`, { headers: getApiHeaders() })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
         const list = data?.data ?? data?.skills ?? data ?? [];
-        const found = Array.isArray(list) ? list.find((i: Record<string, unknown>) => (i.id as string) === id) : null;
+        const found = Array.isArray(list)
+          ? list.find((i: Record<string, unknown>) => (i.id as string) === id)
+          : null;
         if (found) {
           setSkill({
-            id: found.id as string, name: (found.name as string) || "Untitled",
-            category: (found.category as string) || "", domain: (found.domain as string) || "",
-            role: (found.role as string) || "", confidenceLevel: (found.confidenceLevel as string) || "beginner",
+            id: found.id as string,
+            name: (found.name as string) || "Untitled",
+            category: (found.category as string) || "",
+            domain: (found.domain as string) || "",
+            role: (found.role as string) || "",
+            confidenceLevel: (found.confidenceLevel as string) || "beginner",
             yearsOfExperience: (found.yearsOfExperience as number) || 0,
             description: (found.description as string) || "",
-            toolsFrameworks: Array.isArray(found.toolsFrameworks) ? found.toolsFrameworks as string[] : [],
-            reusablePatterns: Array.isArray(found.reusablePatterns) ? found.reusablePatterns as string[] : [],
-            realProjectExamples: Array.isArray(found.realProjectExamples) ? found.realProjectExamples as string[] : [],
-            commonMistakes: Array.isArray(found.commonMistakes) ? found.commonMistakes as string[] : [],
-            aiCoeUsage: Array.isArray(found.aiCoeUsage) ? found.aiCoeUsage as string[] : [],
+            toolsFrameworks: Array.isArray(found.toolsFrameworks)
+              ? (found.toolsFrameworks as string[])
+              : [],
+            reusablePatterns: Array.isArray(found.reusablePatterns)
+              ? (found.reusablePatterns as string[])
+              : [],
+            realProjectExamples: Array.isArray(found.realProjectExamples)
+              ? (found.realProjectExamples as string[])
+              : [],
+            commonMistakes: Array.isArray(found.commonMistakes)
+              ? (found.commonMistakes as string[])
+              : [],
+            aiCoeUsage: Array.isArray(found.aiCoeUsage)
+              ? (found.aiCoeUsage as string[])
+              : [],
             extractionSource: (found.extractionSource as string) || "manual",
-            status: (found.status as string) || "draft", version: (found.version as number) || 1,
-            rejectionReason: found.rejectionReason as string, reviewerNotes: found.reviewerNotes as string,
-            createdAt: (found.createdAt as string) || "", updatedAt: (found.updatedAt as string) || "",
+            status: (found.status as string) || "draft",
+            version: (found.version as number) || 1,
+            rejectionReason: found.rejectionReason as string,
+            reviewerNotes: found.reviewerNotes as string,
+            createdAt: (found.createdAt as string) || "",
+            updatedAt: (found.updatedAt as string) || "",
             raw: found as Record<string, unknown>,
           });
         }
@@ -69,16 +105,23 @@ export function SprintnexSkillDetailPage() {
     if (!skill) return;
     setSubmitLoading(true);
     try {
-      await fetch(`${AICOE_BASE}/skills/${skill.id}/submit-review`, { method: "POST", headers: getApiHeaders() });
+      await fetch(`${AICOE_BASE}/skills/${skill.id}/submit-review`, {
+        method: "POST",
+        headers: getApiHeaders(),
+      });
       navigate("/sprintnex/skills");
-    } catch {}
-    finally { setSubmitLoading(false); }
+    } catch {
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   if (loading) {
     return (
       <div className="flex h-full min-h-0 flex-col bg-dls-bg">
-        <div className="flex items-center justify-center py-20 text-sm text-dls-secondary">Loading...</div>
+        <div className="flex items-center justify-center py-20 text-sm text-dls-secondary">
+          Loading...
+        </div>
       </div>
     );
   }
@@ -86,7 +129,9 @@ export function SprintnexSkillDetailPage() {
   if (!skill) {
     return (
       <div className="flex h-full min-h-0 flex-col bg-dls-bg">
-        <div className="flex items-center justify-center py-20 text-sm text-dls-secondary">Skill not found.</div>
+        <div className="flex items-center justify-center py-20 text-sm text-dls-secondary">
+          Skill not found.
+        </div>
       </div>
     );
   }
@@ -99,25 +144,42 @@ export function SprintnexSkillDetailPage() {
       <div className="shrink-0 border-b border-dls-border px-6 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon-sm" className="size-7 shrink-0" onClick={() => navigate("/sprintnex/skills")}>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-7 shrink-0"
+              onClick={() => navigate("/sprintnex/skills")}
+            >
               <ArrowLeft className="size-4" />
             </Button>
             <div className="flex size-8 items-center justify-center rounded-lg bg-[#111827] text-white">
               <Brain size={16} />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="truncate text-base font-semibold text-dls-text">{skill.name}</h1>
-              <p className="text-xs text-dls-secondary">{skill.category} · v{skill.version}</p>
+              <h1 className="truncate text-base font-semibold text-dls-text">
+                {skill.name}
+              </h1>
+              <p className="text-xs text-dls-secondary">
+                {skill.category} · v{skill.version}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {canSubmit && (
-              <Button size="sm" onClick={handleSubmitReview} disabled={submitLoading}>
+              <Button
+                size="sm"
+                onClick={handleSubmitReview}
+                disabled={submitLoading}
+              >
                 <Send className="size-3.5" /> Submit for Review
               </Button>
             )}
             {canEdit && (
-              <Button variant="outline" size="sm" onClick={() => navigate(`/sprintnex/skills/${skill.id}/edit`)}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/sprintnex/skills/${skill.id}/edit`)}
+              >
                 <Pencil className="size-3.5" /> Edit
               </Button>
             )}
@@ -137,43 +199,155 @@ export function SprintnexSkillDetailPage() {
             <TabsContent value="detail" className="h-full overflow-y-auto">
               <div className="flex flex-col gap-4 rounded-lg border border-dls-border p-5">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="text-[10px]">{skill.status}</Badge>
-                  <Badge variant="outline" className="text-[10px]">v{skill.version}</Badge>
-                  <Badge variant="outline" className="text-[10px]">{skill.extractionSource}</Badge>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {skill.status}
+                  </Badge>
+                  <Badge variant="outline" className="text-[10px]">
+                    v{skill.version}
+                  </Badge>
+                  <Badge variant="outline" className="text-[10px]">
+                    {skill.extractionSource}
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Domain</span><p className="text-dls-text">{skill.domain || "-"}</p></div>
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Role</span><p className="text-dls-text">{skill.role || "-"}</p></div>
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Confidence</span><p className="text-dls-text">{skill.confidenceLevel}</p></div>
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Experience</span><p className="text-dls-text">{skill.yearsOfExperience}y</p></div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Domain
+                    </span>
+                    <p className="text-dls-text">{skill.domain || "-"}</p>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Role
+                    </span>
+                    <p className="text-dls-text">{skill.role || "-"}</p>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Confidence
+                    </span>
+                    <p className="text-dls-text">{skill.confidenceLevel}</p>
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Experience
+                    </span>
+                    <p className="text-dls-text">{skill.yearsOfExperience}y</p>
+                  </div>
                 </div>
-                <div><span className="text-[11px] font-medium text-dls-secondary">Description</span><p className="mt-0.5 whitespace-pre-wrap text-sm text-dls-text">{skill.description || "-"}</p></div>
+                <div>
+                  <span className="text-[11px] font-medium text-dls-secondary">
+                    Description
+                  </span>
+                  <p className="mt-0.5 whitespace-pre-wrap text-sm text-dls-text">
+                    {skill.description || "-"}
+                  </p>
+                </div>
                 {skill.toolsFrameworks.length > 0 && (
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Tools/Frameworks</span><div className="mt-1 flex flex-wrap gap-1">{skill.toolsFrameworks.map((t,i) => <Badge key={i} variant="outline" className="text-[10px]">{t}</Badge>)}</div></div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Tools/Frameworks
+                    </span>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {skill.toolsFrameworks.map((t, i) => (
+                        <Badge
+                          key={i}
+                          variant="outline"
+                          className="text-[10px]"
+                        >
+                          {t}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 )}
                 {skill.reusablePatterns.length > 0 && (
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Reusable Patterns</span><p className="mt-0.5 text-sm text-dls-text">{skill.reusablePatterns.join("; ")}</p></div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Reusable Patterns
+                    </span>
+                    <p className="mt-0.5 text-sm text-dls-text">
+                      {skill.reusablePatterns.join("; ")}
+                    </p>
+                  </div>
                 )}
                 {skill.realProjectExamples.length > 0 && (
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Project Examples</span><p className="mt-0.5 text-sm text-dls-text">{skill.realProjectExamples.join("; ")}</p></div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Project Examples
+                    </span>
+                    <p className="mt-0.5 text-sm text-dls-text">
+                      {skill.realProjectExamples.join("; ")}
+                    </p>
+                  </div>
                 )}
                 {skill.commonMistakes.length > 0 && (
-                  <div><span className="text-[11px] font-medium text-dls-secondary">Common Mistakes</span><p className="mt-0.5 text-sm text-dls-text">{skill.commonMistakes.join("; ")}</p></div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Common Mistakes
+                    </span>
+                    <p className="mt-0.5 text-sm text-dls-text">
+                      {skill.commonMistakes.join("; ")}
+                    </p>
+                  </div>
                 )}
                 {skill.aiCoeUsage.length > 0 && (
-                  <div><span className="text-[11px] font-medium text-dls-secondary">AI COE Usage</span><div className="mt-1 flex flex-wrap gap-1">{skill.aiCoeUsage.map((u,i) => <Badge key={i} variant="secondary" className="text-[10px]">{u}</Badge>)}</div></div>
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      AI COE Usage
+                    </span>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {skill.aiCoeUsage.map((u, i) => (
+                        <Badge
+                          key={i}
+                          variant="secondary"
+                          className="text-[10px]"
+                        >
+                          {u}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
                 )}
-                {skill.rejectionReason && <div><span className="text-[11px] font-medium text-red-500">Rejection Reason</span><p className="mt-0.5 text-sm text-red-500">{skill.rejectionReason}</p></div>}
-                {skill.reviewerNotes && <div><span className="text-[11px] font-medium text-dls-secondary">Reviewer Notes</span><p className="mt-0.5 text-sm text-dls-text">{skill.reviewerNotes}</p></div>}
+                {skill.rejectionReason && (
+                  <div>
+                    <span className="text-[11px] font-medium text-red-500">
+                      Rejection Reason
+                    </span>
+                    <p className="mt-0.5 text-sm text-red-500">
+                      {skill.rejectionReason}
+                    </p>
+                  </div>
+                )}
+                {skill.reviewerNotes && (
+                  <div>
+                    <span className="text-[11px] font-medium text-dls-secondary">
+                      Reviewer Notes
+                    </span>
+                    <p className="mt-0.5 text-sm text-dls-text">
+                      {skill.reviewerNotes}
+                    </p>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-dls-secondary">
-                  <div>Created: {new Date(skill.createdAt).toLocaleString()}</div>
-                  <div>Updated: {new Date(skill.updatedAt).toLocaleString()}</div>
+                  <div>
+                    Created: {new Date(skill.createdAt).toLocaleString()}
+                  </div>
+                  <div>
+                    Updated: {new Date(skill.updatedAt).toLocaleString()}
+                  </div>
                 </div>
               </div>
             </TabsContent>
             <TabsContent value="markdown" className="h-full overflow-y-auto">
               <div className="knowledge-markdown rounded-lg border border-dls-border p-6">
-                {skill.description ? <Markdown>{skill.description}</Markdown> : <p className="text-sm text-dls-secondary">No markdown content.</p>}
+                {skill.description ? (
+                  <Markdown>{skill.description}</Markdown>
+                ) : (
+                  <p className="text-sm text-dls-secondary">
+                    No markdown content.
+                  </p>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="json" className="h-full overflow-y-auto">
