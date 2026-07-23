@@ -2,7 +2,10 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft,
+  Brain,
   FileText,
+  ListChecks,
+  MessageSquare,
   Plus,
   RotateCw,
   Eye,
@@ -12,6 +15,7 @@ import {
   Merge,
   FolderPlus,
   FolderOpen,
+  Workflow,
   X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -42,13 +46,9 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
+import { SprintnexTabBar } from "./sprintnex-tab-bar";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 interface KnowledgeRecord {
@@ -451,6 +451,7 @@ export function SprintnexKnowledgePage() {
             Back
           </Button>
         </div>
+        <SprintnexTabBar activeTab="knowledge" />
       </div>
 
       {/* Toolbar */}
@@ -568,7 +569,7 @@ export function SprintnexKnowledgePage() {
                   variant="outline"
                   size="sm"
                   className="h-7"
-                  loading={groupSaving}
+                  disabled={groupSaving}
                   onClick={handleRemoveFromGroup}
                 >
                   Remove from Group ({selectedIds.size})
@@ -721,51 +722,39 @@ export function SprintnexKnowledgePage() {
                         className="flex items-center gap-1"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="size-7"
-                              onClick={() =>
-                                navigate(`/sprintnex/knowledge/${record.id}`)
-                              }
-                            >
-                              <Eye className="size-3.5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>View</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="size-7"
-                              onClick={() => {
-                                setRenameRecord(record);
-                                setRenameDraft(record.name);
-                                setRenameOpen(true);
-                              }}
-                            >
-                              <Pencil className="size-3.5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Rename</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              className="size-7 text-red-500 hover:text-red-600"
-                              onClick={() => handleDeactivate(record)}
-                            >
-                              <Trash2 className="size-3.5" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Deactivate</TooltipContent>
-                        </Tooltip>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="size-7"
+                          title="View"
+                          onClick={() =>
+                            navigate(`/sprintnex/knowledge/${record.id}`)
+                          }
+                        >
+                          <Eye className="size-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="size-7"
+                          title="Rename"
+                          onClick={() => {
+                            setRenameRecord(record);
+                            setRenameDraft(record.name);
+                            setRenameOpen(true);
+                          }}
+                        >
+                          <Pencil className="size-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="size-7 text-red-500 hover:text-red-600"
+                          title="Deactivate"
+                          onClick={() => handleDeactivate(record)}
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -854,8 +843,7 @@ export function SprintnexKnowledgePage() {
             </DialogClose>
             <Button
               onClick={() => handleUpload("create")}
-              loading={uploading}
-              disabled={!createName.trim() || !uploadFile}
+              disabled={uploading || !createName.trim() || !uploadFile}
             >
               <Upload className="size-3.5" />
               Upload & Create
@@ -881,7 +869,7 @@ export function SprintnexKnowledgePage() {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleRename} loading={renameSaving}>
+            <Button onClick={handleRename} disabled={renameSaving}>
               Save
             </Button>
           </DialogFooter>

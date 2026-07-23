@@ -2,9 +2,11 @@
 import { useCallback, useRef, useState } from "react";
 import {
   ArrowLeft,
+  Brain,
   FileText,
   ListChecks,
   MessageSquare,
+  Sparkles,
   Workflow,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +23,7 @@ import { createOpenworkServerClient } from "@/app/lib/openwork-server";
 import { writeActiveWorkspaceId } from "@/react-app/shell/session-memory";
 import { ProjectTaskHub } from "./project-task-hub";
 import { SprintnexIntake } from "./sprintnex-intake";
+import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import type { SprintnexAicoeTask } from "@/app/lib/sprintnex-aicoe-api";
 import {
   WORKSPACE_AGENT_PROMPT,
@@ -387,43 +390,12 @@ export function SprintnexTasksPage() {
             </Button>
           </div>
         </div>
-        <div className="mt-3 inline-flex rounded-lg border border-dls-border bg-dls-surface p-0.5">
-          <button
-            type="button"
-            className={`inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors ${
-              activeTab === "intake"
-                ? "bg-dls-bg text-dls-text shadow-sm"
-                : "text-dls-secondary hover:text-dls-text"
-            }`}
-            onClick={() => setActiveTab("intake")}
-          >
-            <MessageSquare className="size-3.5" />
-            Intake
-          </button>
-          <button
-            type="button"
-            className={`inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors ${
-              activeTab === "tasks"
-                ? "bg-dls-bg text-dls-text shadow-sm"
-                : "text-dls-secondary hover:text-dls-text"
-            }`}
-            onClick={() => setActiveTab("tasks")}
-          >
-            <ListChecks className="size-3.5" />
-            Tasks
-            <Badge variant="outline" className="h-3.5 px-1 text-[9px]">
-              {taskCount}
-            </Badge>
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
-            onClick={() => navigate("/sprintnex/knowledge")}
-          >
-            <FileText className="size-3.5" />
-            Knowledge
-          </button>
-        </div>
+        <SprintnexTabBar
+          activeTab={activeTab === "intake" ? "intake" : "tasks"}
+          taskCount={taskCount}
+          onIntakeClick={() => setActiveTab("intake")}
+          onTasksClick={() => setActiveTab("tasks")}
+        />
       </div>
       <div className="flex min-h-0 flex-1 flex-col" key={activeTab}>
         {activeTab === "intake" ? (

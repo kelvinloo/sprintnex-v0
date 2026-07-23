@@ -10,6 +10,9 @@ import { SprintnexMappingPage } from "../domains/sprintnex/sprintnex-mapping-pag
 import { SprintnexTasksPage } from "../domains/sprintnex/sprintnex-tasks-page";
 import { SprintnexKnowledgePage } from "../domains/sprintnex/sprintnex-knowledge";
 import { SprintnexKnowledgeDetailPage } from "../domains/sprintnex/sprintnex-knowledge-detail";
+import { SprintnexSkillsPage } from "../domains/sprintnex/sprintnex-skills-page";
+import { SprintnexSkillDetailPage } from "../domains/sprintnex/sprintnex-skill-detail";
+import { SprintnexSkillEditPage } from "../domains/sprintnex/sprintnex-skill-edit";
 import { useSprintnexAuth } from "../domains/auth/sprintnex-auth-provider";
 import { NewProvidersListener } from "./new-providers-listener";
 import { useDesktopFontZoomBehavior } from "./font-zoom";
@@ -240,6 +243,36 @@ export function AppRoot() {
                     <DevProfiler id="SprintnexKnowledgeDetailRoute">
                       <SprintnexAuthGate>
                         <SprintnexKnowledgeDetailPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/skills"
+                  element={
+                    <DevProfiler id="SprintnexSkillsRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexSkillsPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/skills/:id"
+                  element={
+                    <DevProfiler id="SprintnexSkillDetailRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexSkillDetailPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/skills/:id/edit"
+                  element={
+                    <DevProfiler id="SprintnexSkillEditRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexSkillEditPage />
                       </SprintnexAuthGate>
                     </DevProfiler>
                   }
