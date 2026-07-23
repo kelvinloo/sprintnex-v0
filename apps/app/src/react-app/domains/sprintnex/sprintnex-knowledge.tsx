@@ -42,7 +42,11 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 
@@ -115,14 +119,18 @@ export function SprintnexKnowledgePage() {
   // Create / Replace
   const [createOpen, setCreateOpen] = useState(false);
   const [replaceOpen, setReplaceOpen] = useState(false);
-  const [replaceRecord, setReplaceRecord] = useState<KnowledgeRecord | null>(null);
+  const [replaceRecord, setReplaceRecord] = useState<KnowledgeRecord | null>(
+    null,
+  );
   const [createName, setCreateName] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
   // Rename
   const [renameOpen, setRenameOpen] = useState(false);
-  const [renameRecord, setRenameRecord] = useState<KnowledgeRecord | null>(null);
+  const [renameRecord, setRenameRecord] = useState<KnowledgeRecord | null>(
+    null,
+  );
   const [renameDraft, setRenameDraft] = useState("");
   const [renameSaving, setRenameSaving] = useState(false);
 
@@ -182,7 +190,8 @@ export function SprintnexKnowledgePage() {
             fileName: (item.fileName as string) || (item.name as string) || "-",
             fileSize: (item.fileSize as number) || 0,
             fileType: (item.fileType as string) || "text/markdown",
-            version: (item.version as string) || (item._version as string) || "-",
+            version:
+              (item.version as string) || (item._version as string) || "-",
             status: (item.status as KnowledgeRecord["status"]) || "active",
             createdAt: (item.createdAt as string) || "",
             updatedAt: (item.updatedAt as string) || "",
@@ -341,7 +350,9 @@ export function SprintnexKnowledgePage() {
       if (g.id !== groupId) return g;
       return {
         ...g,
-        knowledgeIds: [...new Set([...g.knowledgeIds, ...Array.from(selectedIds)])],
+        knowledgeIds: [
+          ...new Set([...g.knowledgeIds, ...Array.from(selectedIds)]),
+        ],
       };
     });
     setGroups(next);
@@ -431,7 +442,11 @@ export function SprintnexKnowledgePage() {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate("/session")}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/session")}
+          >
             <ArrowLeft className="size-4" />
             Back
           </Button>
@@ -536,7 +551,12 @@ export function SprintnexKnowledgePage() {
           <Separator orientation="vertical" className="h-5" />
 
           {/* Actions */}
-          <Button variant="ghost" size="sm" className="h-7" onClick={handleRetrieve}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7"
+            onClick={handleRetrieve}
+          >
             <RotateCw className="size-3.5" />
             Refresh
           </Button>
@@ -554,10 +574,7 @@ export function SprintnexKnowledgePage() {
                   Remove from Group ({selectedIds.size})
                 </Button>
               )}
-              <Select
-                value=""
-                onValueChange={(gid) => handleAddToGroup(gid)}
-              >
+              <Select value="" onValueChange={(gid) => handleAddToGroup(gid)}>
                 <SelectTrigger className="h-7 w-[150px] text-xs">
                   <SelectValue placeholder="Add to group..." />
                 </SelectTrigger>
@@ -587,11 +604,7 @@ export function SprintnexKnowledgePage() {
 
           <div className="flex-1" />
 
-          <Button
-            size="sm"
-            className="h-7"
-            onClick={() => setCreateOpen(true)}
-          >
+          <Button size="sm" className="h-7" onClick={() => setCreateOpen(true)}>
             <Plus className="size-3.5" />
             New Knowledge
           </Button>
@@ -613,12 +626,12 @@ export function SprintnexKnowledgePage() {
                       displayRecords.every((r) => selectedIds.has(r.id))
                     }
                     onChange={() => {
-                      if (
-                        displayRecords.every((r) => selectedIds.has(r.id))
-                      ) {
+                      if (displayRecords.every((r) => selectedIds.has(r.id))) {
                         setSelectedIds(new Set());
                       } else {
-                        setSelectedIds(new Set(displayRecords.map((r) => r.id)));
+                        setSelectedIds(
+                          new Set(displayRecords.map((r) => r.id)),
+                        );
                       }
                     }}
                   />
@@ -656,7 +669,9 @@ export function SprintnexKnowledgePage() {
                   <TableRow
                     key={record.id}
                     className="cursor-pointer"
-                    onClick={() => navigate(`/sprintnex/knowledge/${record.id}`)}
+                    onClick={() =>
+                      navigate(`/sprintnex/knowledge/${record.id}`)
+                    }
                   >
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <input
@@ -712,7 +727,9 @@ export function SprintnexKnowledgePage() {
                               variant="ghost"
                               size="icon-sm"
                               className="size-7"
-                              onClick={() => navigate(`/sprintnex/knowledge/${record.id}`)}
+                              onClick={() =>
+                                navigate(`/sprintnex/knowledge/${record.id}`)
+                              }
                             >
                               <Eye className="size-3.5" />
                             </Button>
@@ -778,7 +795,9 @@ export function SprintnexKnowledgePage() {
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-dls-text">Document</label>
+              <label className="text-xs font-medium text-dls-text">
+                Document
+              </label>
               <label
                 className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-dls-border bg-dls-surface p-6 text-center hover:border-blue-400"
                 onDragOver={(e) => e.preventDefault()}
@@ -792,7 +811,9 @@ export function SprintnexKnowledgePage() {
                 {uploadFile ? (
                   <div className="flex items-center gap-2">
                     <FileText className="size-4 text-blue-500" />
-                    <span className="text-sm text-dls-text">{uploadFile.name}</span>
+                    <span className="text-sm text-dls-text">
+                      {uploadFile.name}
+                    </span>
                     <Button
                       variant="ghost"
                       size="icon-sm"
@@ -807,7 +828,9 @@ export function SprintnexKnowledgePage() {
                   </div>
                 ) : (
                   <>
-                    <p className="text-sm text-dls-text">Click or drag a document</p>
+                    <p className="text-sm text-dls-text">
+                      Click or drag a document
+                    </p>
                     <p className="text-xs text-dls-secondary">
                       PDF, Word, Excel, Markdown, text, ZIP
                     </p>

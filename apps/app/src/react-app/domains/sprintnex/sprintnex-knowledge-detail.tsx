@@ -72,10 +72,12 @@ export function SprintnexKnowledgeDetailPage() {
           setRecord({
             id: (found._id as string) || (found.id as string) || id,
             name: (found.name as string) || "Untitled",
-            fileName: (found.fileName as string) || (found.name as string) || "-",
+            fileName:
+              (found.fileName as string) || (found.name as string) || "-",
             fileSize: (found.fileSize as number) || 0,
             fileType: (found.fileType as string) || "text/markdown",
-            version: (found.version as string) || (found._version as string) || "-",
+            version:
+              (found.version as string) || (found._version as string) || "-",
             status: (found.status as string) || "active",
             createdAt: (found.createdAt as string) || "",
             updatedAt: (found.updatedAt as string) || "",

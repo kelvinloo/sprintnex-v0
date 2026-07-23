@@ -1,6 +1,12 @@
 /** @jsxImportSource react */
 import { useCallback, useRef, useState } from "react";
-import { ArrowLeft, FileText, ListChecks, MessageSquare, Workflow } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  ListChecks,
+  MessageSquare,
+  Workflow,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
