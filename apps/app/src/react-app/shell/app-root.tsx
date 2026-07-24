@@ -13,6 +13,8 @@ import { SprintnexKnowledgeDetailPage } from "../domains/sprintnex/sprintnex-kno
 import { SprintnexSkillsPage } from "../domains/sprintnex/sprintnex-skills-page";
 import { SprintnexSkillDetailPage } from "../domains/sprintnex/sprintnex-skill-detail";
 import { SprintnexSkillEditPage } from "../domains/sprintnex/sprintnex-skill-edit";
+import { SprintnexMarketplacePage } from "../domains/sprintnex/sprintnex-skill-marketplace";
+import { SprintnexActiveSkillsPage } from "../domains/sprintnex/sprintnex-active-skills";
 import { useSprintnexAuth } from "../domains/auth/sprintnex-auth-provider";
 import { NewProvidersListener } from "./new-providers-listener";
 import { useDesktopFontZoomBehavior } from "./font-zoom";
@@ -273,6 +275,26 @@ export function AppRoot() {
                     <DevProfiler id="SprintnexSkillEditRoute">
                       <SprintnexAuthGate>
                         <SprintnexSkillEditPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/skills/marketplace"
+                  element={
+                    <DevProfiler id="SprintnexMarketplaceRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexMarketplacePage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/skills/active"
+                  element={
+                    <DevProfiler id="SprintnexActiveSkillsRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexActiveSkillsPage />
                       </SprintnexAuthGate>
                     </DevProfiler>
                   }

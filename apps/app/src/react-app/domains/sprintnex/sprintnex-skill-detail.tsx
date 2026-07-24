@@ -1,6 +1,6 @@
 /** @jsxImportSource react */
 import { useState, useEffect } from "react";
-import { ArrowLeft, Brain, Pencil, Send } from "lucide-react";
+import { ArrowLeft, Brain, Globe, GlobeOff, Pencil, Send } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ type SkillRow = {
   reviewerNotes?: string;
   createdAt: string;
   updatedAt: string;
+  n8nId: string;
   raw?: Record<string, unknown>;
 };
 
@@ -44,48 +45,85 @@ function getApiHeaders() {
   return h;
 }
 
+function getScope() {
+  return {
+    organizationId: localStorage.getItem("selected_organization_id") || "",
+    userId: localStorage.getItem("userId") || "",
+  };
+}
+
 export function SprintnexSkillDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [skill, setSkill] = useState<SkillRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [publishLoading, setPublishLoading] = useState(false);
+  const [published, setPublished] = useState(false);
+
+  const N8N_SKILLS_RETRIEVE_URL =
+    "https://n8n.directintegrate.com/webhook/aicoe/skills/retrieve";
+  const N8N_MARKETPLACE_UPDATE_URL =
+    "https://n8n.directintegrate.com/webhook/aicoe/skills/marketplace/update";
+
+  const handlePublishToggle = async () => {
+    if (!skill) return;
+    setPublishLoading(true);
+    try {
+      const res = await fetch(N8N_MARKETPLACE_UPDATE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skillId: skill.n8nId,
+          action: published ? "unpublish" : "publish",
+        }),
+      });
+      if (res.ok) setPublished(!published);
+    } catch {
+    } finally {
+      setPublishLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`${AICOE_BASE}/skills`, { headers: getApiHeaders() })
+    fetch(N8N_SKILLS_RETRIEVE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...getApiHeaders() },
+      body: JSON.stringify(getScope()),
+    })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
-        const list = data?.data ?? data?.skills ?? data ?? [];
+        const list = data?.skills ?? data?.data ?? data ?? [];
         const found = Array.isArray(list)
-          ? list.find((i: Record<string, unknown>) => (i.id as string) === id)
+          ? list.find((i: Record<string, unknown>) => (i._id as string) === id)
           : null;
         if (found) {
+          const n8nId = (found._id as string) || "";
           setSkill({
-            id: found.id as string,
-            name: (found.name as string) || "Untitled",
+            id: n8nId,
+            n8nId,
+            name:
+              (found.skillName as string) ||
+              (found.name as string) ||
+              "Untitled",
             category: (found.category as string) || "",
             domain: (found.domain as string) || "",
             role: (found.role as string) || "",
             confidenceLevel: (found.confidenceLevel as string) || "beginner",
             yearsOfExperience: (found.yearsOfExperience as number) || 0,
-            description: (found.description as string) || "",
-            toolsFrameworks: Array.isArray(found.toolsFrameworks)
-              ? (found.toolsFrameworks as string[])
-              : [],
-            reusablePatterns: Array.isArray(found.reusablePatterns)
-              ? (found.reusablePatterns as string[])
-              : [],
-            realProjectExamples: Array.isArray(found.realProjectExamples)
-              ? (found.realProjectExamples as string[])
-              : [],
-            commonMistakes: Array.isArray(found.commonMistakes)
-              ? (found.commonMistakes as string[])
-              : [],
-            aiCoeUsage: Array.isArray(found.aiCoeUsage)
-              ? (found.aiCoeUsage as string[])
-              : [],
+            description:
+              (found.markdown as string) || (found.description as string) || "",
+            toolsFrameworks: Array.isArray(found.tags)
+              ? (found.tags as string[])
+              : Array.isArray(found.toolsFrameworks)
+                ? (found.toolsFrameworks as string[])
+                : [],
+            reusablePatterns: [],
+            realProjectExamples: [],
+            commonMistakes: [],
+            aiCoeUsage: [],
             extractionSource: (found.extractionSource as string) || "manual",
             status: (found.status as string) || "draft",
             version: (found.version as number) || 1,
@@ -174,6 +212,19 @@ export function SprintnexSkillDetailPage() {
                 <Send className="size-3.5" /> Submit for Review
               </Button>
             )}
+            <Button
+              variant={published ? "outline" : "default"}
+              size="sm"
+              onClick={handlePublishToggle}
+              disabled={publishLoading}
+            >
+              {published ? (
+                <GlobeOff className="size-3.5" />
+              ) : (
+                <Globe className="size-3.5" />
+              )}
+              {published ? "Unpublish" : "Publish to Marketplace"}
+            </Button>
             {canEdit && (
               <Button
                 variant="outline"
@@ -352,7 +403,14 @@ export function SprintnexSkillDetailPage() {
             </TabsContent>
             <TabsContent value="json" className="h-full overflow-y-auto">
               <pre className="whitespace-pre-wrap break-all rounded-lg bg-dls-surface p-4 text-xs text-dls-text">
-                {JSON.stringify(skill.raw || null, null, 2)}
+                {JSON.stringify(
+                  skill?.raw || {
+                    noData: true,
+                    note: "Skill not loaded or missing raw data",
+                  },
+                  null,
+                  2,
+                )}
               </pre>
             </TabsContent>
           </div>

@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Brain,
   Bot,
+  CheckCircle,
   Download,
   Eye,
   FileText,
@@ -118,6 +119,7 @@ type SkillRow = {
   extractionSource: string;
   status: string;
   version: number;
+  isPublished: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -282,6 +284,20 @@ export function SprintnexSkillsPage() {
           >
             <Sparkles className="size-3.5" /> Extract
           </button>
+          <button
+            type="button"
+            className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
+            onClick={() => navigate("/sprintnex/skills/marketplace")}
+          >
+            <Download className="size-3.5" /> Marketplace
+          </button>
+          <button
+            type="button"
+            className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
+            onClick={() => navigate("/sprintnex/skills/active")}
+          >
+            <CheckCircle className="size-3.5" /> Active
+          </button>
         </div>
       </div>
 
@@ -308,11 +324,16 @@ function ProfileTab() {
   );
   const [submitLoadingId, setSubmitLoadingId] = useState<string | null>(null);
 
+  const N8N_SKILLS_RETRIEVE_URL =
+    "https://n8n.directintegrate.com/webhook/aicoe/skills/retrieve";
+
   const loadSkills = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${AICOE_BASE}/skills`, {
-        headers: getApiHeaders(),
+      const res = await fetch(N8N_SKILLS_RETRIEVE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getApiHeaders() },
+        body: JSON.stringify(getScope()),
       });
       if (!res.ok) {
         setSkills([]);
@@ -323,32 +344,31 @@ function ProfileTab() {
       setSkills(
         Array.isArray(list)
           ? list.map((item: Record<string, unknown>, i: number) => ({
-              id: (item.id as string) || `s-${i}`,
-              name: (item.name as string) || "Untitled Skill",
+              id: (item._id as string) || (item.id as string) || `s-${i}`,
+              name:
+                (item.skillName as string) ||
+                (item.name as string) ||
+                "Untitled Skill",
               category: (item.category as string) || "",
               domain: (item.domain as string) || "",
               role: (item.role as string) || "",
               confidenceLevel: (item.confidenceLevel as string) || "beginner",
               yearsOfExperience: (item.yearsOfExperience as number) || 0,
-              description: (item.description as string) || "",
-              toolsFrameworks: Array.isArray(item.toolsFrameworks)
-                ? (item.toolsFrameworks as string[])
-                : [],
-              reusablePatterns: Array.isArray(item.reusablePatterns)
-                ? (item.reusablePatterns as string[])
-                : [],
-              realProjectExamples: Array.isArray(item.realProjectExamples)
-                ? (item.realProjectExamples as string[])
-                : [],
-              commonMistakes: Array.isArray(item.commonMistakes)
-                ? (item.commonMistakes as string[])
-                : [],
-              aiCoeUsage: Array.isArray(item.aiCoeUsage)
-                ? (item.aiCoeUsage as string[])
-                : [],
+              description:
+                (item.markdown as string) || (item.description as string) || "",
+              toolsFrameworks: Array.isArray(item.tags)
+                ? (item.tags as string[])
+                : Array.isArray(item.toolsFrameworks)
+                  ? (item.toolsFrameworks as string[])
+                  : [],
+              reusablePatterns: [],
+              realProjectExamples: [],
+              commonMistakes: [],
+              aiCoeUsage: [],
               extractionSource: (item.extractionSource as string) || "manual",
               status: (item.status as string) || "draft",
               version: (item.version as number) || 1,
+              isPublished: (item.isPublished as boolean) ?? false,
               createdAt: (item.createdAt as string) || "",
               updatedAt: (item.updatedAt as string) || "",
             }))
@@ -579,6 +599,7 @@ function ProfileTab() {
                 <TableHead className="w-20">Exp.</TableHead>
                 <TableHead className="w-24">Source</TableHead>
                 <TableHead className="w-28">Status</TableHead>
+                <TableHead className="w-24">Published</TableHead>
                 <TableHead className="w-28">Updated</TableHead>
                 <TableHead className="w-20">Actions</TableHead>
               </TableRow>
@@ -587,7 +608,7 @@ function ProfileTab() {
               {loading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={10}
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
                     Loading...
@@ -596,7 +617,7 @@ function ProfileTab() {
               ) : filteredSkills.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={10}
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
                     No skills found.
@@ -656,6 +677,17 @@ function ProfileTab() {
                       >
                         {s.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {s.isPublished ? (
+                        <Badge variant="default" className="text-[10px]">
+                          Yes
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-[10px]">
+                          No
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-xs text-dls-secondary">
                       {s.updatedAt
