@@ -693,6 +693,7 @@ export async function getSprintnexTaskCurrentStage(taskId: string): Promise<{
   status: string;
   instructions: string | null;
   taskId: string;
+  system?: string;
 } | null> {
   const response = await requestJson<unknown>(
     `/tasks/${encodeURIComponent(taskId)}/current-stage`,
@@ -708,6 +709,9 @@ export async function getSprintnexTaskCurrentStage(taskId: string): Promise<{
     instructions:
       typeof record.instructions === "string" ? record.instructions : null,
     taskId: String(record.taskId ?? taskId),
+    ...(typeof record.system === "string"
+      ? { system: record.system as string }
+      : {}),
   };
 }
 
@@ -720,6 +724,7 @@ export async function pollSprintnexTaskStage(
   status: string;
   instructions: string | null;
   taskId: string;
+  system?: string;
 } | null> {
   const startedAt = Date.now();
   while (Date.now() - startedAt < timeoutMs) {

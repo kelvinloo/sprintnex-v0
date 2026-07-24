@@ -194,17 +194,20 @@ export function SprintnexTasksPage() {
         instructionsLength: stage.instructions.length,
       });
 
-      // 2. Send instructions via promptAsync (fire-and-forget).
-      //    DO NOT use session.prompt() — that posts to /session/{sessionID}/message
-      //    which can trigger a SECOND prompt from the session page that also
-      //    subscribes to the same session's message events.
+      // 2. Send instructions to the agent.
+      //    The system content from n8n is appended to the instructions text so the
+      //    model receives everything. The chat will render the full combined text.
+      const fullInstructions = stage.system
+        ? stage.instructions + "\n\n" + stage.system
+        : stage.instructions;
+
       console.log("[sprintnex] Sending instructions to Delivery Agent...", {
         stageIndex,
+        hasSystemContext: !!stage.system,
       });
       const parsed = await client.session.promptAsync({
         sessionID: sessionId,
-        parts: [{ type: "text", text: stage.instructions }],
-        system: DELIVERY_AGENT_PROMPT,
+        parts: [{ type: "text", text: fullInstructions }],
       });
       if (parsed.error) {
         console.warn("[sprintnex] promptAsync error", parsed.error);
