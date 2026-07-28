@@ -30,6 +30,10 @@ import {
   DELIVERY_AGENT_PROMPT,
 } from "@/app/lib/sprintnex-agent-prompts";
 
+/** Marker that separates visible instructions from hidden system context.
+ *  The model receives the full content, but the chat UI truncates at this marker. */
+export const SPRINTNEX_SYSTEM_MARKER = "\n\n<!--- sprintnex:system --->\n\n";
+
 // ── Concurrency guard ────────────────────────────────────────────────────
 // Tracks active stage execution loops by taskId so we never run two loops
 // for the same task simultaneously.
@@ -156,6 +160,63 @@ export function SprintnexTasksPage() {
     return true;
   }
 
+  /** Fetch active skills for the user and format as a markdown context block. */
+  async function fetchActiveSkillsBlock(): Promise<string> {
+    try {
+      const uid = localStorage.getItem("userId") || "";
+      if (!uid) return "";
+
+      const token =
+        localStorage.getItem("auth_token") ||
+        localStorage.getItem("accessToken") ||
+        "";
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res = await fetch(
+        `${import.meta.env.VITE_AICOE_API_URL || "https://platform.sprintnex.com/api/aicoe"}/users/${uid}/active-skills`,
+        { headers },
+      );
+      if (!res.ok) return "";
+
+      const json = await res.json();
+      const skills = (json?.data ?? json ?? []) as Array<{
+        skillName: string;
+        skillCategory?: string;
+        skillDomain?: string;
+        skillDescription?: string;
+        skillToolsFrameworks?: string[];
+        skillReusablePatterns?: string[];
+      }>;
+
+      if (!Array.isArray(skills) || skills.length === 0) return "";
+
+      const lines = ["## Active Skills\n"];
+      for (const s of skills) {
+        lines.push(
+          `### ${s.skillName}${s.skillCategory ? ` (${s.skillCategory})` : ""}`,
+        );
+        if (s.skillDescription) lines.push(`\n${s.skillDescription}`);
+        if (s.skillDomain) lines.push(`\n**Domain:** ${s.skillDomain}`);
+        if (s.skillToolsFrameworks?.length) {
+          lines.push(
+            `\n**Tools & Frameworks:** ${s.skillToolsFrameworks.join(", ")}`,
+          );
+        }
+        if (s.skillReusablePatterns?.length) {
+          lines.push(`\n**Patterns:** ${s.skillReusablePatterns.join(", ")}`);
+        }
+        lines.push("");
+      }
+
+      return lines.join("\n");
+    } catch {
+      return "";
+    }
+  }
+
   async function runLoop(
     taskId: string,
     sessionId: string,
@@ -181,6 +242,14 @@ export function SprintnexTasksPage() {
     const loopStartedAt = new Date().toISOString();
     let stageIndex = 0;
 
+    // Fetch active skills once per task execution and cache them for all stages.
+    const activeSkillsBlock = await fetchActiveSkillsBlock();
+    if (activeSkillsBlock) {
+      console.log("[sprintnex] Active skills loaded for session", {
+        blockLength: activeSkillsBlock.length,
+      });
+    }
+
     while (true) {
       // 1. Poll for current stage instructions (single markdown string)
       console.log("[sprintnex] Polling for stage instructions...", { taskId });
@@ -195,11 +264,17 @@ export function SprintnexTasksPage() {
       });
 
       // 2. Send instructions to the agent.
-      //    The system content from n8n is appended to the instructions text so the
-      //    model receives everything. The chat will render the full combined text.
-      const fullInstructions = stage.system
-        ? stage.instructions + "\n\n" + stage.system
-        : stage.instructions;
+      //    System context (n8n) and active skills are appended after a marker.
+      //    The model receives everything, but the chat UI truncates at the marker
+      //    so only the visible instructions show.
+      const systemParts: string[] = [];
+      if (stage.system) systemParts.push(stage.system);
+      if (activeSkillsBlock) systemParts.push(activeSkillsBlock);
+      const systemContext =
+        systemParts.length > 0
+          ? SPRINTNEX_SYSTEM_MARKER + systemParts.join("\n\n---\n")
+          : "";
+      const fullInstructions = stage.instructions + systemContext;
 
       console.log("[sprintnex] Sending instructions to Delivery Agent...", {
         stageIndex,
