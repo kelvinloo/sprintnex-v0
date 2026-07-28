@@ -4,6 +4,7 @@ import {
   AlertCircle,
   Archive,
   ArchiveRestore,
+  Briefcase,
   ChevronRight,
   FolderPlus,
   ListChecks,
@@ -1257,6 +1258,12 @@ export function AppSidebar(props: AppSidebarProps) {
               <SidebarMenuButton onClick={() => navigate("/sprintnex/tasks")}>
                 <ListChecks className="size-4" />
                 Sprintnex tasks
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={() => navigate("/sprintnex/jobs")}>
+                <Briefcase className="size-4" />
+                Jobs
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

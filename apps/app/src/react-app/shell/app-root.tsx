@@ -15,6 +15,10 @@ import { SprintnexSkillDetailPage } from "../domains/sprintnex/sprintnex-skill-d
 import { SprintnexSkillEditPage } from "../domains/sprintnex/sprintnex-skill-edit";
 import { SprintnexMarketplacePage } from "../domains/sprintnex/sprintnex-skill-marketplace";
 import { SprintnexActiveSkillsPage } from "../domains/sprintnex/sprintnex-active-skills";
+import SprintnexJobMarketplacePage from "../domains/sprintnex/sprintnex-job-marketplace";
+import SprintnexJobPostPage from "../domains/sprintnex/sprintnex-job-post";
+import SprintnexJobDetailPage from "../domains/sprintnex/sprintnex-job-detail";
+import SprintnexMyJobsPage from "../domains/sprintnex/sprintnex-my-jobs";
 import { useSprintnexAuth } from "../domains/auth/sprintnex-auth-provider";
 import { NewProvidersListener } from "./new-providers-listener";
 import { useDesktopFontZoomBehavior } from "./font-zoom";
@@ -295,6 +299,46 @@ export function AppRoot() {
                     <DevProfiler id="SprintnexActiveSkillsRoute">
                       <SprintnexAuthGate>
                         <SprintnexActiveSkillsPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/jobs"
+                  element={
+                    <DevProfiler id="SprintnexJobMarketplaceRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexJobMarketplacePage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/jobs/post"
+                  element={
+                    <DevProfiler id="SprintnexJobPostRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexJobPostPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/jobs/mine"
+                  element={
+                    <DevProfiler id="SprintnexMyJobsRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexMyJobsPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/jobs/:id"
+                  element={
+                    <DevProfiler id="SprintnexJobDetailRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexJobDetailPage />
                       </SprintnexAuthGate>
                     </DevProfiler>
                   }
