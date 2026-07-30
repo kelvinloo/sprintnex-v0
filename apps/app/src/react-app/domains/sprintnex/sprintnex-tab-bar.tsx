@@ -5,18 +5,30 @@ import {
   ListChecks,
   MessageSquare,
   Workflow,
+  type LucideIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+export type TabDefinition = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  route?: string;
+  onClick?: () => void;
+  count?: number;
+};
 
 type TabId = "intake" | "tasks" | "knowledge" | "skills";
 
 type Props = {
-  activeTab: TabId;
+  activeTab: TabId | string;
   taskCount?: number;
   /** If provided, clicking Intake calls this instead of navigating. Used on the tasks page where Intake/Tasks share the same route. */
   onIntakeClick?: () => void;
   /** If provided, clicking Tasks calls this instead of navigating. Used on the tasks page where Intake/Tasks share the same route. */
   onTasksClick?: () => void;
+  /** Custom tabs override — if provided, these are rendered instead of the defaults. */
+  customTabs?: TabDefinition[];
 };
 
 export function SprintnexTabBar({
@@ -24,16 +36,11 @@ export function SprintnexTabBar({
   taskCount,
   onIntakeClick,
   onTasksClick,
+  customTabs,
 }: Props) {
   const navigate = useNavigate();
 
-  const tabs: {
-    id: TabId;
-    label: string;
-    icon: typeof Workflow;
-    route?: string;
-    onClick?: () => void;
-  }[] = [
+  const defaultTabs: TabDefinition[] = [
     {
       id: "intake",
       label: "Intake",
@@ -56,6 +63,8 @@ export function SprintnexTabBar({
     { id: "skills", label: "Skills", icon: Brain, route: "/sprintnex/skills" },
   ];
 
+  const tabs = customTabs ?? defaultTabs;
+
   return (
     <div className="mt-3 inline-flex rounded-lg border border-dls-border bg-dls-surface p-0.5">
       {tabs.map((tab) => {
@@ -77,9 +86,9 @@ export function SprintnexTabBar({
           >
             <Icon className="size-3.5" />
             {tab.label}
-            {tab.id === "tasks" && taskCount !== undefined && (
+            {tab.count !== undefined && (
               <span className="inline-flex h-3.5 items-center rounded border border-dls-border px-1 text-[9px] font-medium text-dls-secondary">
-                {taskCount}
+                {tab.count}
               </span>
             )}
           </button>

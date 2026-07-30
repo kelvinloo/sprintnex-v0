@@ -5,6 +5,7 @@ import {
   Archive,
   ArchiveRestore,
   Briefcase,
+  Bug,
   ChevronRight,
   FolderPlus,
   ListChecks,
@@ -24,6 +25,7 @@ import {
   Settings,
   FolderOpen,
   Tag,
+  FileText,
   Workflow,
 } from "lucide-react";
 import { LazyMotion, Reorder, domMax, m, useDragControls } from "motion/react";
@@ -1184,34 +1186,8 @@ export function AppSidebar(props: AppSidebarProps) {
             />
           </div>
         ) : null}
-        <SidebarHeader className="space-y-2 pb-2">
-          <SprintnexScopeSelector
-            selectedWorkspaceId={props.selectedWorkspaceId}
-            workspaceSessionGroups={props.workspaceSessionGroups}
-            onOpenProjectTasks={props.onOpenProjectTasks}
-          />
-          {props.onOpenSessionSearch ? (
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={props.onOpenSessionSearch}
-                  aria-keyshortcuts={
-                    isMacPlatform() ? "Meta+Shift+F" : "Control+Shift+F"
-                  }
-                  className="text-sidebar-foreground/70"
-                >
-                  <Search className="size-4" />
-                  <span className="flex-1 truncate">
-                    {t("workspace_list.search_sessions")}
-                  </span>
-                  <kbd className="ml-auto font-sans text-[11px] tracking-wide text-sidebar-foreground/50">
-                    {isMacPlatform() ? "⌘⇧F" : "Ctrl+Shift+F"}
-                  </kbd>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          ) : null}
-        </SidebarHeader>
+        <SidebarHeader className="space-y-2 pb-2" />
+
         <LazyMotion features={domMax}>
           <m.div
             layoutScroll
@@ -1219,53 +1195,109 @@ export function AppSidebar(props: AppSidebarProps) {
             data-sidebar="content"
             className="no-scrollbar flex min-h-0 flex-1 flex-col gap-px overflow-auto [--radius:var(--radius-xl)] group-data-[collapsible=icon]:overflow-hidden"
           >
-            <Reorder.Group
-              as="div"
-              axis="y"
-              values={props.workspaceSessionGroups.map(
-                (group) => group.workspace.id,
-              )}
-              onReorder={(workspaceIds) =>
-                props.onReorderWorkspaces?.(workspaceIds)
-              }
-              className="flex flex-col gap-px"
+            <Collapsible
+              defaultOpen
+              className="group/collapsible flex flex-col"
             >
-              {props.workspaceSessionGroups.map((group, index) => (
-                <WorkspaceReorderItem
-                  key={group.workspace.id}
-                  group={group}
-                  className={cn(index === 0 && "mac:pt-0")}
-                  showInitialLoading={props.showInitialLoading}
-                  previewCount={previewCount(group.workspace.id)}
-                  showMoreSessions={showMoreSessions}
+              <CollapsibleTrigger>
+                <SidebarMenuItem>
+                  <SidebarMenuButton className="text-[11px] font-semibold uppercase tracking-wider text-dls-secondary data-[state=open]:text-dls-text">
+                    <Workflow className="size-4" />
+                    Engineering
+                    <ChevronRight className="ml-auto size-3 transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="flex flex-col gap-px">
+                <SprintnexScopeSelector
+                  selectedWorkspaceId={props.selectedWorkspaceId}
+                  workspaceSessionGroups={props.workspaceSessionGroups}
+                  onOpenProjectTasks={props.onOpenProjectTasks}
                 />
-              ))}
-            </Reorder.Group>
+                {props.onOpenSessionSearch ? (
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        onClick={props.onOpenSessionSearch}
+                        aria-keyshortcuts={
+                          isMacPlatform() ? "Meta+Shift+F" : "Control+Shift+F"
+                        }
+                        className="text-sidebar-foreground/70"
+                      >
+                        <Search className="size-4" />
+                        <span className="flex-1 truncate">
+                          {t("workspace_list.search_sessions")}
+                        </span>
+                        <kbd className="ml-auto font-sans text-[11px] tracking-wide text-sidebar-foreground/50">
+                          {isMacPlatform() ? "⌘⇧F" : "Ctrl+Shift+F"}
+                        </kbd>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                ) : null}
+                <Reorder.Group
+                  as="div"
+                  axis="y"
+                  values={props.workspaceSessionGroups.map(
+                    (group) => group.workspace.id,
+                  )}
+                  onReorder={(workspaceIds) =>
+                    props.onReorderWorkspaces?.(workspaceIds)
+                  }
+                  className="flex flex-col gap-px"
+                >
+                  {props.workspaceSessionGroups.map((group, index) => (
+                    <WorkspaceReorderItem
+                      key={group.workspace.id}
+                      group={group}
+                      className={cn(index === 0 && "mac:pt-0")}
+                      showInitialLoading={props.showInitialLoading}
+                      previewCount={previewCount(group.workspace.id)}
+                      showMoreSessions={showMoreSessions}
+                    />
+                  ))}
+                </Reorder.Group>
+
+                {/* ── Engineering nav items ───────────────────────────── */}
+                <div className="mt-1 border-t border-dls-border" />
+                <nav className="flex flex-col gap-px px-1 py-1">
+                  <SidebarMenuButton
+                    onClick={() => navigate("/sprintnex/mappings")}
+                    className="text-xs"
+                  >
+                    <Settings className="size-3.5" />
+                    Sprintnex settings
+                  </SidebarMenuButton>
+                  <SidebarMenuButton
+                    onClick={() => navigate("/sprintnex/tasks")}
+                    className="text-xs"
+                  >
+                    <ListChecks className="size-3.5" />
+                    Sprintnex tasks
+                  </SidebarMenuButton>
+                  <SidebarMenuButton
+                    onClick={() => props.onOpenCreateWorkspace()}
+                    className="text-xs"
+                  >
+                    <FolderPlus className="size-3.5" />
+                    Create workspace
+                  </SidebarMenuButton>
+                  <SidebarMenuButton
+                    onClick={() => navigate("/sprintnex/tests")}
+                    className="text-xs"
+                  >
+                    <Bug className="size-3.5" />
+                    Tests
+                  </SidebarMenuButton>
+                </nav>
+              </CollapsibleContent>
+            </Collapsible>
           </m.div>
         </LazyMotion>
 
         <SidebarFooter>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => navigate("/sprintnex/mappings")}
-              >
-                <Settings className="size-4" />
-                Sprintnex settings
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => navigate("/sprintnex/tasks")}>
-                <ListChecks className="size-4" />
-                Sprintnex tasks
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => navigate("/sprintnex/jobs")}>
-                <Briefcase className="size-4" />
-                Jobs
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+          <SidebarMenu className="gap-0">
+            {/* Global items */}
             <SidebarMenuItem>
               <SidebarMenuButton onClick={() => setTourOpen(true)}>
                 <HelpCircle className="size-4" />
@@ -1273,9 +1305,9 @@ export function AppSidebar(props: AppSidebarProps) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => props.onOpenCreateWorkspace()}>
-                <FolderPlus className="size-4" />
-                Create workspace
+              <SidebarMenuButton onClick={() => navigate("/sprintnex/jobs")}>
+                <Briefcase className="size-4" />
+                Jobs
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

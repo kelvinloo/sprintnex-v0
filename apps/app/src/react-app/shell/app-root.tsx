@@ -19,6 +19,9 @@ import SprintnexJobMarketplacePage from "../domains/sprintnex/sprintnex-job-mark
 import SprintnexJobPostPage from "../domains/sprintnex/sprintnex-job-post";
 import SprintnexJobDetailPage from "../domains/sprintnex/sprintnex-job-detail";
 import SprintnexMyJobsPage from "../domains/sprintnex/sprintnex-my-jobs";
+import SprintnexQaPage from "../domains/sprintnex/sprintnex-qa-page";
+import SprintnexTestsPage from "../domains/sprintnex/sprintnex-tests-page";
+import SprintnexTestPlanDetailPage from "../domains/sprintnex/sprintnex-test-plan-detail";
 import { useSprintnexAuth } from "../domains/auth/sprintnex-auth-provider";
 import { NewProvidersListener } from "./new-providers-listener";
 import { useDesktopFontZoomBehavior } from "./font-zoom";
@@ -339,6 +342,36 @@ export function AppRoot() {
                     <DevProfiler id="SprintnexJobDetailRoute">
                       <SprintnexAuthGate>
                         <SprintnexJobDetailPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/tests"
+                  element={
+                    <DevProfiler id="SprintnexTestsRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexTestsPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/qa"
+                  element={
+                    <DevProfiler id="SprintnexQaRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexQaPage />
+                      </SprintnexAuthGate>
+                    </DevProfiler>
+                  }
+                />{" "}
+                <Route
+                  path="/sprintnex/test-plans/:id"
+                  element={
+                    <DevProfiler id="SprintnexTestPlanDetailRoute">
+                      <SprintnexAuthGate>
+                        <SprintnexTestPlanDetailPage />
                       </SprintnexAuthGate>
                     </DevProfiler>
                   }

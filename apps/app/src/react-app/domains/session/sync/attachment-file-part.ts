@@ -1,4 +1,6 @@
 import type { FilePartInput } from "@opencode-ai/sdk/v2/client";
+import mammoth from "mammoth";
+import * as XLSX from "xlsx";
 
 import type { ComposerAttachment } from "../../../../app/types";
 
@@ -42,6 +44,10 @@ const EXTENSION_MIME_TYPES: Record<string, string> = {
   yml: "text/yaml",
   toml: "text/plain",
   log: "text/plain",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  doc: "application/msword",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  xls: "application/vnd.ms-excel",
 };
 
 const MIME_FILENAME_EXTENSIONS: Record<string, string> = {
@@ -60,6 +66,11 @@ const MIME_FILENAME_EXTENSIONS: Record<string, string> = {
   "text/html": "html",
   "text/yaml": "yaml",
   "text/plain": "txt",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+    "docx",
+  "application/msword": "doc",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+  "application/vnd.ms-excel": "xls",
 };
 
 function normalizedMime(mimeType: string) {
@@ -89,11 +100,24 @@ export function resolveAttachmentMime(file: Pick<File, "name" | "type">) {
   return mimeFromFilename(file.name) ?? "text/plain";
 }
 
+const OFFICE_MIMES = new Set([
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-excel",
+]);
+
 export function isResolvedAttachmentMimeReadable(mimeType: string) {
   const mime = normalizedMime(mimeType);
   if (mime.startsWith("image/") || mime.startsWith("text/")) return true;
   if (mime === "application/pdf" || mime === "application/json") return true;
-  return mime.endsWith("+json") || mime.endsWith("+xml") || mime === "application/xml" || mime === "application/javascript";
+  if (OFFICE_MIMES.has(mime)) return true;
+  return (
+    mime.endsWith("+json") ||
+    mime.endsWith("+xml") ||
+    mime === "application/xml" ||
+    mime === "application/javascript"
+  );
 }
 
 function normalizeFilenameExtension(filename: string, mime: string) {
@@ -105,14 +129,21 @@ function normalizeFilenameExtension(filename: string, mime: string) {
   const extensionMime = extension ? EXTENSION_MIME_TYPES[extension] : undefined;
   if (extensionMime === mime) return original;
 
-  const strictMime = mime.startsWith("image/") || mime === "application/pdf" || mime === "application/json";
+  const strictMime =
+    mime.startsWith("image/") ||
+    mime === "application/pdf" ||
+    mime === "application/json";
   if (!strictMime && extensionMime === undefined) return original;
 
-  const stem = extension ? original.slice(0, -(extension.length + 1)) : original;
+  const stem = extension
+    ? original.slice(0, -(extension.length + 1))
+    : original;
   return `${stem.trim() || "attachment"}.${preferredExtension}`;
 }
 
-export function resolveAttachmentFileMetadata(file: Pick<File, "name" | "type">): AttachmentFileMetadata {
+export function resolveAttachmentFileMetadata(
+  file: Pick<File, "name" | "type">,
+): AttachmentFileMetadata {
   const mime = resolveAttachmentMime(file);
   return {
     filename: normalizeFilenameExtension(file.name, mime),
@@ -140,8 +171,74 @@ async function fileToDataUrl(file: AttachmentFile, mime: string) {
   return `data:${mime};base64,${arrayBufferToBase64(await file.arrayBuffer())}`;
 }
 
-export async function composerAttachmentToFilePart(attachment: ComposerAttachment): Promise<FilePartInput> {
+// ── Office document text extraction ────────────────────────────────────────
+
+async function extractDocxText(file: File): Promise<string> {
+  try {
+    const buffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+    return result.value || "[No extractable text found]";
+  } catch (err) {
+    return `[Could not extract text from Word document: ${err}]`;
+  }
+}
+
+async function extractXlsxText(file: File): Promise<string> {
+  try {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    const parts: string[] = [];
+    for (const sheetName of workbook.SheetNames) {
+      const sheet = workbook.Sheets[sheetName];
+      const csv = XLSX.utils.sheet_to_csv(sheet, { blankrows: false });
+      parts.push(`--- ${sheetName} ---\n${csv}`);
+    }
+    return parts.join("\n\n") || "[No data found in spreadsheet]";
+  } catch (err) {
+    return `[Could not extract text from Excel file: ${err}]`;
+  }
+}
+
+async function extractOfficeText(
+  file: File,
+  mime: string,
+): Promise<string | null> {
+  if (
+    mime ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    mime === "application/msword"
+  ) {
+    return extractDocxText(file);
+  }
+  if (
+    mime ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+    mime === "application/vnd.ms-excel"
+  ) {
+    return extractXlsxText(file);
+  }
+  return null;
+}
+
+export async function composerAttachmentToFilePart(
+  attachment: ComposerAttachment,
+): Promise<FilePartInput> {
   const metadata = resolveAttachmentFileMetadata(attachment.file);
+
+  // For Office documents, extract text content and send as a plain text file
+  // so the model can read the content directly.
+  if (OFFICE_MIMES.has(metadata.mime)) {
+    const text = await extractOfficeText(attachment.file, metadata.mime);
+    if (text) {
+      return {
+        type: "file",
+        url: `data:text/plain;charset=utf-8;base64,${btoa(unescape(encodeURIComponent(text)))}`,
+        filename: metadata.filename.replace(/\.(docx|doc|xlsx|xls)$/i, ".txt"),
+        mime: "text/plain",
+      };
+    }
+  }
+
   return {
     type: "file",
     url: await fileToDataUrl(attachment.file, metadata.mime),

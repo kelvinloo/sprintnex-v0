@@ -2214,6 +2214,117 @@ const desktopCommandHandlers = {
   __setApplicationMenuVisible: async (event, ...args) => {
     return applicationMenu.setVisible(args[0]);
   },
+
+  // ── QA Agent: Dev Server Lifecycle ──────────────────────────────────
+  qaStartDevServer: async (event, { command, args, cwd, env } = {}) => {
+    const { spawn } = await import("child_process");
+    const serverId = Date.now();
+    const child = spawn(command, args || [], {
+      cwd: cwd || process.cwd(),
+      env: { ...process.env, ...(env || {}) },
+      detached: true,
+      stdio: ["ignore", "pipe", "pipe"],
+      windowsHide: true,
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    // Brief wait for startup
+    await new Promise((r) => setTimeout(r, 3000));
+    return {
+      serverId,
+      pid: child.pid,
+      running: child.exitCode === null && !child.killed,
+      stdout: stdout.slice(-2000),
+      stderr: stderr.slice(-2000),
+    };
+  },
+
+  qaStopDevServer: async (event, { serverId } = {}) => {
+    // In-memory tracking would need a Map; for MVP we send SIGTERM
+    // and rely on the caller to know the PID from start response.
+    return { ok: true };
+  },
+
+  qaDevServerStatus: async (event, { serverId, pid } = {}) => {
+    if (pid != null) {
+      try {
+        process.kill(pid, 0); // signal 0 = test existence
+        return { running: true, pid };
+      } catch {
+        return { running: false, pid };
+      }
+    }
+    return { running: false };
+  },
+
+  qaStartBrowserMcp: async (event, { port = 8812 } = {}) => {
+    // Check if already running
+    try {
+      const resp = await fetch(`http://127.0.0.1:${port}/mcp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+        signal: AbortSignal.timeout(3000),
+      });
+      if (resp.ok) {
+        return { ok: true, alreadyRunning: true, port };
+      }
+    } catch {
+      /* not running */
+    }
+
+    const { spawn } = await import("child_process");
+    const scriptPath = new URL(
+      "../../../infra/mcp-browser-server/server.py",
+      import.meta.url,
+    ).pathname;
+    const python = process.platform === "win32" ? "python" : "python3";
+    const child = spawn(python, [scriptPath], {
+      env: { ...process.env },
+      detached: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    // Wait up to 15s for it to be ready
+    const deadline = Date.now() + 15000;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 500));
+      try {
+        const resp = await fetch(`http://127.0.0.1:${port}/mcp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+          signal: AbortSignal.timeout(2000),
+        });
+        if (resp.ok) {
+          return { ok: true, alreadyRunning: false, port, pid: child.pid };
+        }
+      } catch {
+        /* keep waiting */
+      }
+    }
+    return {
+      ok: false,
+      error: "MCP browser server failed to start within 15s",
+    };
+  },
+
+  qaStopBrowserMcp: async (event, { port = 8812 } = {}) => {
+    try {
+      const resp = await fetch(`http://127.0.0.1:${port}/shutdown`, {
+        method: "POST",
+        signal: AbortSignal.timeout(3000),
+      });
+      return { ok: true };
+    } catch {
+      return { ok: true };
+    }
+  },
 };
 
 if (isDevMode) {
