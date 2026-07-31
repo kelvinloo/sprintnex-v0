@@ -108,6 +108,70 @@ You must not:
 - Hide uncertainty.
 `;
 
+/**
+ * Output contract appended when the model is asked to classify a request.
+ * The model must respond with ONLY the JSON decision object matching this
+ * schema so the frontend can gate execution (block vs continue).
+ */
+export const WORKSPACE_AGENT_OUTPUT_FORMAT = `## Output Format
+
+When asked to classify a request, you must respond with ONLY a single JSON object conforming to this schema. Do not wrap it in markdown code fences and do not add any text before or after it.
+
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["classification", "status", "message", "reason", "decision", "answer", "changes", "validation", "clarification", "taskRequired"],
+  "properties": {
+    "classification": { "type": "string", "enum": ["INFORMATION_REQUEST", "OUTCOME_REFINEMENT", "CONTROLLED_CHANGE", "TASK_REQUIRED"] },
+    "status": { "type": "string", "enum": ["ANSWERED", "COMPLETED", "PARTIALLY_COMPLETED", "REQUIRES_CLARIFICATION", "TASK_REQUIRED", "BLOCKED", "FAILED"] },
+    "message": { "type": "string", "description": "The user-facing response." },
+    "reason": { "type": "string", "description": "A concise explanation of why the request received this classification and status." },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["riskLevel", "changesOriginalScope", "requiresNewDecision", "blastRadius", "governanceImpact", "recommendedAction"],
+      "properties": {
+        "riskLevel": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+        "changesOriginalScope": { "type": "boolean" },
+        "requiresNewDecision": { "type": "boolean" },
+        "blastRadius": { "type": "string", "enum": ["LOCALIZED", "BOUNDED", "BROAD", "UNCERTAIN"] },
+        "governanceImpact": { "type": "boolean" },
+        "recommendedAction": { "type": "string", "enum": ["ANSWER", "APPLY_MINIMAL_CHANGE", "APPLY_AND_VALIDATE", "ASK_CLARIFICATION", "ASK_USER_TO_LOG_TASK", "REPORT_BLOCKER"] }
+      }
+    },
+    "answer": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["summary", "details", "references", "assumptions"],
+      "properties": {
+        "summary": { "type": "string" },
+        "details": { "type": "array", "items": { "type": "string" } },
+        "references": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["type", "location", "description"], "properties": { "type": { "type": "string" }, "location": { "type": "string" }, "description": { "type": "string" } } } },
+        "assumptions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "changes": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["area", "location", "description"], "properties": { "area": { "type": "string", "description": "The affected component, module, service, configuration, document, or behaviour." }, "location": { "type": "string", "description": "The relevant file path or workspace location." }, "description": { "type": "string", "description": "What was changed." } } } },
+    "validation": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["type", "result", "details"], "properties": { "type": { "type": "string", "enum": ["FILE_REVIEW", "DIFF_REVIEW", "STATIC_ANALYSIS", "TYPE_CHECK", "LINT", "UNIT_TEST", "INTEGRATION_TEST", "COMPONENT_TEST", "BUILD", "RUNTIME_CHECK", "MANUAL_INSPECTION", "NOT_PERFORMED", "OTHER"] }, "command": { "type": ["string", "null"] }, "result": { "type": "string", "enum": ["PASSED", "FAILED", "NOT_RUN"] }, "details": { "type": "string" } } } },
+    "clarification": { "type": ["object", "null"], "additionalProperties": false, "required": ["required", "questions"], "properties": { "required": { "type": "boolean" }, "questions": { "type": "array", "items": { "type": "string" } } } },
+    "taskRequired": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["title", "summary", "boundaryCrossed", "affectedAreas", "knownConstraints", "userInstruction"],
+      "properties": {
+        "title": { "type": "string", "description": "A concise suggested title for the Sprintnex task." },
+        "summary": { "type": "string", "description": "A concise implementation-neutral summary of the requested outcome." },
+        "boundaryCrossed": { "type": "array", "items": { "type": "string", "enum": ["NEW_FEATURE", "CHANGED_BUSINESS_OBJECTIVE", "NEW_REQUIREMENT", "CHANGED_ACCEPTANCE_CRITERIA", "UNCLEAR_REQUIREMENT", "NEW_TECHNICAL_DECISION", "ARCHITECTURE_CHANGE", "DATABASE_CHANGE", "API_CONTRACT_CHANGE", "NEW_INTEGRATION", "AUTHENTICATION_CHANGE", "AUTHORIZATION_CHANGE", "TENANT_ISOLATION_CHANGE", "SECURITY_IMPACT", "PRIVACY_IMPACT", "COMPLIANCE_IMPACT", "FINANCIAL_PROCESSING_CHANGE", "INFRASTRUCTURE_CHANGE", "DEPLOYMENT_CHANGE", "CROSS_SERVICE_CHANGE", "CROSS_DOMAIN_CHANGE", "WORKFLOW_REDESIGN", "MAJOR_REFACTORING", "CORE_TECHNOLOGY_REPLACEMENT", "PLAN_INVALIDATED", "SPECIALIST_COORDINATION_REQUIRED", "BROAD_BLAST_RADIUS", "UNCERTAIN_BLAST_RADIUS"] } },
+        "affectedAreas": { "type": "array", "items": { "type": "string" } },
+        "knownConstraints": { "type": "array", "items": { "type": "string" } },
+        "userInstruction": { "type": "string", "const": "Please log this request as a new Sprintnex task so it can go through the main delivery flow." }
+      }
+    }
+  }
+}
+
+Use the "message" field for the text shown to the user. Set "taskRequired" to a non-null object (and "status" to "TASK_REQUIRED") when the request must go through the Sprintnex main delivery flow.
+`;
+
 export const DELIVERY_AGENT_PROMPT = `# Sprintnex Delivery Agent
 
 You are the Sprintnex Delivery Agent.

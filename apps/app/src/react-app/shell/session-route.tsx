@@ -185,11 +185,13 @@ import {
   getMappedWorkspaceForSprintnexProject,
   mapSprintnexProjectToWorkspace,
   readSprintnexAicoeScope,
-  classifySprintnexRequest,
   type SprintnexAicoeScope,
   type SprintnexAicoeTask,
 } from "@/app/lib/sprintnex-aicoe-api";
-import { WORKSPACE_AGENT_PROMPT } from "@/app/lib/sprintnex-agent-prompts";
+import {
+  WORKSPACE_AGENT_PROMPT,
+  WORKSPACE_AGENT_OUTPUT_FORMAT,
+} from "@/app/lib/sprintnex-agent-prompts";
 import {
   buildSprintnexExecutionPrompt,
   cacheSprintnexTasks,
@@ -263,6 +265,165 @@ function focusPromptSoon() {
   if (typeof window === "undefined") return;
   const focus = () => window.dispatchEvent(new Event("openwork:focusPrompt"));
   [0, 80, 240, 600].forEach((delay) => window.setTimeout(focus, delay));
+}
+
+/**
+ * Extract the JSON decision object from the model's classification response.
+ * Tolerates markdown fences and surrounding prose.
+ */
+function parseSprintnexDecisionJson(
+  text: string,
+): Record<string, unknown> | null {
+  const candidates: string[] = [];
+  const codeBlock = text.match(/```json\s*([\s\S]*?)\s*```/);
+  if (codeBlock) candidates.push(codeBlock[1]);
+  candidates.push(text);
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      return JSON.parse(candidate.trim()) as Record<string, unknown>;
+    } catch {
+      /* fall through to brace extraction */
+    }
+    const first = candidate.indexOf("{");
+    if (first !== -1) {
+      let depth = 0;
+      let inString = false;
+      let escaped = false;
+      for (let i = first; i < candidate.length; i++) {
+        const ch = candidate[i];
+        if (inString) {
+          if (escaped) escaped = false;
+          else if (ch === "\\") escaped = true;
+          else if (ch === '"') inString = false;
+          continue;
+        }
+        if (ch === '"') inString = true;
+        else if (ch === "{") depth++;
+        else if (ch === "}") {
+          depth--;
+          if (depth === 0) {
+            try {
+              return JSON.parse(candidate.slice(first, i + 1)) as Record<
+                string,
+                unknown
+              >;
+            } catch {
+              return null;
+            }
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Classify a user request by asking the model directly (with the Sprintnex
+ * Workspace Agent system context and the structured output format), instead of
+ * calling the n8n webhook. Runs in a throwaway session so the decision JSON
+ * never pollutes the user's visible chat.
+ */
+async function classifySprintnexWithModel(opts: {
+  client: ReturnType<typeof createClient>;
+  draftText: string;
+  system?: string;
+  model?: { providerID: string; modelID: string };
+  variant?: string | null;
+}): Promise<{ blocked: boolean; message?: string }> {
+  const { client, draftText, system, model, variant } = opts;
+  let sid: string | null = null;
+  try {
+    const { unwrap } = await import("@/app/lib/opencode");
+    const created = unwrap(
+      await client.session.create({ directory: undefined }),
+    );
+    sid = created.id;
+
+    const prompt = `Classify the following user request according to the Sprintnex Workspace Agent instructions. Respond with ONLY the JSON decision object — no markdown fences, no explanation, no surrounding text.
+
+${WORKSPACE_AGENT_OUTPUT_FORMAT}
+
+USER REQUEST:
+${draftText}`;
+
+    await client.session.promptAsync({
+      sessionID: sid,
+      parts: [{ type: "text", text: prompt }],
+      ...(model
+        ? { model: { providerID: model.providerID, modelID: model.modelID } }
+        : {}),
+      ...(variant ? { variant } : {}),
+      ...(system ? { system } : {}),
+    });
+
+    const start = Date.now();
+    while (Date.now() - start < 45_000) {
+      await new Promise((r) => setTimeout(r, 2_000));
+      try {
+        const msgsResult = await client.session.messages({
+          sessionID: sid,
+          limit: 5,
+        });
+        const msgsData =
+          msgsResult && typeof msgsResult === "object" && "data" in msgsResult
+            ? (msgsResult as { data?: unknown }).data
+            : null;
+        if (!Array.isArray(msgsData)) continue;
+        const assistantMsg = [...msgsData].reverse().find((m: unknown) => {
+          if (!m || typeof m !== "object") return false;
+          const info = (m as Record<string, unknown>).info;
+          return (
+            info &&
+            typeof info === "object" &&
+            (info as Record<string, unknown>).role === "assistant"
+          );
+        });
+        if (!assistantMsg) continue;
+        const parts = (assistantMsg as Record<string, unknown>).parts;
+        if (!Array.isArray(parts)) continue;
+        const text = parts
+          .filter(
+            (p: unknown) =>
+              p &&
+              typeof p === "object" &&
+              (p as Record<string, unknown>).type === "text",
+          )
+          .map((p: unknown) => (p as Record<string, unknown>).text as string)
+          .filter(Boolean)
+          .join("\n");
+        if (!text.trim()) continue;
+        const decision = parseSprintnexDecisionJson(text);
+        if (!decision) continue;
+        const blocked = Boolean(
+          decision.taskRequired ||
+          decision.status === "TASK_REQUIRED" ||
+          decision.status === "BLOCKED" ||
+          decision.classification === "TASK_REQUIRED",
+        );
+        return {
+          blocked,
+          message:
+            typeof decision.message === "string" ? decision.message : undefined,
+        };
+      } catch {
+        /* keep polling */
+      }
+    }
+    // Timeout → fail open (let the request through).
+    return { blocked: false };
+  } catch {
+    return { blocked: false };
+  } finally {
+    if (sid) {
+      try {
+        await client.session.delete({ sessionID: sid });
+      } catch {
+        /* best-effort cleanup */
+      }
+    }
+  }
 }
 
 const EVAL_UNAVAILABLE_PROVIDER_ID = "eval-unavailable-provider";
@@ -1150,40 +1311,64 @@ export function SessionRoute() {
             noReply: true,
           });
 
-          // 2. Classify in background. If blocked, do NOT send any follow-up
-          //    promptAsync — the first noReply call already rendered the
-          //    message. Sending even a gatekeeper prompt still wastes a model
-          //    call and risks the model ignoring instructions.
+          // 2. Classify in background by asking the model directly (with the
+          //    Workspace Agent system context + structured output format).
+          //    If the model says the request requires the main delivery flow,
+          //    do NOT send any follow-up prompt — the first noReply call
+          //    already rendered the message.
           if (draftText.trim()) {
-            classifySprintnexRequest(draftText)
-              .then(async (c) => {
+            void (async () => {
+              try {
                 await step1;
-                if (c.blocked) {
+                const decision = await classifySprintnexWithModel({
+                  client: opencodeClient,
+                  draftText,
+                  system: combinedSystem,
+                  model: local.prefs.defaultModel ?? undefined,
+                  variant: modelVariantValue,
+                });
+                if (decision.blocked) {
                   // Tell the user the request was routed to the Sprintnex
-                  // delivery flow and offer to create a task so they can
-                  // continue without confusion.
+                  // delivery flow and direct them to the Sprintnex tasks page
+                  // so they can log it as a task.
                   const blockMessage =
-                    c.message ??
+                    decision.message ??
                     "This request requires the Sprintnex main delivery flow. Please log it as a new task.";
-                  const blockedText = draftText;
-                  const workspaceIdForTask = selectedWorkspaceId;
                   toast.warning(blockMessage, {
+                    id: "sprintnex-task-blocked",
                     description:
-                      "Continue your work by creating a Sprintnex task.",
+                      "Open Sprintnex Tasks to log this request as a task and continue.",
                     action: {
-                      label: "Create Sprintnex Task",
+                      label: "Open Sprintnex Tasks",
                       onClick: () => {
-                        if (workspaceIdForTask) {
-                          setSprintnexTaskCreate({
-                            workspaceId: workspaceIdForTask,
-                            initialPrompt: blockedText,
-                          });
-                        }
+                        navigate("/sprintnex/tasks");
                       },
                     },
-                    duration: Infinity,
+                    // Finite duration so the toast (and its close button) can
+                    // be dismissed reliably — Infinity can wedge custom toasts.
+                    duration: 600_000,
                   });
-                  return; // <-- absolutely no model call
+
+                  // Render the redirect notice in the chat so it persists in
+                  // the conversation history when the user reads back. A
+                  // strict system override makes the model echo the exact
+                  // text without running any tools or doing real work.
+                  await opencodeClient.session.promptAsync({
+                    sessionID: targetSessionId,
+                    parts: [
+                      {
+                        type: "text" as const,
+                        text: `Reply with EXACTLY the following message and nothing else:\n\n${blockMessage}\n\nOpen the Sprintnex Tasks page to log this request as a task and continue.`,
+                      },
+                    ],
+                    model: local.prefs.defaultModel ?? undefined,
+                    ...(modelVariantValue
+                      ? { variant: modelVariantValue }
+                      : {}),
+                    system:
+                      "You are a message router. Output only the exact text given to you. Do not call tools, do not add commentary, and do not use markdown.",
+                  });
+                  return;
                 }
                 await opencodeClient.session.promptAsync({
                   sessionID: targetSessionId,
@@ -1197,8 +1382,10 @@ export function SessionRoute() {
                   ...(modelVariantValue ? { variant: modelVariantValue } : {}),
                   system: combinedSystem,
                 });
-              })
-              .catch(() => {});
+              } catch {
+                /* ignore */
+              }
+            })();
           }
           return;
         }
