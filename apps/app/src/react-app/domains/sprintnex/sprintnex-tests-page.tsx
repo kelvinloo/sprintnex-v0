@@ -1,12 +1,10 @@
 /** @jsxImportSource react */
 import { useState, useEffect, useRef } from "react";
 import {
-  Activity,
   ArrowDown,
   ArrowLeft,
   ArrowUp,
   BarChart3,
-  Bot,
   Bug,
   ChevronDown,
   FileEdit,
@@ -27,7 +25,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   createScenario,
@@ -49,6 +46,8 @@ import {
   deleteTestPlan,
   createTestPlan,
   updateTestPlan,
+  createTestRun,
+  updateTestRun,
   type TestPlan,
   type TestRun,
 } from "@/app/lib/test-plan-store";
@@ -61,6 +60,7 @@ import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection
 import { ensureBrowserMcp, executeQaTask } from "@/app/lib/qa-agent";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import { McpUrlSelector } from "./mcp-url-manager";
+import { TargetUrlSelector } from "./target-url-manager";
 import type { TabDefinition } from "./sprintnex-tab-bar";
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -86,211 +86,6 @@ type LogEntry = { ts: string; text: string };
 
 // ── QA Runner sub-component ────────────────────────────────────────────────
 
-function QaRunnerView({ scopeProjectName }: { scopeProjectName: string }) {
-  const navigate = useNavigate();
-  const [targetUrl, setTargetUrl] = useState("");
-  const [testSteps, setTestSteps] = useState("");
-  const [running, setRunning] = useState(false);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [error, setError] = useState("");
-  const [sessionId, setSessionId] = useState<string | null>(null);
-
-  const addLog = (text: string) => {
-    setLogs((prev) => [...prev, { ts: new Date().toLocaleTimeString(), text }]);
-  };
-
-  const handleRun = async () => {
-    if (!targetUrl.trim()) {
-      setError("Target URL is required");
-      return;
-    }
-    if (!testSteps.trim()) {
-      setError("Test steps are required");
-      return;
-    }
-
-    setRunning(true);
-    setError("");
-    setLogs([]);
-    setSessionId(null);
-    addLog("Initializing QA agent...");
-
-    try {
-      addLog("Checking MCP browser server...");
-      await ensureBrowserMcp();
-      addLog("MCP browser server ready");
-
-      addLog("Connecting to OpenWork...");
-      const { normalizedBaseUrl, resolvedToken } =
-        await resolveOpenworkConnection();
-      if (!normalizedBaseUrl || !resolvedToken) {
-        throw new Error("OpenWork server not connected");
-      }
-      addLog("Connected to OpenWork");
-
-      addLog("Creating agent session...");
-      const scope = readSprintnexAicoeScope();
-      const mappedWsId = getMappedWorkspaceForSprintnexProject(scope.projectId);
-      if (!mappedWsId) {
-        throw new Error("No workspace mapped for this project");
-      }
-      const opencodeClient = createClient(
-        `${normalizedBaseUrl}/workspace/${mappedWsId}/opencode`,
-        undefined,
-        { token: resolvedToken, mode: "openwork" },
-      );
-      const { unwrap } = await import("@/app/lib/opencode");
-      const created = unwrap(
-        await opencodeClient.session.create({ directory: undefined }),
-      );
-      const sid = created.id;
-      setSessionId(sid);
-      addLog(`Session created: ${sid.slice(0, 8)}...`);
-
-      addLog("Sending test instructions to QA agent...");
-      const result = await executeQaTask(sid, opencodeClient, {
-        targetUrl: targetUrl.trim(),
-        testSteps: testSteps.trim(),
-      });
-      addLog("Test instructions sent to agent");
-
-      if (result.error) {
-        addLog(`Error: ${result.error}`);
-        setError(result.error);
-      } else {
-        addLog("QA agent is executing tests in the session...");
-        addLog("Navigate to the session to watch progress");
-      }
-    } catch (err) {
-      const msg = String(err);
-      addLog(`Error: ${msg}`);
-      setError(msg);
-    } finally {
-      setRunning(false);
-    }
-  };
-
-  return (
-    <div className="flex min-h-0 flex-1 gap-4 overflow-auto">
-      {/* Left: Form */}
-      <div className="flex w-1/2 flex-col gap-4">
-        <div className="rounded-lg border border-dls-border bg-dls-surface p-4">
-          <h2 className="mb-3 text-sm font-semibold text-dls-text">
-            Test Configuration
-          </h2>
-
-          {error && (
-            <div className="mb-3 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <McpUrlSelector />
-
-            <div className="space-y-1">
-              <Label className="text-xs font-medium text-dls-text">
-                Target URL *
-              </Label>
-              <Input
-                value={targetUrl}
-                onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder="http://localhost:5173"
-                className="h-8 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-xs font-medium text-dls-text">
-                Test Steps (markdown) *
-              </Label>
-              <Textarea
-                value={testSteps}
-                onChange={(e) => setTestSteps(e.target.value)}
-                placeholder={`## Test: Login Flow\n\n1. Navigate to /login\n2. Enter "admin" into #username\n3. Enter "password" into #password\n4. Click #submit-btn\n5. Verify dashboard loads`}
-                className="min-h-[200px] text-xs font-mono"
-              />
-            </div>
-
-            <Button
-              size="sm"
-              onClick={handleRun}
-              disabled={running}
-              className="w-full"
-            >
-              {running ? (
-                <>
-                  <RotateCw className="size-3.5 animate-spin" />
-                  Running...
-                </>
-              ) : (
-                <>
-                  <Play className="size-3.5" />
-                  Run QA Tests
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right: Logs */}
-      <div className="flex w-1/2 flex-col">
-        <div className="flex flex-1 flex-col rounded-lg border border-dls-border bg-dls-surface">
-          <div className="flex items-center gap-2 border-b border-dls-border px-3 py-2">
-            <Activity size={14} className="text-dls-secondary" />
-            <span className="text-xs font-medium text-dls-text">Output</span>
-            {running && (
-              <Bot size={14} className="ml-auto animate-pulse text-blue-500" />
-            )}
-          </div>
-          <div className="flex-1 overflow-auto p-3">
-            {logs.length === 0 ? (
-              <p className="text-xs text-dls-secondary">
-                Configure the test and click "Run QA Tests" to start.
-              </p>
-            ) : (
-              <div className="space-y-1">
-                {logs.map((log, i) => (
-                  <div
-                    key={i}
-                    className="flex gap-2 text-[11px] font-mono leading-relaxed"
-                  >
-                    <span className="shrink-0 text-dls-muted">{log.ts}</span>
-                    <span
-                      className={
-                        log.text.startsWith("Error")
-                          ? "text-red-400"
-                          : "text-dls-text"
-                      }
-                    >
-                      {log.text}
-                    </span>
-                  </div>
-                ))}
-                {running && (
-                  <span className="inline-block size-2 animate-pulse rounded-full bg-blue-500" />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        {sessionId && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => navigate(`/session/${sessionId}`)}
-          >
-            <Terminal className="size-3.5" />
-            Open Session
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── Test Plans sub-component ────────────────────────────────────────────────
 
 function TestPlansView({
@@ -308,6 +103,7 @@ function TestPlansView({
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newType, setNewType] = useState<TestPlan["testType"]>("functional");
+  const [runPlanId, setRunPlanId] = useState<string | null>(null);
 
   // Expose toggleCreate to parent via effect (not during render)
   useEffect(() => {
@@ -508,8 +304,103 @@ Return ONLY valid JSON, no markdown, no explanation.`;
     }
   };
 
+  const handleRunPlan = async (plan: TestPlan) => {
+    if (runPlanId) return;
+    const storedTargetUrl = localStorage.getItem("sprintnex.targetUrl") || "";
+    setRunPlanId(plan.id);
+    try {
+      const mcpUrl = await ensureBrowserMcp();
+      const run = createTestRun(plan.id, plan.name, storedTargetUrl);
+      const { normalizedBaseUrl, resolvedToken } =
+        await resolveOpenworkConnection();
+      if (!normalizedBaseUrl || !resolvedToken) {
+        updateTestRun(run.id, { status: "failed" });
+        return;
+      }
+      const scope = readSprintnexAicoeScope();
+      const mappedWsId = getMappedWorkspaceForSprintnexProject(scope.projectId);
+      if (!mappedWsId) {
+        updateTestRun(run.id, { status: "failed" });
+        return;
+      }
+      const opencodeClient = createClient(
+        `${normalizedBaseUrl}/workspace/${mappedWsId}/opencode`,
+        undefined,
+        { token: resolvedToken, mode: "openwork" },
+      );
+      const { unwrap } = await import("@/app/lib/opencode");
+      const created = unwrap(
+        await opencodeClient.session.create({ directory: undefined }),
+      );
+      const sid = created.id;
+      updateTestRun(run.id, { sessionId: sid });
+
+      // Initialize scenario results
+      const scenarioResults = getPlanScenarios(plan).map(
+        (sc): import("@/app/lib/test-plan-store").ScenarioResult => ({
+          scenarioId: sc.id,
+          scenarioName: sc.name,
+          status: "running" as const,
+          steps: sc.steps.map((st) => ({
+            stepId: st.id,
+            action: st.action,
+            status: "skipped" as const,
+          })),
+          screenshots: [],
+          logs: [`Started at ${new Date().toLocaleTimeString()}`],
+          startedAt: new Date().toISOString(),
+        }),
+      );
+      updateTestRun(run.id, {
+        scenarioResults,
+        totalScenarios: scenarioResults.length,
+      });
+
+      // Format scenarios as QA test instructions
+      const stepsText = getPlanScenarios(plan)
+        .map(
+          (sc, i) =>
+            `### Scenario ${i + 1}: ${sc.name}\n${sc.description ? sc.description + "\n" : ""}` +
+            sc.steps
+              .map(
+                (st) =>
+                  `${st.order}. ${st.action}${st.expectedResult ? `\n   Expected: ${st.expectedResult}` : ""}`,
+              )
+              .join("\n"),
+        )
+        .join("\n\n");
+
+      const targetInfo = storedTargetUrl
+        ? `\n**Target URL:** ${storedTargetUrl}`
+        : "";
+
+      const prompt = `## QA Test Execution\n\n**Test Plan:** ${plan.name}\n**Type:** ${plan.testType}${targetInfo}\n\n**Scenarios to execute:**\n\n${stepsText}\n\nExecute these test scenarios using the browser automation tools available to you. The MCP browser server is at ${mcpUrl}. Navigate to the application and follow each step. Take screenshots at key points. Report pass/fail for each scenario with detailed results.`;
+
+      await opencodeClient.session.promptAsync({
+        sessionID: sid,
+        parts: [{ type: "text", text: prompt }],
+      });
+
+      navigate(`/session/${sid}`);
+    } catch {
+      // silently fail
+    } finally {
+      setRunPlanId(null);
+    }
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto">
+      {/* Connection config cards */}
+      <div className="flex gap-3">
+        <div className="flex-1 rounded-lg border border-dls-border bg-dls-surface p-3">
+          <McpUrlSelector />
+        </div>
+        <div className="flex-1 rounded-lg border border-dls-border bg-dls-surface p-3">
+          <TargetUrlSelector />
+        </div>
+      </div>
+
       {/* Create form */}
       {showCreate && (
         <div className="rounded-lg border border-dls-border bg-dls-surface p-4">
@@ -632,7 +523,24 @@ Return ONLY valid JSON, no markdown, no explanation.`;
                   {getPlanScenarios(plan).length !== 1 ? "s" : ""}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-1 opacity-0 group-hover:opacity-100">
+              <div className="flex shrink-0 gap-1">
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="size-7"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRunPlan(plan);
+                  }}
+                  disabled={runPlanId === plan.id}
+                  title="Run test plan"
+                >
+                  {runPlanId === plan.id ? (
+                    <RotateCw className="size-3.5 animate-spin" />
+                  ) : (
+                    <Play className="size-3.5" />
+                  )}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon-sm"
@@ -984,6 +892,11 @@ function RunsView() {
                   {run.completedAt &&
                     ` · ${Math.round((new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime()) / 1000)}s`}
                 </p>
+                {run.targetUrl && (
+                  <p className="truncate text-[10px] text-dls-muted">
+                    Target: {run.targetUrl}
+                  </p>
+                )}
               </div>
               <div className="flex shrink-0 items-center gap-2 text-[11px]">
                 <span className="text-emerald-500">{run.passed} pass</span>
@@ -1427,12 +1340,7 @@ export default function SprintnexTestsPage() {
       icon: MessageSquare,
       onClick: () => setActiveTab("chat"),
     },
-    {
-      id: "qa-runner",
-      label: "QA Runner",
-      icon: Bug,
-      onClick: () => setActiveTab("qa-runner"),
-    },
+
     {
       id: "plans",
       label: "Test Plans",
@@ -1466,13 +1374,11 @@ export default function SprintnexTestsPage() {
             <div>
               <h1 className="text-base font-semibold text-dls-text">Tests</h1>
               <p className="text-xs text-dls-secondary">
-                {activeTab === "qa-runner"
-                  ? "Run browser-based tests"
-                  : activeTab === "chat"
-                    ? "AI test plan assistant"
-                    : activeTab === "runs"
-                      ? "Test execution history"
-                      : `${plans.length} plan${plans.length !== 1 ? "s" : ""}`}
+                {activeTab === "chat"
+                  ? "AI test plan assistant"
+                  : activeTab === "runs"
+                    ? "Test execution history"
+                    : `${plans.length} plan${plans.length !== 1 ? "s" : ""}`}
                 {scope.projectName ? ` · ${scope.projectName}` : ""}
               </p>
             </div>
@@ -1503,10 +1409,6 @@ export default function SprintnexTestsPage() {
 
       {/* Content */}
       <div className="flex min-h-0 flex-1 flex-col px-6 py-4">
-        {activeTab === "qa-runner" && (
-          <QaRunnerView scopeProjectName={scope.projectName || ""} />
-        )}
-
         {activeTab === "plans" && (
           <TestPlansView
             scopeProjectName={scope.projectName || ""}

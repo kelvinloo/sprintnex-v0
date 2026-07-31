@@ -4,35 +4,33 @@ import { Plus, Pencil, Trash2, Check, X, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  useMcpUrls,
-  useSelectedMcpUrl,
-  selectMcpUrl,
-  createMcpUrl,
-  updateMcpUrl,
-  deleteMcpUrl,
-  type McpUrlConfig,
-} from "@/app/lib/mcp-url-store";
+  useTargetUrls,
+  useSelectedTargetUrl,
+  selectTargetUrl,
+  createTargetUrl,
+  updateTargetUrl,
+  deleteTargetUrl,
+  type TargetUrlConfig,
+} from "@/app/lib/target-url-store";
 
-export function McpUrlSelector() {
-  const urls = useMcpUrls();
-  const selected = useSelectedMcpUrl();
+export function TargetUrlSelector() {
+  const urls = useTargetUrls();
+  const selected = useSelectedTargetUrl();
   const [showManager, setShowManager] = useState(false);
 
   return (
     <>
       <div className="space-y-1">
-        <label className="text-xs font-medium text-dls-text">
-          MCP Browser Server
-        </label>
+        <label className="text-xs font-medium text-dls-text">Target URL</label>
         <div className="flex gap-2">
           <select
             value={selected?.id ?? ""}
-            onChange={(e) => selectMcpUrl(e.target.value)}
+            onChange={(e) => selectTargetUrl(e.target.value)}
             className="h-8 flex-1 rounded-md border border-dls-border bg-background px-2 text-xs text-foreground"
           >
             {urls.length === 0 && (
               <option value="" disabled>
-                No MCP servers configured
+                No target URLs configured
               </option>
             )}
             {urls.map((u) => (
@@ -50,24 +48,27 @@ export function McpUrlSelector() {
             <Globe className="size-3.5" />
           </Button>
         </div>
+        {selected && (
+          <p className="truncate text-[10px] text-dls-muted">{selected.url}</p>
+        )}
       </div>
 
       {showManager && (
-        <McpUrlManagerModal onClose={() => setShowManager(false)} />
+        <TargetUrlManagerModal onClose={() => setShowManager(false)} />
       )}
     </>
   );
 }
 
-function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
-  const urls = useMcpUrls();
+function TargetUrlManagerModal({ onClose }: { onClose: () => void }) {
+  const urls = useTargetUrls();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editUrl, setEditUrl] = useState("");
   const [newName, setNewName] = useState("");
   const [newUrl, setNewUrl] = useState("");
 
-  const startEdit = (url: McpUrlConfig) => {
+  const startEdit = (url: TargetUrlConfig) => {
     setEditingId(url.id);
     setEditName(url.name);
     setEditUrl(url.url);
@@ -75,15 +76,14 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
 
   const handleSaveEdit = () => {
     if (!editingId || !editName.trim() || !editUrl.trim()) return;
-    updateMcpUrl(editingId, { name: editName.trim(), url: editUrl.trim() });
+    updateTargetUrl(editingId, { name: editName.trim(), url: editUrl.trim() });
     setEditingId(null);
   };
 
   const handleCreate = () => {
     if (!newName.trim() || !newUrl.trim()) return;
-    const created = createMcpUrl(newName.trim(), newUrl.trim());
-    // Auto-select the newly created URL so it reflects immediately
-    selectMcpUrl(created.id);
+    const created = createTargetUrl(newName.trim(), newUrl.trim());
+    selectTargetUrl(created.id);
     setNewName("");
     setNewUrl("");
   };
@@ -92,19 +92,16 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="w-full max-w-md rounded-xl border border-dls-border bg-dls-surface p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-dls-text">
-            MCP Server URLs
-          </h2>
+          <h2 className="text-sm font-semibold text-dls-text">Target URLs</h2>
           <Button variant="ghost" size="icon-sm" onClick={onClose}>
             <X className="size-4" />
           </Button>
         </div>
 
-        {/* Existing URLs */}
         <div className="mb-4 max-h-48 space-y-2 overflow-auto">
           {urls.length === 0 && (
             <p className="py-4 text-center text-xs text-dls-muted">
-              No MCP servers configured. Add one below.
+              No target URLs configured yet. Add one below.
             </p>
           )}
           {urls.map((url) => (
@@ -162,7 +159,7 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
                     variant="ghost"
                     size="icon-sm"
                     className="size-6 text-red-500"
-                    onClick={() => deleteMcpUrl(url.id)}
+                    onClick={() => deleteTargetUrl(url.id)}
                   >
                     <Trash2 className="size-3" />
                   </Button>
@@ -172,21 +169,20 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
           ))}
         </div>
 
-        {/* Add new */}
         <div className="space-y-2 border-t border-dls-border pt-3">
           <h3 className="text-[11px] font-medium text-dls-secondary">
-            Add Server
+            Add Target URL
           </h3>
           <Input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            placeholder="Name (e.g. Production MCP)"
+            placeholder="Name (e.g. Staging)"
             className="h-7 text-xs"
           />
           <Input
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
-            placeholder="URL (e.g. https://mcp.example.com)"
+            placeholder="URL (e.g. https://staging.example.com)"
             className="h-7 text-xs"
           />
           <Button
@@ -196,7 +192,7 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
             disabled={!newName.trim() || !newUrl.trim()}
           >
             <Plus className="size-3" />
-            Add Server
+            Add Target URL
           </Button>
         </div>
       </div>

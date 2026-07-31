@@ -67,6 +67,7 @@ export type TestRun = {
   planId: string;
   planName: string;
   sessionId?: string;
+  targetUrl?: string;
   status: TestRunStatus;
   scenarioResults: ScenarioResult[];
   startedAt: string;
@@ -296,12 +297,17 @@ export function getAllTestRuns(): TestRun[] {
   );
 }
 
-export function createTestRun(planId: string, planName: string): TestRun {
+export function createTestRun(
+  planId: string,
+  planName: string,
+  targetUrl?: string,
+): TestRun {
   const runs = loadRuns();
   const run: TestRun = {
     id: crypto.randomUUID(),
     planId,
     planName,
+    targetUrl,
     status: "running",
     scenarioResults: [],
     startedAt: new Date().toISOString(),

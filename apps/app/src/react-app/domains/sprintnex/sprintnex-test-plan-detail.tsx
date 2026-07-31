@@ -70,7 +70,9 @@ export default function SprintnexTestPlanDetailPage() {
       const mcpUrl = await ensureBrowserMcp();
 
       // Create a TestRun record
-      const run = createTestRun(plan.id, plan.name);
+      const targetUrl =
+        localStorage.getItem("sprintnex.targetUrl") || undefined;
+      const run = createTestRun(plan.id, plan.name, targetUrl);
 
       const { normalizedBaseUrl, resolvedToken } =
         await resolveOpenworkConnection();

@@ -1,13 +1,13 @@
 /**
- * MCP URL Store — manage remote MCP browser server URLs.
- * Persisted in localStorage under sprintnex.mcpUrls.v1.
+ * Target URL Store — manage saved target application URLs.
+ * Persisted in localStorage under sprintnex.targetUrls.v1.
  */
 
 import { useState, useEffect } from "react";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type McpUrlConfig = {
+export type TargetUrlConfig = {
   id: string;
   name: string;
   url: string;
@@ -16,10 +16,10 @@ export type McpUrlConfig = {
 
 // ── Store ──────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = "sprintnex.mcpUrls.v1";
-const SELECTED_KEY = "sprintnex.mcpBrowserUrl";
+const STORAGE_KEY = "sprintnex.targetUrls.v1";
+const SELECTED_KEY = "sprintnex.targetUrlId";
 
-let cache: McpUrlConfig[] = [];
+let cache: TargetUrlConfig[] = [];
 let listeners = new Set<() => void>();
 let loaded = false;
 
@@ -43,24 +43,19 @@ function emit(): void {
   listeners.forEach((fn) => fn());
 }
 
-export function subscribe(fn: () => void): () => void {
+export function subscribeTargetUrls(fn: () => void): () => void {
   listeners.add(fn);
   return () => listeners.delete(fn);
 }
 
-export function getMcpUrls(): McpUrlConfig[] {
+export function getTargetUrls(): TargetUrlConfig[] {
   load();
   return [...cache];
 }
 
-export function getMcpUrlById(id: string): McpUrlConfig | undefined {
+export function createTargetUrl(name: string, url: string): TargetUrlConfig {
   load();
-  return cache.find((c) => c.id === id);
-}
-
-export function createMcpUrl(name: string, url: string): McpUrlConfig {
-  load();
-  const entry: McpUrlConfig = {
+  const entry: TargetUrlConfig = {
     id: crypto.randomUUID(),
     name,
     url,
@@ -71,10 +66,10 @@ export function createMcpUrl(name: string, url: string): McpUrlConfig {
   return entry;
 }
 
-export function updateMcpUrl(
+export function updateTargetUrl(
   id: string,
   updates: { name?: string; url?: string },
-): McpUrlConfig | undefined {
+): TargetUrlConfig | undefined {
   load();
   const entry = cache.find((c) => c.id === id);
   if (!entry) return undefined;
@@ -84,59 +79,62 @@ export function updateMcpUrl(
   return entry;
 }
 
-export function deleteMcpUrl(id: string): boolean {
+export function deleteTargetUrl(id: string): boolean {
   load();
   const idx = cache.findIndex((c) => c.id === id);
   if (idx === -1) return false;
   cache.splice(idx, 1);
   if (localStorage.getItem(SELECTED_KEY) === id) {
     localStorage.removeItem(SELECTED_KEY);
-    localStorage.removeItem("sprintnex.mcpBrowserUrl");
+    localStorage.removeItem("sprintnex.targetUrl");
   }
   persist();
   return true;
 }
 
-export function getSelectedMcpUrl(): McpUrlConfig | undefined {
+export function getSelectedTargetUrl(): TargetUrlConfig | undefined {
   load();
   const selectedId = localStorage.getItem(SELECTED_KEY);
   if (selectedId) {
-    return cache.find((c) => c.id === selectedId);
+    const found = cache.find((c) => c.id === selectedId);
+    if (found) return found;
   }
-  return undefined;
+  return cache[0];
 }
 
-export function selectMcpUrl(id: string): void {
+export function selectTargetUrl(id: string): void {
   load();
   if (cache.find((c) => c.id === id)) {
     localStorage.setItem(SELECTED_KEY, id);
     const entry = cache.find((c) => c.id === id)!;
-    localStorage.setItem("sprintnex.mcpBrowserUrl", entry.url);
+    localStorage.setItem("sprintnex.targetUrl", entry.url);
     emit();
   }
 }
 
 // ── React hooks ────────────────────────────────────────────────────────────
 
-export function useMcpUrls(): McpUrlConfig[] {
+export function useTargetUrls(): TargetUrlConfig[] {
   const [version, setVersion] = useState(0);
   useEffect(() => {
     load();
     setVersion((v) => v + 1);
-    const unsub = subscribe(() => setVersion((v) => v + 1));
+    const unsub = subscribeTargetUrls(() => setVersion((v) => v + 1));
     return unsub;
   }, []);
-  return getMcpUrls();
+  return getTargetUrls();
 }
 
-export function useSelectedMcpUrl(): McpUrlConfig | undefined {
-  const [snapshot, setSnapshot] = useState<McpUrlConfig | undefined>(() =>
-    getSelectedMcpUrl(),
+export function useSelectedTargetUrl(): TargetUrlConfig | undefined {
+  const [snapshot, setSnapshot] = useState<TargetUrlConfig | undefined>(() =>
+    getSelectedTargetUrl(),
   );
   useEffect(() => {
     load();
-    setSnapshot(getSelectedMcpUrl());
-    const unsub = subscribe(() => setSnapshot(getSelectedMcpUrl()));
+    setSnapshot(getSelectedTargetUrl());
+    const unsub = subscribeTargetUrls(() =>
+      setSnapshot(getSelectedTargetUrl()),
+    );
     return unsub;
   }, []);
   return snapshot;

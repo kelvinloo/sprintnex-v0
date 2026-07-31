@@ -59,38 +59,26 @@ async function desktopFetch<T = unknown>(
  * In desktop mode, starts it as a sidecar. In browser mode, assumes external.
  */
 export async function ensureBrowserMcp(port = 8812): Promise<string> {
-  // Allow remote URL override via localStorage
+  // Read the selected MCP URL from localStorage
   const customUrl = localStorage.getItem("sprintnex.mcpBrowserUrl");
-  let baseUrl = customUrl || `http://127.0.0.1:${port}`;
+  if (!customUrl) {
+    throw new Error(
+      "No MCP browser server URL configured. Add one in Tests → Test Plans → MCP Browser Server.",
+    );
+  }
+  let baseUrl = customUrl;
   // Strip /mcp suffix if present (client appends it)
   if (baseUrl.endsWith("/mcp")) baseUrl = baseUrl.slice(0, -4);
   if (baseUrl.endsWith("/mcp/")) baseUrl = baseUrl.slice(0, -5);
 
-  // First check if it's already reachable
+  // Check if it's reachable
   const client = new McpBrowserClient({ baseUrl });
   const healthy = await client.health();
   if (healthy) return baseUrl;
 
-  // If it's a custom URL and not reachable, throw immediately
-  if (customUrl) {
-    throw new Error(
-      `MCP browser server not reachable at ${customUrl}. Check the URL or start the server.`,
-    );
-  }
-
-  // Try starting via desktop bridge (local only)
-  const result = await desktopFetch<{ ok: boolean; error?: string }>(
-    "qaStartBrowserMcp",
-    { port },
+  throw new Error(
+    `MCP browser server not reachable at ${customUrl}. Check the URL or start the server.`,
   );
-  if (!result?.ok) {
-    throw new Error(
-      result?.error ??
-        `MCP browser server not reachable on port ${port}. ` +
-          `Start it with: cd infra/mcp-browser-server && python server.py`,
-    );
-  }
-  return baseUrl;
 }
 
 /**
