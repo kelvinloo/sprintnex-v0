@@ -1,6 +1,7 @@
 /** @jsxImportSource react */
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Check, X, Globe } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,11 +13,54 @@ import {
   deleteMcpUrl,
   type McpUrlConfig,
 } from "@/app/lib/mcp-url-store";
+import {
+  readSprintnexAicoeScope,
+  getMappedWorkspaceForSprintnexProject,
+} from "@/app/lib/sprintnex-aicoe-api";
+import { createOpenworkServerClient } from "@/app/lib/openwork-server";
+import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
+
+/**
+ * Register the selected MCP URL as the workspace's browser MCP server so the
+ * agent's actual tool connection points at the newly selected server.
+ */
+async function registerBrowserMcpForWorkspace(url: string): Promise<void> {
+  try {
+    const { normalizedBaseUrl, resolvedToken } =
+      await resolveOpenworkConnection();
+    if (!normalizedBaseUrl || !resolvedToken) return;
+    const scope = readSprintnexAicoeScope();
+    const mappedWsId = getMappedWorkspaceForSprintnexProject(scope.projectId);
+    if (!mappedWsId) return;
+    // Use the configured URL exactly as provided — never append /mcp.
+    const mcpUrl = url.trim();
+    const client = createOpenworkServerClient({
+      baseUrl: normalizedBaseUrl,
+      token: resolvedToken,
+    });
+    await client.addMcp(mappedWsId, {
+      name: "browser-mcp",
+      config: { type: "remote", url: mcpUrl, enabled: true },
+    });
+  } catch {
+    // Best-effort; selection is still stored locally.
+  }
+}
 
 export function McpUrlSelector() {
   const urls = useMcpUrls();
   const selected = useSelectedMcpUrl();
   const [showManager, setShowManager] = useState(false);
+
+  const handleSelect = (id: string) => {
+    selectMcpUrl(id);
+    const entry = urls.find((u) => u.id === id);
+    if (entry) {
+      void registerBrowserMcpForWorkspace(entry.url).then(() => {
+        toast.success(`Browser MCP switched to ${entry.name}`);
+      });
+    }
+  };
 
   return (
     <>
@@ -27,7 +71,7 @@ export function McpUrlSelector() {
         <div className="flex gap-2">
           <select
             value={selected?.id ?? ""}
-            onChange={(e) => selectMcpUrl(e.target.value)}
+            onChange={(e) => handleSelect(e.target.value)}
             className="h-8 flex-1 rounded-md border border-dls-border bg-background px-2 text-xs text-foreground"
           >
             {urls.length === 0 && (
@@ -84,6 +128,9 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
     const created = createMcpUrl(newName.trim(), newUrl.trim());
     // Auto-select the newly created URL so it reflects immediately
     selectMcpUrl(created.id);
+    void registerBrowserMcpForWorkspace(created.url).then(() => {
+      toast.success(`Browser MCP switched to ${created.name}`);
+    });
     setNewName("");
     setNewUrl("");
   };

@@ -57,7 +57,11 @@ import {
 } from "@/app/lib/sprintnex-aicoe-api";
 import { createClient } from "@/app/lib/opencode";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
-import { ensureBrowserMcp, executeQaTask } from "@/app/lib/qa-agent";
+import {
+  ensureBrowserMcp,
+  executeQaTask,
+  parseQaExecutionReport,
+} from "@/app/lib/qa-agent";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import { McpUrlSelector } from "./mcp-url-manager";
 import { TargetUrlSelector } from "./target-url-manager";
@@ -374,7 +378,7 @@ Return ONLY valid JSON, no markdown, no explanation.`;
         ? `\n**Target URL:** ${storedTargetUrl}`
         : "";
 
-      const prompt = `## QA Test Execution\n\n**Test Plan:** ${plan.name}\n**Type:** ${plan.testType}${targetInfo}\n\n**Scenarios to execute:**\n\n${stepsText}\n\nExecute these test scenarios using the browser automation tools available to you. The MCP browser server is at ${mcpUrl}. Navigate to the application and follow each step. Take screenshots at key points. Report pass/fail for each scenario with detailed results.`;
+      const prompt = `## QA Test Execution\n\n**Test Plan:** ${plan.name}\n**Type:** ${plan.testType}${targetInfo}\n\n**Scenarios to execute:**\n\n${stepsText}\n\nExecute these test scenarios using the browser automation tools available to you. The MCP browser server is at ${mcpUrl}. Navigate to the application and follow each step. Take screenshots at key points. Report pass/fail for each scenario with detailed results.\n\nAt the END of your response, output ONLY a JSON report in this exact format (no markdown around it):\n{"results":[{"scenario":"<exact scenario name>","status":"pass|fail|error","notes":"<optional detail>"}]}`;
 
       await opencodeClient.session.promptAsync({
         sessionID: sid,
@@ -382,6 +386,101 @@ Return ONLY valid JSON, no markdown, no explanation.`;
       });
 
       navigate(`/session/${sid}`);
+
+      // Background: poll for the agent's report and update the run results.
+      void (async () => {
+        const pollStart = Date.now();
+        while (Date.now() - pollStart < 10 * 60 * 1000) {
+          await new Promise((r) => setTimeout(r, 4000));
+          try {
+            const msgsResult = await opencodeClient.session.messages({
+              sessionID: sid,
+              limit: 20,
+            });
+            const msgsData =
+              msgsResult &&
+              typeof msgsResult === "object" &&
+              "data" in msgsResult
+                ? (msgsResult as { data?: unknown }).data
+                : null;
+            if (!Array.isArray(msgsData)) continue;
+            const assistantMsg = [...msgsData].reverse().find((m: unknown) => {
+              if (!m || typeof m !== "object") return false;
+              const info = (m as Record<string, unknown>).info;
+              return (
+                info &&
+                typeof info === "object" &&
+                (info as Record<string, unknown>).role === "assistant"
+              );
+            });
+            if (!assistantMsg) continue;
+            const parts = (assistantMsg as Record<string, unknown>).parts;
+            if (!Array.isArray(parts)) continue;
+            const text = parts
+              .filter(
+                (p: unknown) =>
+                  p &&
+                  typeof p === "object" &&
+                  (p as Record<string, unknown>).type === "text",
+              )
+              .map(
+                (p: unknown) => (p as Record<string, unknown>).text as string,
+              )
+              .filter(Boolean)
+              .join("\n");
+            if (!text.trim()) continue;
+
+            const items = parseQaExecutionReport(text);
+            if (!items || items.length === 0) continue;
+
+            // Map parsed report onto the initialized scenario results.
+            const nameToIndex = new Map(
+              scenarioResults.map((sr, i) => [
+                sr.scenarioName.toLowerCase(),
+                i,
+              ]),
+            );
+            const updated = scenarioResults.map((sr) => ({ ...sr }));
+            let passed = 0;
+            let failed = 0;
+            let errors = 0;
+            items.forEach((item, index) => {
+              const matched =
+                nameToIndex.get(item.scenario.toLowerCase()) ??
+                (index < updated.length ? index : undefined);
+              if (matched === undefined) return;
+              const target = updated[matched];
+              if (!target) return;
+              target.status = item.status;
+              target.completedAt = new Date().toISOString();
+              target.logs = [
+                ...target.logs,
+                `${item.status.toUpperCase()}: ${item.scenario}`,
+                ...(item.notes ? [item.notes] : []),
+              ];
+              if (item.status === "pass") passed++;
+              else if (item.status === "fail") failed++;
+              else errors++;
+            });
+            updateTestRun(run.id, {
+              scenarioResults: updated,
+              status: failed > 0 || errors > 0 ? "failed" : "completed",
+              passed,
+              failed,
+              errors,
+              completedAt: new Date().toISOString(),
+            });
+            return;
+          } catch {
+            /* keep polling */
+          }
+        }
+        // Timed out without a parseable report.
+        updateTestRun(run.id, {
+          status: "failed",
+          completedAt: new Date().toISOString(),
+        });
+      })();
     } catch {
       // silently fail
     } finally {

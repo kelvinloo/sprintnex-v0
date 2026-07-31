@@ -17,7 +17,7 @@ export type McpUrlConfig = {
 // ── Store ──────────────────────────────────────────────────────────────────
 
 const STORAGE_KEY = "sprintnex.mcpUrls.v1";
-const SELECTED_KEY = "sprintnex.mcpBrowserUrl";
+const SELECTED_KEY = "sprintnex.mcpUrlSelectedId";
 
 let cache: McpUrlConfig[] = [];
 let listeners = new Set<() => void>();
@@ -108,9 +108,9 @@ export function getSelectedMcpUrl(): McpUrlConfig | undefined {
 
 export function selectMcpUrl(id: string): void {
   load();
-  if (cache.find((c) => c.id === id)) {
+  const entry = cache.find((c) => c.id === id);
+  if (entry) {
     localStorage.setItem(SELECTED_KEY, id);
-    const entry = cache.find((c) => c.id === id)!;
     localStorage.setItem("sprintnex.mcpBrowserUrl", entry.url);
     emit();
   }

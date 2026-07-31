@@ -1158,7 +1158,33 @@ export function SessionRoute() {
             classifySprintnexRequest(draftText)
               .then(async (c) => {
                 await step1;
-                if (c.blocked) return; // <-- absolutely no model call
+                if (c.blocked) {
+                  // Tell the user the request was routed to the Sprintnex
+                  // delivery flow and offer to create a task so they can
+                  // continue without confusion.
+                  const blockMessage =
+                    c.message ??
+                    "This request requires the Sprintnex main delivery flow. Please log it as a new task.";
+                  const blockedText = draftText;
+                  const workspaceIdForTask = selectedWorkspaceId;
+                  toast.warning(blockMessage, {
+                    description:
+                      "Continue your work by creating a Sprintnex task.",
+                    action: {
+                      label: "Create Sprintnex Task",
+                      onClick: () => {
+                        if (workspaceIdForTask) {
+                          setSprintnexTaskCreate({
+                            workspaceId: workspaceIdForTask,
+                            initialPrompt: blockedText,
+                          });
+                        }
+                      },
+                    },
+                    duration: Infinity,
+                  });
+                  return; // <-- absolutely no model call
+                }
                 await opencodeClient.session.promptAsync({
                   sessionID: targetSessionId,
                   parts: [
