@@ -44,6 +44,7 @@ import {
 } from "@/app/lib/sprintnex-aicoe-api";
 import { createClient } from "@/app/lib/opencode";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
+import { writeActiveWorkspaceId } from "@/react-app/shell/session-memory";
 import { ensureBrowserMcp } from "@/app/lib/qa-agent";
 
 export default function SprintnexTestPlanDetailPage() {
@@ -103,6 +104,15 @@ export default function SprintnexTestPlanDetailPage() {
       );
       const sid = created.id;
 
+      // Select the workspace + mark this as the active session so the
+      // session route loads the new session instead of failing to find it.
+      try {
+        writeActiveWorkspaceId(mappedWsId);
+        window.localStorage.setItem(`openwork.lastSession.${mappedWsId}`, sid);
+      } catch {
+        /* not critical */
+      }
+
       // Link session to run
       updateTestRun(run.id, { sessionId: sid });
 
@@ -141,7 +151,18 @@ export default function SprintnexTestPlanDetailPage() {
         )
         .join("\n\n");
 
-      const prompt = `## QA Test Execution\n\n**Test Plan:** ${plan.name}\n**Type:** ${plan.testType}\n\n**Scenarios to execute:**\n\n${stepsText}\n\nExecute these test scenarios using the browser automation tools available to you. The MCP browser server is at ${mcpUrl}. Navigate to the application and follow each step. Take screenshots at key points. Report pass/fail for each scenario with detailed results.`;
+      const targetInfo = targetUrl ? `\n**Target URL:** ${targetUrl}` : "";
+
+      // Deterministic filesystem report directory under the workspace root.
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const planSlug =
+        (plan.name || "test-plan")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "test-plan";
+      const reportDir = `test-reports/${planSlug}/${timestamp}`;
+
+      const prompt = `## QA Test Execution\n\n**Test Plan:** ${plan.name}\n**Type:** ${plan.testType}${targetInfo}\n\n**Scenarios to execute:**\n\n${stepsText}\n\nExecute these test scenarios using the browser automation tools available to you. The MCP browser server is at ${mcpUrl}. Navigate to the application and follow each step. Take a screenshot at every step.\n\n### Report output — write to filesystem (IMPORTANT)\n\nWrite the full test report and ALL screenshots into this directory inside the current workspace (create it if needed):\n\n\`${reportDir}/\`\n\nRequired structure:\n- \`${reportDir}/REPORT.md\` — complete report: plan name, type, target URL, timestamp, and for EACH scenario: name, PASS/FAIL result, step-by-step outcomes, and the relative paths of its screenshots.\n- \`${reportDir}/scenario-1-<short-name>/step-1.png\`, \`step-2.png\`, ... — one folder per scenario with numbered screenshots in execution order.\n\nRules:\n- Save every screenshot you capture into its scenario folder with a numbered filename.\n- After all scenarios finish, write \`${reportDir}/REPORT.md\` with the results.\n- Reference screenshots in REPORT.md using paths relative to the workspace root.\n- Do not write the report anywhere else.`;
 
       await opencodeClient.session.promptAsync({
         sessionID: sid,

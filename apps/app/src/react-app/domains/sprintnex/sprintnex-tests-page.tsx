@@ -4,7 +4,6 @@ import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
-  BarChart3,
   Bug,
   ChevronDown,
   FileEdit,
@@ -42,14 +41,10 @@ import {
 } from "@/app/lib/scenario-store";
 import {
   useTestPlans,
-  useTestRuns,
   deleteTestPlan,
   createTestPlan,
   updateTestPlan,
-  createTestRun,
-  updateTestRun,
   type TestPlan,
-  type TestRun,
 } from "@/app/lib/test-plan-store";
 import {
   readSprintnexAicoeScope,
@@ -57,11 +52,8 @@ import {
 } from "@/app/lib/sprintnex-aicoe-api";
 import { createClient } from "@/app/lib/opencode";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
-import {
-  ensureBrowserMcp,
-  executeQaTask,
-  parseQaExecutionReport,
-} from "@/app/lib/qa-agent";
+import { writeActiveWorkspaceId } from "@/react-app/shell/session-memory";
+import { ensureBrowserMcp, executeQaTask } from "@/app/lib/qa-agent";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import { McpUrlSelector } from "./mcp-url-manager";
 import { TargetUrlSelector } from "./target-url-manager";
@@ -314,19 +306,12 @@ Return ONLY valid JSON, no markdown, no explanation.`;
     setRunPlanId(plan.id);
     try {
       const mcpUrl = await ensureBrowserMcp();
-      const run = createTestRun(plan.id, plan.name, storedTargetUrl);
       const { normalizedBaseUrl, resolvedToken } =
         await resolveOpenworkConnection();
-      if (!normalizedBaseUrl || !resolvedToken) {
-        updateTestRun(run.id, { status: "failed" });
-        return;
-      }
+      if (!normalizedBaseUrl || !resolvedToken) return;
       const scope = readSprintnexAicoeScope();
       const mappedWsId = getMappedWorkspaceForSprintnexProject(scope.projectId);
-      if (!mappedWsId) {
-        updateTestRun(run.id, { status: "failed" });
-        return;
-      }
+      if (!mappedWsId) return;
       const opencodeClient = createClient(
         `${normalizedBaseUrl}/workspace/${mappedWsId}/opencode`,
         undefined,
@@ -337,28 +322,15 @@ Return ONLY valid JSON, no markdown, no explanation.`;
         await opencodeClient.session.create({ directory: undefined }),
       );
       const sid = created.id;
-      updateTestRun(run.id, { sessionId: sid });
 
-      // Initialize scenario results
-      const scenarioResults = getPlanScenarios(plan).map(
-        (sc): import("@/app/lib/test-plan-store").ScenarioResult => ({
-          scenarioId: sc.id,
-          scenarioName: sc.name,
-          status: "running" as const,
-          steps: sc.steps.map((st) => ({
-            stepId: st.id,
-            action: st.action,
-            status: "skipped" as const,
-          })),
-          screenshots: [],
-          logs: [`Started at ${new Date().toLocaleTimeString()}`],
-          startedAt: new Date().toISOString(),
-        }),
-      );
-      updateTestRun(run.id, {
-        scenarioResults,
-        totalScenarios: scenarioResults.length,
-      });
+      // Select the workspace + mark this as the active session so the
+      // session route loads the new session instead of failing to find it.
+      try {
+        writeActiveWorkspaceId(mappedWsId);
+        window.localStorage.setItem(`openwork.lastSession.${mappedWsId}`, sid);
+      } catch {
+        /* not critical */
+      }
 
       // Format scenarios as QA test instructions
       const stepsText = getPlanScenarios(plan)
@@ -378,7 +350,16 @@ Return ONLY valid JSON, no markdown, no explanation.`;
         ? `\n**Target URL:** ${storedTargetUrl}`
         : "";
 
-      const prompt = `## QA Test Execution\n\n**Test Plan:** ${plan.name}\n**Type:** ${plan.testType}${targetInfo}\n\n**Scenarios to execute:**\n\n${stepsText}\n\nExecute these test scenarios using the browser automation tools available to you. The MCP browser server is at ${mcpUrl}. Navigate to the application and follow each step. Take screenshots at key points. Report pass/fail for each scenario with detailed results.\n\nAt the END of your response, output ONLY a JSON report in this exact format (no markdown around it):\n{"results":[{"scenario":"<exact scenario name>","status":"pass|fail|error","notes":"<optional detail>"}]}`;
+      // Deterministic filesystem report directory under the workspace root.
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const planSlug =
+        (plan.name || "test-plan")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "") || "test-plan";
+      const reportDir = `test-reports/${planSlug}/${timestamp}`;
+
+      const prompt = `## QA Test Execution\n\n**Test Plan:** ${plan.name}\n**Type:** ${plan.testType}${targetInfo}\n\n**Scenarios to execute:**\n\n${stepsText}\n\nExecute these test scenarios using the browser automation tools available to you. The MCP browser server is at ${mcpUrl}. Navigate to the application and follow each step. Take a screenshot at every step.\n\n### Report output — write to filesystem (IMPORTANT)\n\nWrite the full test report and ALL screenshots into this directory inside the current workspace (create it if needed):\n\n\`${reportDir}/\`\n\nRequired structure:\n- \`${reportDir}/REPORT.md\` — complete report: plan name, type, target URL, timestamp, and for EACH scenario: name, PASS/FAIL result, step-by-step outcomes, and the relative paths of its screenshots.\n- \`${reportDir}/scenario-1-<short-name>/step-1.png\`, \`step-2.png\`, ... — one folder per scenario with numbered screenshots in execution order.\n\nRules:\n- Save every screenshot you capture into its scenario folder with a numbered filename.\n- After all scenarios finish, write \`${reportDir}/REPORT.md\` with the results.\n- Reference screenshots in REPORT.md using paths relative to the workspace root.\n- Do not write the report anywhere else.`;
 
       await opencodeClient.session.promptAsync({
         sessionID: sid,
@@ -386,101 +367,6 @@ Return ONLY valid JSON, no markdown, no explanation.`;
       });
 
       navigate(`/session/${sid}`);
-
-      // Background: poll for the agent's report and update the run results.
-      void (async () => {
-        const pollStart = Date.now();
-        while (Date.now() - pollStart < 10 * 60 * 1000) {
-          await new Promise((r) => setTimeout(r, 4000));
-          try {
-            const msgsResult = await opencodeClient.session.messages({
-              sessionID: sid,
-              limit: 20,
-            });
-            const msgsData =
-              msgsResult &&
-              typeof msgsResult === "object" &&
-              "data" in msgsResult
-                ? (msgsResult as { data?: unknown }).data
-                : null;
-            if (!Array.isArray(msgsData)) continue;
-            const assistantMsg = [...msgsData].reverse().find((m: unknown) => {
-              if (!m || typeof m !== "object") return false;
-              const info = (m as Record<string, unknown>).info;
-              return (
-                info &&
-                typeof info === "object" &&
-                (info as Record<string, unknown>).role === "assistant"
-              );
-            });
-            if (!assistantMsg) continue;
-            const parts = (assistantMsg as Record<string, unknown>).parts;
-            if (!Array.isArray(parts)) continue;
-            const text = parts
-              .filter(
-                (p: unknown) =>
-                  p &&
-                  typeof p === "object" &&
-                  (p as Record<string, unknown>).type === "text",
-              )
-              .map(
-                (p: unknown) => (p as Record<string, unknown>).text as string,
-              )
-              .filter(Boolean)
-              .join("\n");
-            if (!text.trim()) continue;
-
-            const items = parseQaExecutionReport(text);
-            if (!items || items.length === 0) continue;
-
-            // Map parsed report onto the initialized scenario results.
-            const nameToIndex = new Map(
-              scenarioResults.map((sr, i) => [
-                sr.scenarioName.toLowerCase(),
-                i,
-              ]),
-            );
-            const updated = scenarioResults.map((sr) => ({ ...sr }));
-            let passed = 0;
-            let failed = 0;
-            let errors = 0;
-            items.forEach((item, index) => {
-              const matched =
-                nameToIndex.get(item.scenario.toLowerCase()) ??
-                (index < updated.length ? index : undefined);
-              if (matched === undefined) return;
-              const target = updated[matched];
-              if (!target) return;
-              target.status = item.status;
-              target.completedAt = new Date().toISOString();
-              target.logs = [
-                ...target.logs,
-                `${item.status.toUpperCase()}: ${item.scenario}`,
-                ...(item.notes ? [item.notes] : []),
-              ];
-              if (item.status === "pass") passed++;
-              else if (item.status === "fail") failed++;
-              else errors++;
-            });
-            updateTestRun(run.id, {
-              scenarioResults: updated,
-              status: failed > 0 || errors > 0 ? "failed" : "completed",
-              passed,
-              failed,
-              errors,
-              completedAt: new Date().toISOString(),
-            });
-            return;
-          } catch {
-            /* keep polling */
-          }
-        }
-        // Timed out without a parseable report.
-        updateTestRun(run.id, {
-          status: "failed",
-          completedAt: new Date().toISOString(),
-        });
-      })();
     } catch {
       // silently fail
     } finally {
@@ -924,120 +810,6 @@ The JSON must be a valid array of scenario objects. Include relevant scenarios b
   );
 }
 
-// ── Runs View ──────────────────────────────────────────────────────────────
-
-function RunsView() {
-  const navigate = useNavigate();
-  const runs = useTestRuns();
-
-  const statusColor = (status: TestRun["status"]) => {
-    switch (status) {
-      case "running":
-        return "text-blue-500";
-      case "completed":
-        return "text-emerald-500";
-      case "failed":
-        return "text-red-500";
-      case "aborted":
-        return "text-gray-500";
-    }
-  };
-
-  const statusLabel = (status: TestRun["status"]) => {
-    switch (status) {
-      case "running":
-        return "Running";
-      case "completed":
-        return "Passed";
-      case "failed":
-        return "Failed";
-      case "aborted":
-        return "Aborted";
-    }
-  };
-
-  return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-auto">
-      {runs.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center">
-          <div className="text-center">
-            <BarChart3 className="mx-auto size-8 text-dls-muted" />
-            <p className="mt-2 text-sm text-dls-secondary">No runs yet</p>
-            <p className="text-xs text-dls-muted">
-              Run a test plan to see execution results here
-            </p>
-          </div>
-        </div>
-      ) : (
-        runs.map((run) => (
-          <div
-            key={run.id}
-            className="rounded-lg border border-dls-border bg-dls-surface p-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-medium text-dls-text">
-                    {run.planName}
-                  </span>
-                  <span
-                    className={`text-xs font-medium ${statusColor(run.status)}`}
-                  >
-                    {statusLabel(run.status)}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-[10px] text-dls-muted">
-                  {new Date(run.startedAt).toLocaleString()}
-                  {run.completedAt &&
-                    ` · ${Math.round((new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime()) / 1000)}s`}
-                </p>
-                {run.targetUrl && (
-                  <p className="truncate text-[10px] text-dls-muted">
-                    Target: {run.targetUrl}
-                  </p>
-                )}
-              </div>
-              <div className="flex shrink-0 items-center gap-2 text-[11px]">
-                <span className="text-emerald-500">{run.passed} pass</span>
-                <span className="text-red-500">{run.failed} fail</span>
-                <span className="text-orange-500">{run.errors} err</span>
-              </div>
-            </div>
-            {run.scenarioResults.length > 0 && (
-              <div className="mt-2 space-y-1 border-t border-dls-border pt-2">
-                {run.scenarioResults.map((sr, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[11px]">
-                    <span
-                      className={`size-1.5 shrink-0 rounded-full ${
-                        sr.status === "pass"
-                          ? "bg-emerald-500"
-                          : sr.status === "fail"
-                            ? "bg-red-500"
-                            : sr.status === "error"
-                              ? "bg-orange-500"
-                              : "bg-gray-400"
-                      }`}
-                    />
-                    <span className="flex-1 truncate text-dls-text">
-                      {sr.scenarioName}
-                    </span>
-                    <span className="text-dls-muted">{sr.status}</span>
-                    {sr.screenshots.length > 0 && (
-                      <span className="text-dls-muted">
-                        📷 {sr.screenshots.length}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ))
-      )}
-    </div>
-  );
-}
-
 // ── Scenarios View ─────────────────────────────────────────────────────────
 
 function ScenariosView() {
@@ -1453,12 +1225,6 @@ export default function SprintnexTestsPage() {
       icon: LayoutTemplate,
       onClick: () => setActiveTab("scenarios"),
     },
-    {
-      id: "runs",
-      label: "Runs",
-      icon: BarChart3,
-      onClick: () => setActiveTab("runs"),
-    },
   ];
 
   return (
@@ -1475,9 +1241,7 @@ export default function SprintnexTestsPage() {
               <p className="text-xs text-dls-secondary">
                 {activeTab === "chat"
                   ? "AI test plan assistant"
-                  : activeTab === "runs"
-                    ? "Test execution history"
-                    : `${plans.length} plan${plans.length !== 1 ? "s" : ""}`}
+                  : `${plans.length} plan${plans.length !== 1 ? "s" : ""}`}
                 {scope.projectName ? ` · ${scope.projectName}` : ""}
               </p>
             </div>
@@ -1520,8 +1284,6 @@ export default function SprintnexTestsPage() {
         {activeTab === "chat" && <ChatView />}
 
         {activeTab === "scenarios" && <ScenariosView />}
-
-        {activeTab === "runs" && <RunsView />}
       </div>
     </div>
   );
