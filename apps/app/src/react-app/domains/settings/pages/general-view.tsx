@@ -35,20 +35,70 @@ type SettingsCardDefinition = { tab: SettingsTab; icon: typeof Sparkles } & (
 );
 
 const workspaceCards: SettingsCardDefinition[] = [
-  { tab: "preferences", icon: Cog, title: "Preferences", desc: "Default model, reasoning, and compaction." },
-  { tab: "permissions", icon: FolderLock, title: "Permissions", desc: "Authorized folders and file access." },
-  { tab: "extensions", icon: Puzzle, title: "Extensions", desc: "MCPs, skills, plugins, and integrations." },
-  { tab: "advanced", icon: Wrench, title: "Advanced", desc: "Runtime, engine, and developer options." },
+  {
+    tab: "preferences",
+    icon: Cog,
+    title: "Preferences",
+    desc: "Default model, reasoning, and compaction.",
+  },
+  {
+    tab: "permissions",
+    icon: FolderLock,
+    title: "Permissions",
+    desc: "Authorized folders and file access.",
+  },
+  {
+    tab: "extensions",
+    icon: Puzzle,
+    title: "Extensions",
+    desc: "MCPs, skills, plugins, and integrations.",
+  },
+  {
+    tab: "advanced",
+    icon: Wrench,
+    title: "Advanced",
+    desc: "Runtime, engine, and developer options.",
+  },
 ];
 
 const globalCards: SettingsCardDefinition[] = [
-  { tab: "ai", icon: Sparkles, title: "AI Providers", desc: "Connect services that provide AI models." },
-  { tab: "cloud-account", icon: Cloud, title: "Cloud", desc: "OpenWork Cloud account and organization." },
-  { tab: "connect", icon: Cable, titleKey: "settings.tab_connect", descKey: "settings.tab_description_connect" },
-  { tab: "appearance", icon: Paintbrush, title: "Appearance", desc: "Theme, font size, and display." },
-  { tab: "environment", icon: Terminal, title: "Environment", desc: "Environment variables and paths." },
-  { tab: "updates", icon: RefreshCcw, title: "Updates", desc: "App version and update channel." },
-  { tab: "recovery", icon: ShieldCheck, title: "Recovery", desc: "Reset onboarding and clear data." },
+  {
+    tab: "ai",
+    icon: Sparkles,
+    title: "AI Providers",
+    desc: "Connect services that provide AI models.",
+  },
+  // { tab: "cloud-account", icon: Cloud, title: "Cloud", desc: "OpenWork Cloud account and organization." },
+  {
+    tab: "connect",
+    icon: Cable,
+    titleKey: "settings.tab_connect",
+    descKey: "settings.tab_description_connect",
+  },
+  {
+    tab: "appearance",
+    icon: Paintbrush,
+    title: "Appearance",
+    desc: "Theme, font size, and display.",
+  },
+  {
+    tab: "environment",
+    icon: Terminal,
+    title: "Environment",
+    desc: "Environment variables and paths.",
+  },
+  {
+    tab: "updates",
+    icon: RefreshCcw,
+    title: "Updates",
+    desc: "App version and update channel.",
+  },
+  {
+    tab: "recovery",
+    icon: ShieldCheck,
+    title: "Recovery",
+    desc: "Reset onboarding and clear data.",
+  },
 ];
 
 function cardTitle(card: SettingsCardDefinition) {
@@ -75,7 +125,9 @@ function SettingsCard(props: {
         <props.icon size={16} className="text-dls-secondary" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium text-dls-text">{props.title}</div>
+        <div className="text-[13px] font-medium text-dls-text">
+          {props.title}
+        </div>
         <div className="text-[11px] text-dls-secondary">{props.desc}</div>
       </div>
       <ArrowRight size={14} className="shrink-0 text-dls-secondary" />
@@ -132,9 +184,13 @@ export function GeneralSettingsView(props: GeneralSettingsViewProps) {
             <div>
               <div className="flex items-center gap-2">
                 <LifeBuoy size={14} className="text-dls-secondary" />
-                <div className="text-[13px] font-medium text-dls-text">{t("settings.feedback_title")}</div>
+                <div className="text-[13px] font-medium text-dls-text">
+                  {t("settings.feedback_title")}
+                </div>
               </div>
-              <div className="mt-1 max-w-[58ch] text-[11px] text-dls-secondary">{t("settings.feedback_desc")}</div>
+              <div className="mt-1 max-w-[58ch] text-[11px] text-dls-secondary">
+                {t("settings.feedback_desc")}
+              </div>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button
@@ -146,19 +202,11 @@ export function GeneralSettingsView(props: GeneralSettingsViewProps) {
                 {t("settings.send_feedback")}
                 <ArrowUpRight size={11} />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={props.onJoinDiscord}
-              >
+              <Button variant="outline" size="sm" onClick={props.onJoinDiscord}>
                 {t("settings.join_discord")}
                 <ArrowUpRight size={11} />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={props.onReportIssue}
-              >
+              <Button variant="outline" size="sm" onClick={props.onReportIssue}>
                 {t("settings.report_issue")}
                 <ArrowUpRight size={11} />
               </Button>

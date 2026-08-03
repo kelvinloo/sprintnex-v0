@@ -243,7 +243,7 @@ export function StatusBar(props: StatusBarProps) {
         />
 
         <div className="flex items-center gap-1">
-          {shellConfig.docsButton ? (
+          {/* {shellConfig.docsButton ? (
             <Button
               ref={docsButtonRef}
               className="text-muted-foreground gap-2"
@@ -270,7 +270,7 @@ export function StatusBar(props: StatusBarProps) {
               <MessageCircleMore className="size-3.5" />
               <span>{t("status.feedback")}</span>
             </Button>
-          ) : null}
+          ) : null} */}
           {props.showSettingsButton !== false ? (
             <Tooltip>
               <TooltipTrigger

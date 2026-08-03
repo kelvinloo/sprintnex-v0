@@ -52,7 +52,8 @@ export type ExtensionsViewProps = {
 export function ExtensionsView(props: ExtensionsViewProps) {
   const [view, setView] = useState<"my" | "marketplace">("my");
   const connectEnabled = useConnectEnabled();
-  const showMarketplacePane = shouldShowExtensionsMarketplacePane(connectEnabled);
+  const showMarketplacePane =
+    shouldShowExtensionsMarketplacePane(connectEnabled);
   const activeView = showMarketplacePane ? view : "my";
   const pluginCount = useMemo(
     () => props.extensions.pluginList().length,
@@ -67,7 +68,9 @@ export function ExtensionsView(props: ExtensionsViewProps) {
             <div className="inline-flex items-center gap-2 rounded-full bg-green-3 px-3 py-1">
               <div className="size-2 rounded-full bg-green-9" />
               <span className="text-xs font-medium text-green-11">
-                {t("extensions.app_count", { count: props.mcpConnectedAppsCount })}
+                {t("extensions.app_count", {
+                  count: props.mcpConnectedAppsCount,
+                })}
               </span>
             </div>
           ) : null}
@@ -80,7 +83,12 @@ export function ExtensionsView(props: ExtensionsViewProps) {
       {connectEnabled === true ? (
         <div className="flex flex-col gap-2 rounded-xl border border-dls-border bg-dls-surface px-4 py-3 text-sm text-dls-secondary sm:flex-row sm:items-center sm:justify-between">
           <span>{t("extensions.connect_marketplace_split_hint")}</span>
-          <Button size="sm" variant="outline" className="w-fit" onClick={props.onOpenConnect}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-fit"
+            onClick={props.onOpenConnect}
+          >
             {t("extensions.open_connect")}
           </Button>
         </div>
@@ -95,18 +103,23 @@ export function ExtensionsView(props: ExtensionsViewProps) {
           >
             {t("extensions.my_extensions_tab")}
           </Button>
-          <Button
+          {/* <Button
             variant={view === "marketplace" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setView("marketplace")}
           >
             {t("extensions.marketplace_tab")}
-          </Button>
+          </Button> */}
         </div>
       ) : (
         <div className="flex flex-col gap-2 rounded-xl border border-dls-border bg-dls-surface px-4 py-3 text-sm text-dls-secondary sm:flex-row sm:items-center sm:justify-between">
           <span>{t("extensions.connect_marketplace_hint")}</span>
-          <Button size="sm" variant="outline" className="w-fit" onClick={props.onOpenConnect}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-fit"
+            onClick={props.onOpenConnect}
+          >
             {t("extensions.open_connect")}
           </Button>
         </div>
@@ -123,7 +136,9 @@ export function ExtensionsView(props: ExtensionsViewProps) {
               <summary className="flex cursor-pointer items-center gap-2 rounded-lg px-1 py-2 text-sm font-medium text-dls-secondary transition-colors hover:text-dls-text">
                 <Cpu size={14} />
                 <span>OpenCode Plugins</span>
-                <span className="text-[11px] text-dls-secondary">({pluginCount})</span>
+                <span className="text-[11px] text-dls-secondary">
+                  ({pluginCount})
+                </span>
               </summary>
               <div className="mt-3">
                 <PluginsView
@@ -139,10 +154,12 @@ export function ExtensionsView(props: ExtensionsViewProps) {
             </details>
           ) : null}
         </>
-      ) : props.cloudMarketplaceView ?? (
-        <div className="rounded-xl border border-dashed border-dls-border px-5 py-10 text-center text-sm text-dls-secondary">
-          Marketplace is unavailable.
-        </div>
+      ) : (
+        (props.cloudMarketplaceView ?? (
+          <div className="rounded-xl border border-dashed border-dls-border px-5 py-10 text-center text-sm text-dls-secondary">
+            Marketplace is unavailable.
+          </div>
+        ))
       )}
     </section>
   );
