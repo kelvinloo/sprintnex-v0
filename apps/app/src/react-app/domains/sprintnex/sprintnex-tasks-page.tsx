@@ -295,9 +295,14 @@ export function SprintnexTasksPage() {
       });
       let agentOutput = "";
       let lastAssistantText = "";
-      const pollStartedAt = Date.now();
-      const POLL_TIMEOUT_MS = 10 * 60 * 1000;
-      while (Date.now() - pollStartedAt < POLL_TIMEOUT_MS) {
+      // A stage may legitimately run for a long time (multiple long processing
+      // steps). Instead of a fixed wall-clock cap, extend the deadline whenever
+      // the agent is observed actively working ("busy"/"retry"). We only give
+      // up when the agent stops being active for STALL_TIMEOUT_MS — i.e. a real
+      // stall, not a long-running stage.
+      const STALL_TIMEOUT_MS = 10 * 60 * 1000;
+      let lastAgentActivityAt = Date.now();
+      while (Date.now() - lastAgentActivityAt < STALL_TIMEOUT_MS) {
         await new Promise((r) => setTimeout(r, 2000));
         try {
           if (!serverClient || !mappedWsId) {
@@ -323,6 +328,8 @@ export function SprintnexTasksPage() {
               );
             });
             if (!assistantMsg) continue;
+            // The agent is producing output — keep waiting for the stage to finish.
+            lastAgentActivityAt = Date.now();
             const parts = (assistantMsg as Record<string, unknown>).parts;
             if (!Array.isArray(parts)) continue;
             lastAssistantText = parts
@@ -351,7 +358,9 @@ export function SprintnexTasksPage() {
           );
           const statusType = snapshot?.item?.status?.type;
           if (statusType === "busy" || statusType === "retry") {
-            // Agent still running — keep polling
+            // Agent still running — reset the stall deadline so long-running
+            // stages are never cut off.
+            lastAgentActivityAt = Date.now();
             continue;
           }
           if (statusType !== "idle") {
@@ -395,6 +404,12 @@ export function SprintnexTasksPage() {
         } catch (err) {
           console.warn("[sprintnex] Snapshot poll error", err);
         }
+      }
+      if (!agentOutput) {
+        console.warn(
+          "[sprintnex] Stage poll ended without agent output (possible stall)",
+          { stageIndex, taskId },
+        );
       }
       console.log("[sprintnex] Agent finished processing stage", {
         stageIndex,
