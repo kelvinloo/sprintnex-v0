@@ -241,6 +241,15 @@ export function SprintnexTasksPage() {
 
     const loopStartedAt = new Date().toISOString();
     let stageIndex = 0;
+    // The backend returns the current stage without an identifier, so
+    // fingerprint the stage content to detect the backend re-serving a stage we
+    // have already completed (e.g. the completion mark didn't advance it).
+    // Without this guard the loop would re-process the same request forever. A
+    // legitimate n8n re-run shows the same stage once; anything beyond
+    // MAX_SAME_STAGE_RUNS repeats is a stuck loop.
+    let lastStageKey: string | null = null;
+    let sameStageRuns = 0;
+    const MAX_SAME_STAGE_RUNS = 2;
 
     // Fetch active skills once per task execution and cache them for all stages.
     const activeSkillsBlock = await fetchActiveSkillsBlock();
@@ -257,6 +266,24 @@ export function SprintnexTasksPage() {
       if (!stage || !stage.instructions) {
         console.log("[sprintnex] No more stages — task complete");
         break;
+      }
+      // Guard against the backend re-serving the same stage we already ran
+      // (e.g. stage completion didn't advance it). Re-processing identical
+      // instructions repeatedly burns tokens/processes, so stop after a couple
+      // of repeats instead of looping forever.
+      const stageKey = `${stage.instructions}\u0000${stage.system ?? ""}`;
+      if (lastStageKey === stageKey) {
+        sameStageRuns += 1;
+        if (sameStageRuns >= MAX_SAME_STAGE_RUNS) {
+          console.error(
+            "[sprintnex] Same stage returned repeatedly — aborting loop to avoid re-processing the same request",
+            { taskId, stageIndex, repeats: sameStageRuns + 1 },
+          );
+          break;
+        }
+      } else {
+        lastStageKey = stageKey;
+        sameStageRuns = 0;
       }
       console.log("[sprintnex] Stage received", {
         stageIndex,
