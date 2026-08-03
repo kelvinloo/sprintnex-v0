@@ -41,7 +41,6 @@ import {
   pickDirectory,
   resolveWorkspaceListSelectedId,
   workspaceBootstrap,
-  workspaceCreateRemote,
   workspaceForget,
   workspaceSetRuntimeActive,
   workspaceSetSelected,
@@ -204,6 +203,8 @@ import {
   type SprintnexTaskRecord,
   type SprintnexTaskStatus,
 } from "@/react-app/domains/sprintnex/task-store";
+import { createScenario } from "@/app/lib/scenario-store";
+import { createTestPlan, updateTestPlan } from "@/app/lib/test-plan-store";
 import {
   legacySessionRoute,
   workspaceSessionRoute,
@@ -265,6 +266,76 @@ function focusPromptSoon() {
   if (typeof window === "undefined") return;
   const focus = () => window.dispatchEvent(new Event("openwork:focusPrompt"));
   [0, 80, 240, 600].forEach((delay) => window.setTimeout(focus, delay));
+}
+
+/**
+ * Best-effort parse of a chat reply into a test plan. Derives the name from
+ * the first heading/line and extracts a JSON array of scenarios when present
+ * (code fence or bare array). Falls back to a plan with just the reply text as
+ * the description.
+ */
+function parseTestPlanFromText(text: string): {
+  name: string;
+  description: string;
+  scenarios: Array<{
+    name: string;
+    description?: string;
+    tags?: string[];
+    steps?: { action: string; expectedResult: string }[];
+  }>;
+} {
+  const trimmed = text.trim();
+  const heading = trimmed.match(/^#{1,4}\s+(.+)$/m);
+  const firstLine = trimmed.split("\n").find((line) => line.trim()) ?? "";
+  const name =
+    (heading?.[1] ?? firstLine).replace(/[*_`]/g, "").trim().slice(0, 80) ||
+    "Test Plan";
+
+  let rawScenarios: unknown[] = [];
+  const codeBlock = trimmed.match(/```json\s*([\s\S]*?)\s*```/);
+  if (codeBlock) {
+    try {
+      rawScenarios = JSON.parse(codeBlock[1]);
+    } catch {
+      /* ignore */
+    }
+  }
+  if (!Array.isArray(rawScenarios)) {
+    const first = trimmed.indexOf("[");
+    const last = trimmed.lastIndexOf("]");
+    if (first !== -1 && last > first) {
+      try {
+        rawScenarios = JSON.parse(trimmed.slice(first, last + 1));
+      } catch {
+        rawScenarios = [];
+      }
+    }
+  }
+
+  const scenarios = (Array.isArray(rawScenarios) ? rawScenarios : []).map(
+    (scenario, i) => {
+      const obj =
+        scenario && typeof scenario === "object"
+          ? (scenario as Record<string, unknown>)
+          : {};
+      return {
+        name: typeof obj.name === "string" ? obj.name : `Scenario ${i + 1}`,
+        description:
+          typeof obj.description === "string" ? obj.description : undefined,
+        tags: Array.isArray(obj.tags) ? (obj.tags as string[]) : undefined,
+        steps: Array.isArray(obj.steps)
+          ? (obj.steps as { action?: string; expectedResult?: string }[]).map(
+              (step) => ({
+                action: String(step?.action ?? ""),
+                expectedResult: String(step?.expectedResult ?? ""),
+              }),
+            )
+          : undefined,
+      };
+    },
+  );
+
+  return { name, description: trimmed, scenarios };
 }
 
 /**
@@ -615,11 +686,6 @@ export function SessionRoute() {
   const providerStepResendRef = useRef(false);
   const [createWorkspaceBusy, setCreateWorkspaceBusy] = useState(false);
   const [createWorkspaceError, setCreateWorkspaceError] = useState<
-    string | null
-  >(null);
-  const [createWorkspaceRemoteBusy, setCreateWorkspaceRemoteBusy] =
-    useState(false);
-  const [createWorkspaceRemoteError, setCreateWorkspaceRemoteError] = useState<
     string | null
   >(null);
   const [renameWorkspaceId, setRenameWorkspaceId] = useState<string | null>(
@@ -1132,6 +1198,44 @@ export function SessionRoute() {
     [navigate, selectedSessionId, sidebarActiveWorkspaceId],
   );
 
+  // Save an assistant chat reply as a test plan on the Test Plans page.
+  const handleSaveTestPlan = useCallback((_messageId: string, text: string) => {
+    const scope = readSprintnexAicoeScope();
+    if (!scope.projectId) return;
+    try {
+      const parsed = parseTestPlanFromText(text);
+      const plan = createTestPlan({
+        name: parsed.name,
+        description: parsed.description,
+        testType: "functional",
+      });
+      if (parsed.scenarios.length > 0) {
+        const scenarioIds = parsed.scenarios.map((scenario) => {
+          const created = createScenario({
+            name: scenario.name,
+            description: scenario.description || "",
+            steps: (scenario.steps || []).map((step, i) => ({
+              id: crypto.randomUUID(),
+              action: step.action,
+              expectedResult: step.expectedResult,
+              order: i,
+            })),
+            tags: scenario.tags || [],
+          });
+          return created.id;
+        });
+        updateTestPlan(plan.id, { scenarioIds });
+      }
+      toast.success("Test plan saved", {
+        description: `${parsed.name} added to the Test Plans page.`,
+      });
+    } catch (err) {
+      toast.error("Failed to save test plan", {
+        description: err instanceof Error ? err.message : "Unknown error",
+      });
+    }
+  }, []);
+
   const surfaceProps = useMemo(() => {
     if (
       !client ||
@@ -1401,6 +1505,9 @@ export function SessionRoute() {
           throw new Error(serializeSDKError(result.error));
         }
       },
+      onSaveTestPlan: readSprintnexAicoeScope().projectId
+        ? handleSaveTestPlan
+        : undefined,
       onDraftChange: () => {
         // Draft persistence will be wired once the full React shell owns session state.
       },
@@ -1532,6 +1639,7 @@ export function SessionRoute() {
     selectedWorkspaceId,
     selectedWorkspaceRoot,
     sessionsByWorkspaceId,
+    handleSaveTestPlan,
     token,
   ]);
 
@@ -1584,7 +1692,6 @@ export function SessionRoute() {
       });
       return;
     }
-    setCreateWorkspaceRemoteError(null);
     setCreateWorkspaceOpen(true);
   }, [checkDesktopRestriction, restrictionNotice, workspaces.length]);
 
@@ -2897,68 +3004,6 @@ export function SessionRoute() {
   );
   useControlAction(createWorkspaceControlAction);
 
-  const handleCreateRemoteWorkspace = useCallback(
-    async (input: {
-      openworkHostUrl?: string | null;
-      openworkToken?: string | null;
-      directory?: string | null;
-      displayName?: string | null;
-    }) => {
-      const baseUrlValue = input.openworkHostUrl?.trim() ?? "";
-      if (!baseUrlValue) return false;
-      setCreateWorkspaceRemoteBusy(true);
-      setCreateWorkspaceRemoteError(null);
-      try {
-        const remoteType: "openwork" = "openwork";
-        const payload = {
-          baseUrl: baseUrlValue,
-          openworkHostUrl: baseUrlValue,
-          openworkToken: input.openworkToken?.trim() || null,
-          displayName: input.displayName?.trim() || null,
-          directory: input.directory?.trim() || null,
-          remoteType,
-        };
-        let list: WorkspaceList | null = null;
-        if (isDesktopRuntime()) {
-          list = await workspaceCreateRemote(payload);
-        } else if (client) {
-          list = await client.createRemoteWorkspace(payload).catch(() => null);
-        }
-        if (!list) {
-          throw new Error(
-            "Sprintnex server is unavailable. Start or reconnect the server before connecting a remote workspace.",
-          );
-        }
-        const createdId =
-          resolveWorkspaceListSelectedId(list) ||
-          list.workspaces[list.workspaces.length - 1]?.id ||
-          "";
-        if (createdId) {
-          await workspaceSetSelected(createdId).catch(() => undefined);
-          await workspaceSetRuntimeActive(createdId).catch(() => undefined);
-        }
-        setCreateWorkspaceOpen(false);
-        // Mark onboarding complete so the /welcome redirect never fires again.
-        // Completing the classic flow also counts as the provider step.
-        local.setPrefs((prev) => ({
-          ...prev,
-          hasCompletedOnboarding: true,
-          providerStepCompleted: true,
-        }));
-        await refreshRouteState();
-        return true;
-      } catch (error) {
-        setCreateWorkspaceRemoteError(
-          error instanceof Error ? error.message : t("app.unknown_error"),
-        );
-        return false;
-      } finally {
-        setCreateWorkspaceRemoteBusy(false);
-      }
-    },
-    [client, local, refreshRouteState],
-  );
-
   return (
     <WorkspaceProvider
       client={opencodeClient}
@@ -3320,7 +3365,6 @@ export function SessionRoute() {
           setCreateWorkspaceError(null);
         }}
         onConfirm={handleCreateWorkspace}
-        onConfirmRemote={handleCreateRemoteWorkspace}
         onPickFolder={() =>
           pickDirectory({ title: t("onboarding.authorize_folder") }) as Promise<
             string | null
@@ -3328,8 +3372,6 @@ export function SessionRoute() {
         }
         submitting={createWorkspaceBusy}
         localError={createWorkspaceError}
-        remoteSubmitting={createWorkspaceRemoteBusy}
-        remoteError={createWorkspaceRemoteError}
       />
       <SprintnexTaskCreateModal
         open={sprintnexTaskCreate !== null}

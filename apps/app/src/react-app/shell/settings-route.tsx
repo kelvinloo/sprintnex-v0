@@ -128,7 +128,6 @@ import {
   pickDirectory,
   resolveWorkspaceListSelectedId,
   workspaceBootstrap,
-  workspaceCreateRemote,
   workspaceForget,
   workspaceSetRuntimeActive,
   workspaceSetSelected,
@@ -516,11 +515,6 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
   const [createWorkspaceOpen, setCreateWorkspaceOpen] = useState(false);
   const [createWorkspaceBusy, setCreateWorkspaceBusy] = useState(false);
   const [createWorkspaceError, setCreateWorkspaceError] = useState<
-    string | null
-  >(null);
-  const [createWorkspaceRemoteBusy, setCreateWorkspaceRemoteBusy] =
-    useState(false);
-  const [createWorkspaceRemoteError, setCreateWorkspaceRemoteError] = useState<
     string | null
   >(null);
   const [renameWorkspaceId, setRenameWorkspaceId] = useState<string | null>(
@@ -2221,7 +2215,6 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
     }
 
     setCreateWorkspaceError(null);
-    setCreateWorkspaceRemoteError(null);
     setCreateWorkspaceOpen(true);
   };
 
@@ -2405,60 +2398,6 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
       setCreateWorkspaceError(describeWorkspaceCreateError(error));
     } finally {
       setCreateWorkspaceBusy(false);
-    }
-  };
-
-  const handleCreateRemoteWorkspace = async (input: {
-    openworkHostUrl?: string | null;
-    openworkToken?: string | null;
-    directory?: string | null;
-    displayName?: string | null;
-  }) => {
-    const baseUrlValue = input.openworkHostUrl?.trim() ?? "";
-    if (!baseUrlValue) return false;
-    setCreateWorkspaceRemoteBusy(true);
-    setCreateWorkspaceRemoteError(null);
-    try {
-      const remoteType: "openwork" = "openwork";
-      const payload = {
-        baseUrl: baseUrlValue,
-        openworkHostUrl: baseUrlValue,
-        openworkToken: input.openworkToken?.trim() || null,
-        displayName: input.displayName?.trim() || null,
-        directory: input.directory?.trim() || null,
-        remoteType,
-      };
-      let list: WorkspaceList | null = null;
-      if (isDesktopRuntime()) {
-        list = await workspaceCreateRemote(payload);
-      } else if (openworkClient) {
-        list = await openworkClient
-          .createRemoteWorkspace(payload)
-          .catch(() => null);
-      }
-      if (!list) {
-        throw new Error(
-          "OpenWork server is unavailable. Start or reconnect the server before connecting a remote workspace.",
-        );
-      }
-      const createdId =
-        resolveWorkspaceListSelectedId(list) ||
-        list.workspaces[list.workspaces.length - 1]?.id ||
-        "";
-      if (createdId) {
-        await workspaceSetSelected(createdId).catch(() => undefined);
-        await workspaceSetRuntimeActive(createdId).catch(() => undefined);
-      }
-      setCreateWorkspaceOpen(false);
-      await refreshRouteState();
-      return true;
-    } catch (error) {
-      setCreateWorkspaceRemoteError(
-        error instanceof Error ? error.message : t("app.unknown_error"),
-      );
-      return false;
-    } finally {
-      setCreateWorkspaceRemoteBusy(false);
     }
   };
 
@@ -2929,7 +2868,6 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
           setCreateWorkspaceError(null);
         }}
         onConfirm={handleCreateWorkspace}
-        onConfirmRemote={handleCreateRemoteWorkspace}
         onPickFolder={() =>
           pickDirectory({ title: t("onboarding.authorize_folder") }) as Promise<
             string | null
@@ -2938,8 +2876,6 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
         submitting={createWorkspaceBusy}
         localError={createWorkspaceError}
         showProjectLabel={false}
-        remoteSubmitting={createWorkspaceRemoteBusy}
-        remoteError={createWorkspaceRemoteError}
       />
       <RenameWorkspaceModal
         open={renameWorkspaceId !== null}

@@ -9,16 +9,13 @@ export type CreateWorkspaceLocalState = {
   showProgressDetails: boolean;
   now: number;
   projectLabel: string;
-  remoteUrl: string;
-  remoteToken: string;
-  remoteDisplayName: string;
-  remoteTokenVisible: boolean;
 };
 
-type CreateWorkspaceLocalAction<K extends keyof CreateWorkspaceLocalState = keyof CreateWorkspaceLocalState> =
+type CreateWorkspaceLocalAction<
+  K extends keyof CreateWorkspaceLocalState = keyof CreateWorkspaceLocalState,
+> =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic key dispatch requires any
-  | { type: "set"; key: K; value: SetStateAction<any> }
-  | { type: "reset" };
+  { type: "set"; key: K; value: SetStateAction<any> } | { type: "reset" };
 
 export function createInitialWorkspaceLocalState(): CreateWorkspaceLocalState {
   return {
@@ -28,10 +25,6 @@ export function createInitialWorkspaceLocalState(): CreateWorkspaceLocalState {
     showProgressDetails: false,
     now: Date.now(),
     projectLabel: "",
-    remoteUrl: "",
-    remoteToken: "",
-    remoteDisplayName: "",
-    remoteTokenVisible: false,
   };
 }
 

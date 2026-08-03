@@ -8,6 +8,7 @@ import {
   FileIcon,
   LoaderCircle,
   Pencil,
+  Save,
   Split,
   Undo2,
 } from "lucide-react";
@@ -323,10 +324,14 @@ type AssistantMessageProps = {
 };
 
 const AssistantMessage = React.memo(({ message }: AssistantMessageProps) => {
-  const { showThinking, highlightQuery } = useMessageList();
+  const { showThinking, highlightQuery, onSaveTestPlan } = useMessageList();
   const assistantRenderGroups = React.useMemo(
     () => getAssistantRenderGroups(message.parts, showThinking),
     [message.parts, showThinking],
+  );
+  const messageText = React.useMemo(
+    () => getMessagesText([message]),
+    [message],
   );
 
   return (
@@ -376,6 +381,20 @@ const AssistantMessage = React.memo(({ message }: AssistantMessageProps) => {
             </div>
           );
         })}
+        {onSaveTestPlan && messageText ? (
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 gap-1.5 px-2 text-xs text-dls-secondary hover:text-dls-text"
+              aria-label="Save to Test Plans"
+              onClick={() => onSaveTestPlan(message.id, messageText)}
+            >
+              <Save className="size-3.5" />
+              Save to Test Plans
+            </Button>
+          </div>
+        ) : null}
       </div>
     </Message>
   );

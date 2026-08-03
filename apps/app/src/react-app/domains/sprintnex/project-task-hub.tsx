@@ -26,7 +26,6 @@ import {
   getSprintnexWorkspaces,
   listSprintnexAicoeTasks,
   readSprintnexAicoeScope,
-  retrySprintnexTask,
   startSprintnexTask,
   updateSprintnexTaskStatus,
   writeSprintnexWorkspaceScope,
@@ -506,21 +505,6 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
     }
   };
 
-  const retrySelected = async () => {
-    if (!ensureScopeReady()) return;
-    if (!selected) return;
-    setActionBusy(true);
-    try {
-      await retrySprintnexTask(selected.taskId);
-      await fetchTasks();
-      pollTaskExecution(selected.taskId);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Retry failed");
-    } finally {
-      setActionBusy(false);
-    }
-  };
-
   const toggleTaskSelection = (taskId: string) => {
     setSelectedIds((current) => {
       const next = new Set(current);
@@ -889,15 +873,6 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                   >
                     <XCircle className="size-4" />
                     Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => void retrySelected()}
-                  >
-                    <RefreshCw className="size-4" />
-                    Retry
                   </Button>
                 </div>
                 {selectedIds.size ? (

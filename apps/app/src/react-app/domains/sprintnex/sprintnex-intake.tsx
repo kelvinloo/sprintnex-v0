@@ -66,6 +66,15 @@ function renderList(obj: Record<string, unknown>, key: string, label: string) {
   );
 }
 
+/** True once the delivery plan's governance gate has been approved. */
+function isPlanApproved(plan: Record<string, unknown>): boolean {
+  const governance = plan.governance as Record<string, unknown> | undefined;
+  return (
+    governance?.approvalStatus === "APPROVED" ||
+    plan.proposalStatus === "APPROVED"
+  );
+}
+
 function mapMessage(
   item: SprintnexDepartmentMessage,
   index: number,
@@ -112,9 +121,7 @@ function mapMessage(
       const rootMsg = (root as Record<string, unknown>).message;
       if (rootMsg !== undefined && rootMsg !== null) {
         displayText =
-          typeof rootMsg === "string"
-            ? rootMsg
-            : JSON.stringify(rootMsg);
+          typeof rootMsg === "string" ? rootMsg : JSON.stringify(rootMsg);
       }
       // else keep displayText = item.text (message was nested deeper)
     }
@@ -487,8 +494,9 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
                     </div>
                   ) : null}
 
-                  {/* Requirement */}
-                  {msg.planData.requirement &&
+                  {/* Requirement — hidden once the plan is approved */}
+                  {!isPlanApproved(msg.planData) &&
+                  msg.planData.requirement &&
                   typeof msg.planData.requirement === "object" ? (
                     <div className="mt-3 space-y-3 rounded-lg border border-blue-7/20 bg-blue-1/30 p-3">
                       <p className="text-xs font-medium text-blue-11">
@@ -543,8 +551,9 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
                     </div>
                   ) : null}
 
-                  {/* Tasks */}
-                  {Array.isArray(msg.planData.tasks) &&
+                  {/* Tasks — hidden once the plan is approved */}
+                  {!isPlanApproved(msg.planData) &&
+                  Array.isArray(msg.planData.tasks) &&
                   msg.planData.tasks.length > 0 ? (
                     <div className="mt-3 space-y-3">
                       <p className="text-xs font-medium text-green-11">Tasks</p>
