@@ -98,6 +98,8 @@ export type SprintnexDepartmentMessage = {
   metadata?: Record<string, unknown> | null;
 };
 
+import type { Agent } from "@opencode-ai/sdk/v2/client";
+
 import {
   API_ROOT,
   AICOE_BASE,
@@ -686,63 +688,171 @@ export async function classifySprintnexRequest(
   }
 }
 
-// ─── Multi-stage task execution ─────────────────────────────────────────────
+const N8N_AGENT_CONTEXT_URL =
+  "https://n8n.directintegrate.com/webhook/aicoe/agent/context";
 
-/** Poll for the current stage instructions. Returns null when no stage is ready. */
-export async function getSprintnexTaskCurrentStage(taskId: string): Promise<{
-  status: string;
-  instructions: string | null;
-  taskId: string;
-  system?: string;
-} | null> {
-  const response = await requestJson<unknown>(
-    `/tasks/${encodeURIComponent(taskId)}/current-stage`,
-  );
-  const data =
-    response && typeof response === "object" && "data" in response
-      ? (response as { data?: unknown }).data
-      : response;
-  if (!data) return null;
-  const record = data as Record<string, unknown>;
-  return {
-    status: String(record.status ?? ""),
-    instructions:
-      typeof record.instructions === "string" ? record.instructions : null,
-    taskId: String(record.taskId ?? taskId),
-    ...(typeof record.system === "string"
-      ? { system: record.system as string }
-      : {}),
-  };
+let sprintnexAgentsCache: Agent[] | null = null;
+
+/** Last successfully fetched Sprintnex client agents (empty until first fetch). */
+export function getCachedSprintnexAgents(): Agent[] {
+  return sprintnexAgentsCache ?? [];
 }
 
-/** Poll current stage until instructions arrive or timeout. */
-export async function pollSprintnexTaskStage(
+/**
+ * Resolve whether a selected agent name is a Sprintnex (n8n) client agent and,
+ * if so, its runtime system prompt. Membership is determined from the n8n
+ * agent list (cache, then fresh fetch), independently of whether a prompt is
+ * present — so an n8n agent never gets mistaken for a registered local agent.
+ */
+export async function resolveSprintnexAgent(name: string): Promise<{
+  isSprintnex: boolean;
+  prompt?: string;
+}> {
+  const cached = getCachedSprintnexAgents().find(
+    (agent) => agent.name === name,
+  );
+  if (cached) {
+    return {
+      isSprintnex: true,
+      ...(cached.prompt ? { prompt: cached.prompt } : {}),
+    };
+  }
+  const fresh = await fetchSprintnexAgents();
+  const freshFound = fresh.find((agent) => agent.name === name);
+  if (freshFound) {
+    return {
+      isSprintnex: true,
+      ...(freshFound.prompt ? { prompt: freshFound.prompt } : {}),
+    };
+  }
+  return { isSprintnex: false };
+}
+
+/**
+ * Fetch the active Sprintnex client agents directly from n8n.
+ * Each agent carries its runtime system prompt in `prompt`. Returns [] on any
+ * failure so callers fall back to the local OpenCode agent list.
+ */
+export async function fetchSprintnexAgents(): Promise<Agent[]> {
+  try {
+    const res = await fetch(N8N_AGENT_CONTEXT_URL, { method: "GET" });
+    if (!res.ok) return [];
+    const data = (await res.json()) as Record<string, unknown>;
+    const rawList =
+      (data?.agents as unknown) ?? (data?.data as unknown) ?? data ?? [];
+    if (!Array.isArray(rawList)) return [];
+    const agents = rawList
+      .map((item): Agent | null => {
+        const record = (item ?? {}) as Record<string, unknown>;
+        const name = typeof record.name === "string" ? record.name : "";
+        if (!name) return null;
+        const rawMode = record.mode;
+        const mode: Agent["mode"] =
+          rawMode === "subagent" || rawMode === "all" ? rawMode : "primary";
+        const description =
+          typeof record.description === "string"
+            ? record.description
+            : undefined;
+        const prompt =
+          typeof record.prompt === "string" ? record.prompt : undefined;
+        return {
+          name,
+          ...(description ? { description } : {}),
+          mode,
+          hidden: record.hidden === true,
+          ...(prompt ? { prompt } : {}),
+          permission: [],
+          options: {},
+        };
+      })
+      .filter((agent): agent is Agent => agent !== null);
+    sprintnexAgentsCache = agents;
+    return agents;
+  } catch {
+    return [];
+  }
+}
+
+// ─── Multi-stage task execution ─────────────────────────────────────────────
+
+const N8N_EXECUTION_OBSERVE_URL =
+  "https://n8n.directintegrate.com/webhook/aicoe/execution/observe";
+
+export type SprintnexExecutionObservation = {
+  status: string;
+  instructions: string | null;
+  system?: string;
+  completed: boolean;
+};
+
+/**
+ * Poll the current Sprintnex task stage directly from n8n. The webhook is
+ * expected to return the current stage as `instructions` and to signal the end
+ * of the task with `status: "COMPLETED"` (no further polling needed). Failures
+ * return a non-completed observation so the caller keeps polling.
+ */
+export async function observeSprintnexExecution(
+  taskId: string,
+): Promise<SprintnexExecutionObservation> {
+  const scope = readSprintnexAicoeScope();
+  try {
+    const res = await fetch(N8N_EXECUTION_OBSERVE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        organizationId: scope.organizationId,
+        teamId: scope.teamId,
+        projectId: scope.projectId,
+        userId: scope.userId,
+        taskId,
+      }),
+    });
+    if (!res.ok) {
+      return { status: "ERROR", instructions: null, completed: false };
+    }
+    const data = (await res.json()) as Record<string, unknown>;
+    const record = data && typeof data === "object" ? data : {};
+    const status = typeof record.status === "string" ? record.status : "";
+    const instructions =
+      typeof record.instructions === "string" ? record.instructions : null;
+    const system =
+      typeof record.system === "string" ? record.system : undefined;
+    return {
+      status,
+      instructions,
+      ...(system ? { system } : {}),
+      completed: status === "COMPLETED",
+    };
+  } catch {
+    return { status: "ERROR", instructions: null, completed: false };
+  }
+}
+
+/** Poll n8n until the task reports COMPLETED or a stage becomes ready, or timeout. */
+export async function pollObserveSprintnexExecution(
   taskId: string,
   timeoutMs = 300_000,
   intervalMs = 2_500,
-): Promise<{
-  status: string;
-  instructions: string | null;
-  taskId: string;
-  system?: string;
-} | null> {
+): Promise<SprintnexExecutionObservation> {
   const startedAt = Date.now();
   while (Date.now() - startedAt < timeoutMs) {
-    const stage = await getSprintnexTaskCurrentStage(taskId);
-    if (stage?.instructions) {
-      console.log("[sprintnex] pollSprintnexTaskStage found instructions", {
+    const observed = await observeSprintnexExecution(taskId);
+    if (observed.completed || observed.instructions) {
+      console.log("[sprintnex] observeSprintnexExecution returned", {
         taskId,
+        completed: observed.completed,
+        hasInstructions: Boolean(observed.instructions),
         elapsed: Date.now() - startedAt,
       });
-      return stage;
+      return observed;
     }
     await new Promise((r) => setTimeout(r, intervalMs));
   }
-  console.warn("[sprintnex] pollSprintnexTaskStage timed out", {
+  console.warn("[sprintnex] observeSprintnexExecution timed out", {
     taskId,
     timeoutMs,
   });
-  return null;
+  return { status: "TIMEOUT", instructions: null, completed: false };
 }
 
 /** Mark a stage as completed on the backend so polling moves to the next stage. */

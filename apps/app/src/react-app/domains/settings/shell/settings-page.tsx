@@ -168,6 +168,7 @@ export function getGlobalSettingsTabs(developerMode: boolean): SettingsTab[] {
     "shell",
     "appearance",
     "environment",
+    "updates",
     "recovery",
   ];
   if (developerMode) tabs.push("debug");

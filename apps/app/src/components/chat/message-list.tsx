@@ -226,6 +226,36 @@ function isSessionErrorMessage(message: UIMessage) {
   return message.id.startsWith(SYNTHETIC_SESSION_ERROR_MESSAGE_PREFIX);
 }
 
+/**
+ * True when the assistant reply looks like a test plan: it carries a scenarios
+ * JSON array (fenced or bare). Mirrors parseTestPlanFromText in session-route so
+ * the "Save to Test Plans" button only appears on actual test-plan output.
+ */
+function isLikelyTestPlan(text: string): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return false;
+  const block = trimmed.match(/```json\s*([\s\S]*?)\s*```/);
+  const candidate = block?.[1] ?? trimmed;
+  const first = candidate.indexOf("[");
+  const last = candidate.lastIndexOf("]");
+  if (first === -1 || last <= first) return false;
+  try {
+    const parsed = JSON.parse(candidate.slice(first, last + 1));
+    if (!Array.isArray(parsed)) return false;
+    return parsed.some((item) => {
+      if (!item || typeof item !== "object") return false;
+      const record = item as Record<string, unknown>;
+      return (
+        typeof record.name === "string" ||
+        typeof record.description === "string" ||
+        Array.isArray(record.steps)
+      );
+    });
+  } catch {
+    return false;
+  }
+}
+
 function retryDelaySeconds(status: RetryStatus) {
   return Math.max(0, Math.round((status.next - Date.now()) / 1000));
 }
@@ -381,7 +411,7 @@ const AssistantMessage = React.memo(({ message }: AssistantMessageProps) => {
             </div>
           );
         })}
-        {onSaveTestPlan && messageText ? (
+        {onSaveTestPlan && messageText && isLikelyTestPlan(messageText) ? (
           <div className="flex items-center gap-2 pt-1">
             <Button
               variant="outline"

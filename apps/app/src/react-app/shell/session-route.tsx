@@ -181,9 +181,11 @@ import { useSessionControlActions } from "@/react-app/domains/session/control/se
 import { SprintnexTaskCreateModal } from "@/react-app/domains/sprintnex/task-create-modal";
 import { buildSprintnexTaskCreationInstructions } from "@/app/lib/sprintnex-instructions";
 import {
+  fetchSprintnexAgents,
   getMappedWorkspaceForSprintnexProject,
   mapSprintnexProjectToWorkspace,
   readSprintnexAicoeScope,
+  resolveSprintnexAgent,
   type SprintnexAicoeScope,
   type SprintnexAicoeTask,
 } from "@/app/lib/sprintnex-aicoe-api";
@@ -1178,8 +1180,18 @@ export function SessionRoute() {
     // agent files become available, even when the inline picker is hidden.
     void engineReloadVersion;
     if (!opencodeClient) return [];
-    const list = unwrap(await opencodeClient.app.agents());
-    return list.filter((agent) => !agent.hidden && agent.mode !== "subagent");
+    const local = unwrap(await opencodeClient.app.agents()).filter(
+      (agent) => !agent.hidden && agent.mode !== "subagent",
+    );
+    // Sprintnex client agents from n8n take precedence; fall back to the
+    // local OpenCode agents when the webhook is unavailable or returns none.
+    const sprintnex = await fetchSprintnexAgents();
+    const seen = new Set<string>();
+    return [...sprintnex, ...local].filter((agent) => {
+      if (seen.has(agent.name)) return false;
+      seen.add(agent.name);
+      return true;
+    });
   }, [engineReloadVersion, opencodeClient]);
 
   const handleOpenSettings = useCallback(
@@ -1404,6 +1416,29 @@ export function SessionRoute() {
         const combinedSystem =
           systemParts.length > 0 ? systemParts.join("\n\n") : undefined;
 
+        // Resolve the selected agent. Sprintnex (n8n) agents are never passed
+        // to the engine by name (they are not registered as OpenCode agents) —
+        // their persona is always injected via `system` instead. Registered
+        // local agents are passed by name so the engine applies their own
+        // definition.
+        const selectedAgentResolution =
+          selectedAgent != null
+            ? await resolveSprintnexAgent(selectedAgent)
+            : undefined;
+        const isSelectedSprintnexAgent =
+          selectedAgentResolution?.isSprintnex === true;
+        const selectedSprintnexPrompt = selectedAgentResolution?.prompt;
+        const selectedAgentSystem =
+          isSelectedSprintnexAgent && selectedSprintnexPrompt
+            ? [selectedSprintnexPrompt, combinedSystem]
+                .filter(Boolean)
+                .join("\n\n")
+            : combinedSystem;
+        const selectedAgentOption =
+          selectedAgent && !isSelectedSprintnexAgent
+            ? { agent: selectedAgent }
+            : {};
+
         // Sprintnex: render + clear draft instantly, classify in background.
         if (currentScope.projectId) {
           const draftText = typeof draft?.text === "string" ? draft.text : "";
@@ -1484,7 +1519,8 @@ export function SessionRoute() {
                   ],
                   model: local.prefs.defaultModel ?? undefined,
                   ...(modelVariantValue ? { variant: modelVariantValue } : {}),
-                  system: combinedSystem,
+                  ...selectedAgentOption,
+                  system: selectedAgentSystem,
                 });
               } catch {
                 /* ignore */
@@ -1499,7 +1535,8 @@ export function SessionRoute() {
           parts,
           model: local.prefs.defaultModel ?? undefined,
           ...(modelVariantValue ? { variant: modelVariantValue } : {}),
-          ...(combinedSystem ? { system: combinedSystem } : {}),
+          ...selectedAgentOption,
+          ...(selectedAgentSystem ? { system: selectedAgentSystem } : {}),
         });
         if (result.error) {
           throw new Error(serializeSDKError(result.error));

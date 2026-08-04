@@ -30,8 +30,9 @@ function resolveAppVersion(app) {
   return _cachedAppVersion;
 }
 const ELECTRON_UPDATER_FEEDS = Object.freeze({
-  stable: "https://github.com/different-ai/openwork/releases/latest/download",
-  alpha: "https://github.com/different-ai/openwork/releases/download/alpha-macos-latest",
+  stable: "https://github.com/k3lvinlkf/openwork/releases/latest/download",
+  alpha:
+    "https://github.com/k3lvinlkf/openwork/releases/download/alpha-macos-latest",
 });
 
 function normalizeElectronUpdaterChannel(value) {
@@ -79,7 +80,10 @@ function parseComparableVersion(value) {
 
   const [releasePart, prereleasePart = ""] = versionCore.split("-", 2);
   const release = releasePart.split(".").map((segment) => Number(segment));
-  if (!release.length || release.some((segment) => !Number.isInteger(segment) || segment < 0)) {
+  if (
+    !release.length ||
+    release.some((segment) => !Number.isInteger(segment) || segment < 0)
+  ) {
     return null;
   }
 
@@ -107,7 +111,8 @@ function comparePrereleaseIdentifiers(left, right) {
     const rightNumeric = /^\d+$/.test(rightPart) ? Number(rightPart) : null;
 
     if (leftNumeric !== null && rightNumeric !== null) {
-      if (leftNumeric !== rightNumeric) return leftNumeric < rightNumeric ? -1 : 1;
+      if (leftNumeric !== rightNumeric)
+        return leftNumeric < rightNumeric ? -1 : 1;
       continue;
     }
 
@@ -133,7 +138,10 @@ function compareVersions(left, right) {
     if (leftPart !== rightPart) return leftPart < rightPart ? -1 : 1;
   }
 
-  return comparePrereleaseIdentifiers(parsedLeft.prerelease, parsedRight.prerelease);
+  return comparePrereleaseIdentifiers(
+    parsedLeft.prerelease,
+    parsedRight.prerelease,
+  );
 }
 
 function isVersionNewer(candidate, current) {
@@ -168,7 +176,11 @@ function runDefaults(args) {
     execFile("/usr/bin/defaults", args, (error) => {
       // Best-effort: a failure here just means we fall back to Squirrel's
       // default move-based install. Never block the update on it.
-      if (error) console.warn("[updater] defaults write failed", error?.message ?? error);
+      if (error)
+        console.warn(
+          "[updater] defaults write failed",
+          error?.message ?? error,
+        );
       resolve(undefined);
     });
   });
@@ -189,7 +201,13 @@ const SHIP_IT_DEFAULTS_DOMAIN = "com.differentai.openwork.ShipIt";
 // avoids the ENOENT abort.
 async function enableSquirrelDirectContentsWrite() {
   if (process.platform !== "darwin") return;
-  await runDefaults(["write", SHIP_IT_DEFAULTS_DOMAIN, "SquirrelMacEnableDirectContentsWrite", "-bool", "YES"]);
+  await runDefaults([
+    "write",
+    SHIP_IT_DEFAULTS_DOMAIN,
+    "SquirrelMacEnableDirectContentsWrite",
+    "-bool",
+    "YES",
+  ]);
 }
 
 // Path of the ShipIt cache that, when stuck, keeps aborting future installs.
@@ -208,7 +226,11 @@ async function cleanStaleUpdaterState(app) {
     try {
       await rm(target, { recursive: true, force: true });
     } catch (error) {
-      console.warn("[updater] failed to clean stale state", target, error?.message ?? error);
+      console.warn(
+        "[updater] failed to clean stale state",
+        target,
+        error?.message ?? error,
+      );
     }
   }
 }
@@ -296,12 +318,15 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
     const channelState = updater
       ? await applyElectronUpdaterFeed(app, updater)
       : updaterChannelState(app, await readElectronUpdaterChannel(app));
-    if (!updater) return { available: false, reason: "unavailable", ...channelState };
+    if (!updater)
+      return { available: false, reason: "unavailable", ...channelState };
     try {
       const result = await updater.checkForUpdates();
       const info = result?.updateInfo ?? null;
       const currentVersion = resolveAppVersion(app);
-      const available = Boolean(info?.version && isVersionNewer(info.version, currentVersion));
+      const available = Boolean(
+        info?.version && isVersionNewer(info.version, currentVersion),
+      );
       checkedUpdateVersion = available ? info.version : null;
       return {
         available,
@@ -313,7 +338,11 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
       };
     } catch (error) {
       checkedUpdateVersion = null;
-      return { available: false, reason: String(error?.message ?? error), ...channelState };
+      return {
+        available: false,
+        reason: String(error?.message ?? error),
+        ...channelState,
+      };
     }
   });
 
@@ -323,12 +352,16 @@ export function registerUpdaterIpc({ app, ipcMain, getMainWindow }) {
     try {
       await applyElectronUpdaterFeed(app, updater);
       const currentVersion = resolveAppVersion(app);
-      if (!checkedUpdateVersion || !isVersionNewer(checkedUpdateVersion, currentVersion)) {
+      if (
+        !checkedUpdateVersion ||
+        !isVersionNewer(checkedUpdateVersion, currentVersion)
+      ) {
         const result = await updater.checkForUpdates();
         const info = result?.updateInfo ?? null;
-        checkedUpdateVersion = info?.version && isVersionNewer(info.version, currentVersion)
-          ? info.version
-          : null;
+        checkedUpdateVersion =
+          info?.version && isVersionNewer(info.version, currentVersion)
+            ? info.version
+            : null;
       }
       if (!checkedUpdateVersion) {
         return { ok: false, reason: "No update available." };

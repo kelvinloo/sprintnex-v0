@@ -519,7 +519,7 @@ export function ReactSessionComposer(props: ComposerProps) {
     () => agents.filter(isNonDefaultAgent),
     [agents],
   );
-  const showAgentPicker = false;
+  const showAgentPicker = true;
 
   useEffect(() => {
     setSlashOpen(slashOpenNext);

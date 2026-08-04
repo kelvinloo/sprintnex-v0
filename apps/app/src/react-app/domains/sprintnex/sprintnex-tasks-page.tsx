@@ -224,7 +224,7 @@ export function SprintnexTasksPage() {
     openworkConnection?: { baseUrl: string; token: string },
   ) {
     const {
-      pollSprintnexTaskStage,
+      pollObserveSprintnexExecution,
       markSprintnexStageComplete,
       notifySprintnexStageComplete,
     } = await import("@/app/lib/sprintnex-aicoe-api");
@@ -260,11 +260,20 @@ export function SprintnexTasksPage() {
     }
 
     while (true) {
-      // 1. Poll for current stage instructions (single markdown string)
-      console.log("[sprintnex] Polling for stage instructions...", { taskId });
-      const stage = await pollSprintnexTaskStage(taskId);
-      if (!stage || !stage.instructions) {
-        console.log("[sprintnex] No more stages — task complete");
+      // 1. Poll n8n for the current stage instructions. The webhook returns
+      //    the stage as `instructions` and signals task completion with
+      //    `status: "COMPLETED"` (no further polling needed).
+      console.log("[sprintnex] Polling n8n for stage instructions...", {
+        taskId,
+      });
+      const stage = await pollObserveSprintnexExecution(taskId);
+      if (stage.completed || !stage.instructions) {
+        console.log(
+          stage.completed
+            ? "[sprintnex] Task completed (n8n status COMPLETED) — stopping loop"
+            : "[sprintnex] No stage available — stopping loop",
+          { taskId },
+        );
         break;
       }
       // Guard against the backend re-serving the same stage we already ran
