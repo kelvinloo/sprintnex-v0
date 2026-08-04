@@ -5,6 +5,8 @@ import { ArrowRight, CheckCircle2, KeyRound, X } from "lucide-react";
 
 import { t } from "@/i18n";
 import { ProviderIcon } from "../../../design-system/provider-icon";
+import type { LocalProviderInstallInput } from "../openai-image-extension";
+import { ModelStudioConnectCard } from "../model-studio-connect-card";
 import { SettingsNotice, SettingsStatusBadge } from "../settings-section";
 import {
   LayoutSection,
@@ -47,6 +49,11 @@ export type AiSettingsViewProps = {
   onSubscribeOpenWorkModels?: () => void | Promise<void>;
   onDismissOpenWorkModels?: () => void | Promise<void>;
   cloudProvidersView?: ReactNode;
+  /**
+   * Installs Alibaba Cloud Model Studio (DashScope) as an OpenAI-compatible
+   * provider. Optional; when absent the preset card is hidden.
+   */
+  onInstallModelStudio?: (input: LocalProviderInstallInput) => Promise<unknown>;
 };
 
 function providerSourceLabel(source?: ConnectedProvider["source"]) {
@@ -212,6 +219,16 @@ export function AiSettingsView(props: AiSettingsViewProps) {
               </LayoutSectionItem>
             ))}
           </div>
+        ) : null}
+
+        {props.onInstallModelStudio ? (
+          <ModelStudioConnectCard
+            connectedProviders={props.connectedProviders}
+            onConnect={async (input) => {
+              await props.onInstallModelStudio?.(input);
+            }}
+            disabled={props.busy || props.providerAuthBusy}
+          />
         ) : null}
 
         {props.showOpenWorkModelsConnect ? (

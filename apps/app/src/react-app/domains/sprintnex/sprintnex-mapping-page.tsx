@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KeyRound, Link as LinkIcon, Unlink, Workflow } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -41,9 +40,7 @@ type ProjectRow = {
 
 export function SprintnexMappingPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"mappings" | "providers">(
-    "mappings",
-  );
+  const [activeTab, setActiveTab] = useState<"mappings">("mappings");
   const [teams, setTeams] = useState<SprintnexTeamSpaceNode[]>([]);
   const [projects, setProjects] = useState<SprintnexTenantWorkspaceNode[]>([]);
   const [workspaces, setWorkspaces] = useState<WorkspaceRef[]>(() => {
@@ -203,21 +200,15 @@ export function SprintnexMappingPage() {
         </button>
         <button
           type="button"
-          className={`inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-colors ${
-            activeTab === "providers"
-              ? "bg-dls-bg text-dls-text shadow-sm"
-              : "text-dls-secondary hover:text-dls-text"
-          }`}
-          onClick={() => setActiveTab("providers")}
+          className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
+          onClick={() => navigate("/settings/ai")}
         >
           <KeyRound className="size-3.5" />
           Providers
         </button>
       </div>
 
-      {activeTab === "providers" ? (
-        <SprintnexProvidersView />
-      ) : error ? (
+      {error ? (
         <div className="mb-4 rounded-lg border border-red-7/30 bg-red-2/50 px-4 py-3 text-sm text-red-11">
           {error}
         </div>
@@ -335,138 +326,5 @@ export function SprintnexMappingPage() {
         </div>
       )}
     </main>
-  );
-}
-
-/** Inline provider management view for the Sprintnex settings page. */
-function SprintnexProvidersView() {
-  const navigate = useNavigate();
-  const [providers, setProviders] = useState<
-    { id: string; name: string; connected: boolean }[]
-  >([]);
-  const [busy, setBusy] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        setBusy(true);
-        const { normalizedBaseUrl, resolvedToken } =
-          await resolveOpenworkConnection();
-        if (!normalizedBaseUrl || !resolvedToken || cancelled) {
-          setBusy(false);
-          return;
-        }
-        // Create an OpenCode client to fetch providers
-        const { createClient } = await import("@/app/lib/opencode");
-        const client = createClient(
-          `${normalizedBaseUrl}/workspace/opencode`,
-          undefined,
-          { token: resolvedToken, mode: "openwork" },
-        );
-        const result = await client.provider.list();
-        const providerData =
-          result && typeof result === "object" && "data" in result
-            ? (
-                result as {
-                  data: {
-                    all?: { id: string; name: string }[];
-                    connected?: string[];
-                  };
-                }
-              ).data
-            : null;
-        const all: { id: string; name: string }[] = Array.isArray(
-          providerData?.all,
-        )
-          ? providerData.all
-          : [];
-        const connected = new Set<string>(
-          Array.isArray(providerData?.connected) ? providerData.connected : [],
-        );
-        if (!cancelled) {
-          setProviders(
-            all.map((p) => ({
-              id: p.id,
-              name: p.name || p.id,
-              connected: connected.has(p.id),
-            })),
-          );
-        }
-      } catch {
-        // Non-critical
-      } finally {
-        if (!cancelled) setBusy(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleConnect = () => {
-    navigate("/settings/ai");
-  };
-
-  return (
-    <div className="flex-1 space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-dls-secondary">
-          AI providers available to the OpenCode agent for task execution.
-        </p>
-        <Button variant="outline" size="sm" onClick={handleConnect}>
-          <KeyRound className="mr-1.5 size-3.5" />
-          Manage providers
-        </Button>
-      </div>
-      {busy ? (
-        <div className="flex items-center justify-center py-12">
-          <p className="text-sm text-dls-secondary">Loading providers...</p>
-        </div>
-      ) : providers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-dls-border py-12">
-          <KeyRound className="size-8 text-dls-tertiary" />
-          <p className="text-sm text-dls-secondary">No providers connected</p>
-          <p className="text-xs text-dls-tertiary">
-            Connect an AI provider in settings to enable agent task execution.
-          </p>
-          <Button variant="outline" size="sm" onClick={handleConnect}>
-            Connect provider
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {providers.map((p) => (
-            <div
-              key={p.id}
-              className="flex items-center justify-between rounded-lg border border-dls-border bg-dls-surface px-4 py-3"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`size-2 rounded-full ${
-                    p.connected ? "bg-green-500" : "bg-dls-tertiary"
-                  }`}
-                />
-                <span className="text-sm font-medium text-dls-text">
-                  {p.name}
-                </span>
-              </div>
-              {p.connected ? (
-                <Badge
-                  variant="outline"
-                  className="border-green-7/30 text-green-11"
-                >
-                  Connected
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-dls-tertiary">
-                  Not connected
-                </Badge>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }

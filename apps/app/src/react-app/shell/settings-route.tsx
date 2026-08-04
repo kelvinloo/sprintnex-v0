@@ -195,6 +195,7 @@ import { getReactQueryClient } from "@/react-app/infra/query-client";
 import { refreshProviderListQueries } from "@/react-app/infra/provider-list-query";
 import {
   buildLocalProviderConfig,
+  buildModelsDevProviderConfig,
   OPENAI_IMAGE_EXTENSION_ID,
   OPENAI_IMAGE_MODEL,
   type LocalProviderInstallInput,
@@ -1275,7 +1276,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
   }, [openworkClient]);
 
   const installLocalProvider = useCallback(
-    async (input: LocalProviderInstallInput) => {
+    async (input: LocalProviderInstallInput): Promise<string | null> => {
       const client = selectedWorkspaceEndpoint?.client ?? openworkClient;
       const workspaceId = runtimeWorkspaceId?.trim() ?? "";
       const modelId = input.modelId.trim();
@@ -1283,24 +1284,24 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
         setLocalProviderError(
           "OpenWork server is not connected for this workspace.",
         );
-        return;
+        return "OpenWork server is not connected for this workspace.";
       }
       if (!modelId) {
         setLocalProviderError("Model ID is required.");
-        return;
+        return "Model ID is required.";
       }
 
       setLocalProviderBusy(true);
       setLocalProviderStatus(null);
       setLocalProviderError(null);
       try {
+        const providerConfig = input.useModelsDev
+          ? buildModelsDevProviderConfig(input)
+          : buildLocalProviderConfig({ ...input, modelId });
         await client.patchConfig(workspaceId, {
           opencode: {
             provider: {
-              [input.providerId]: buildLocalProviderConfig({
-                ...input,
-                modelId,
-              }),
+              [input.providerId]: providerConfig,
             },
           },
         });
@@ -1330,8 +1331,11 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
           // ignore browser event dispatch failures
         }
         setLocalProviderStatus(`Added ${input.name} with ${modelId}.`);
+        return null;
       } catch (error) {
-        setLocalProviderError(describeRouteError(error));
+        const message = describeRouteError(error);
+        setLocalProviderError(message);
+        return message;
       } finally {
         setLocalProviderBusy(false);
       }
@@ -2099,7 +2103,9 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
       busy: localProviderBusy,
       status: localProviderStatus,
       error: localProviderError,
-      onInstall: installLocalProvider,
+      onInstall: async (input) => {
+        await installLocalProvider(input);
+      },
     },
   });
   const extensionItems = useMemo(
@@ -2490,6 +2496,13 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
               await providerAuthStore.disconnectProvider(providerId);
             }}
             canDisconnectProvider={(source) => source !== "env"}
+            onInstallModelStudio={async (input) => {
+              const error = await installLocalProvider(input);
+              if (error) throw new Error(error);
+              toast.success("Alibaba Cloud Model Studio connected", {
+                description: `${input.modelId} is now available in the model picker.`,
+              });
+            }}
           />
         );
       case "preferences":
