@@ -42,12 +42,6 @@ export function SprintnexTabBar({
 
   const defaultTabs: TabDefinition[] = [
     {
-      id: "intake",
-      label: "Intake",
-      icon: MessageSquare,
-      onClick: onIntakeClick,
-    },
-    {
       id: "tasks",
       label: "Tasks",
       icon: ListChecks,

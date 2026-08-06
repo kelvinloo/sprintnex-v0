@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useSessionActivityStore } from "@/react-app/domains/session/status/session-activity-store";
 import {
   getMappedWorkspaceForSprintnexProject,
   readSprintnexAicoeScope,
@@ -22,7 +23,7 @@ import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection
 import { createOpenworkServerClient } from "@/app/lib/openwork-server";
 import { writeActiveWorkspaceId } from "@/react-app/shell/session-memory";
 import { ProjectTaskHub } from "./project-task-hub";
-import { SprintnexIntake } from "./sprintnex-intake";
+// import { SprintnexIntake } from "./sprintnex-intake";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import type { SprintnexAicoeTask } from "@/app/lib/sprintnex-aicoe-api";
 import {
@@ -128,6 +129,18 @@ export function SprintnexTasksPage() {
       } catch (err) {
         console.error("[sprintnex] Failed to create execution session", err);
       }
+
+      // Enable polling indicator for task execution
+      if (sessionId) {
+        const { setPolling } = useSessionActivityStore.getState();
+        const mappedWsId = getMappedWorkspaceForSprintnexProject(
+          readSprintnexAicoeScope().projectId,
+        );
+        if (mappedWsId) {
+          setPolling(mappedWsId, sessionId, true);
+        }
+      }
+
       navigate(sessionId ? `/session/${sessionId}` : "/session");
     },
     [navigate],
@@ -520,31 +533,30 @@ export function SprintnexTasksPage() {
           </div>
         </div>
         <SprintnexTabBar
-          activeTab={activeTab === "intake" ? "intake" : "tasks"}
+          activeTab="tasks"
           taskCount={taskCount}
-          onIntakeClick={() => setActiveTab("intake")}
           onTasksClick={() => setActiveTab("tasks")}
         />
       </div>
       <div className="flex min-h-0 flex-1 flex-col" key={activeTab}>
-        {activeTab === "intake" ? (
+        {/* {activeTab === "intake" ? (
           <SprintnexIntake onTasksCreated={() => setActiveTab("tasks")} />
-        ) : (
-          <ProjectTaskHub
-            key={scopeVersion}
-            workspace={
-              scope.projectId
-                ? {
-                    id: scope.projectId,
-                    name: scope.projectName || scope.projectId,
-                    displayName: scope.projectName || scope.projectId,
-                  }
-                : null
-            }
-            onOpenExecutionSession={handleOpenExecutionSession}
-            onTaskCountChange={setTaskCount}
-          />
-        )}
+        ) : ( */}
+        <ProjectTaskHub
+          key={scopeVersion}
+          workspace={
+            scope.projectId
+              ? {
+                  id: scope.projectId,
+                  name: scope.projectName || scope.projectId,
+                  displayName: scope.projectName || scope.projectId,
+                }
+              : null
+          }
+          onOpenExecutionSession={handleOpenExecutionSession}
+          onTaskCountChange={setTaskCount}
+        />
+        {/* )} */}
       </div>
     </div>
   );

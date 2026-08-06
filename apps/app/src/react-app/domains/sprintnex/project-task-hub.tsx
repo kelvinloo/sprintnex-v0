@@ -34,6 +34,7 @@ import {
   type SprintnexTeamSpaceNode,
   type SprintnexTenantWorkspaceNode,
 } from "@/app/lib/sprintnex-aicoe-api";
+import { useSessionActivityStore } from "@/react-app/domains/session/status/session-activity-store";
 type ProjectTaskHubWorkspace = {
   id: string;
   displayName?: string;

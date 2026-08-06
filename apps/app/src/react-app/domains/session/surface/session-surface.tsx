@@ -271,7 +271,9 @@ function resolveFindOwnerSessionId() {
 function statusLabel(
   snapshot: OpenworkSessionSnapshot | undefined,
   busy: boolean,
+  activityStatus: SessionActivityStatus = "idle",
 ) {
+  if (activityStatus === "polling") return "Listening for updates";
   if (busy) return "Running...";
   if (snapshot?.status.type === "busy") return "Running...";
   if (snapshot?.status.type === "retry")
@@ -2016,7 +2018,11 @@ export function SessionSurface(props: SessionSurfaceProps) {
                 Boolean(props.modelUnavailable)
               }
               modelUnavailable={Boolean(props.modelUnavailable)}
-              statusLabel={statusLabel(snapshot ?? undefined, chatStreaming)}
+              statusLabel={statusLabel(
+                snapshot ?? undefined,
+                chatStreaming,
+                effectiveActivityStatus,
+              )}
               modelPickerOpen={props.modelPickerOpen}
               selectedModel={props.selectedModel}
               onModelPickerOpenChange={props.onModelPickerOpenChange}

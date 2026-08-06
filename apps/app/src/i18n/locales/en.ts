@@ -1100,6 +1100,7 @@ export default {
   "session.assistant_responding": "Responding",
   "session.assistant_thinking": "Thinking",
   "session.assistant_waiting": "Waiting",
+  "session.listening_to_updates": "Listening for updates",
   "session.support_docs": "Open documentation",
   "session.support_feedback": "Open feedback",
   "session.todo_label": "Tasks",

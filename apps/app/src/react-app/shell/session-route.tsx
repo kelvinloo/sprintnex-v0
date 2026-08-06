@@ -675,6 +675,7 @@ export function SessionRoute() {
   } | null>(null);
   const [sprintnexTaskCreateBusy, setSprintnexTaskCreateBusy] = useState(false);
   const [sprintnexTaskExecuting, setSprintnexTaskExecuting] = useState(false);
+  const { setPolling } = useSessionActivityStore();
   const [sprintnexScope, setSprintnexScope] = useState<SprintnexAicoeScope>(
     () => readSprintnexAicoeScope(),
   );
@@ -1439,93 +1440,35 @@ export function SessionRoute() {
             ? { agent: selectedAgent }
             : {};
 
-        // Sprintnex: render + clear draft instantly, classify in background.
+        // Sprintnex: integrated blocking classification with task creation.
+        // The model can include a task object in structured output to create a task.
         if (currentScope.projectId) {
-          const draftText = typeof draft?.text === "string" ? draft.text : "";
+          const sprintnexSystem = [
+            selectedAgentSystem,
+            WORKSPACE_AGENT_OUTPUT_FORMAT,
+            `organizationId: ${currentScope.organizationId}`,
+            `teamId: ${currentScope.teamId}`,
+            `projectId: ${currentScope.projectId}`,
+            `userId: ${currentScope.userId}`,
+          ]
+            .filter(Boolean)
+            .join("\n\n");
 
-          // 1. Send with noReply immediately so message renders + draft clears
-          const step1 = opencodeClient.session.promptAsync({
-            sessionID: targetSessionId,
-            parts,
-            noReply: true,
-          });
+          try {
+            const result = await opencodeClient.session.promptAsync({
+              sessionID: targetSessionId,
+              parts,
+              model: local.prefs.defaultModel ?? undefined,
+              ...(modelVariantValue ? { variant: modelVariantValue } : {}),
+              ...selectedAgentOption,
+              system: sprintnexSystem,
+            });
 
-          // 2. Classify in background by asking the model directly (with the
-          //    Workspace Agent system context + structured output format).
-          //    If the model says the request requires the main delivery flow,
-          //    do NOT send any follow-up prompt — the first noReply call
-          //    already rendered the message.
-          if (draftText.trim()) {
-            void (async () => {
-              try {
-                await step1;
-                const decision = await classifySprintnexWithModel({
-                  client: opencodeClient,
-                  draftText,
-                  system: combinedSystem,
-                  model: local.prefs.defaultModel ?? undefined,
-                  variant: modelVariantValue,
-                });
-                if (decision.blocked) {
-                  // Tell the user the request was routed to the Sprintnex
-                  // delivery flow and direct them to the Sprintnex tasks page
-                  // so they can log it as a task.
-                  const blockMessage =
-                    decision.message ??
-                    "This request requires the Sprintnex main delivery flow. Please log it as a new task.";
-                  toast.warning(blockMessage, {
-                    id: "sprintnex-task-blocked",
-                    description:
-                      "Open Sprintnex Tasks to log this request as a task and continue.",
-                    action: {
-                      label: "Open Sprintnex Tasks",
-                      onClick: () => {
-                        navigate("/sprintnex/tasks");
-                      },
-                    },
-                    // Finite duration so the toast (and its close button) can
-                    // be dismissed reliably — Infinity can wedge custom toasts.
-                    duration: 600_000,
-                  });
-
-                  // Render the redirect notice in the chat so it persists in
-                  // the conversation history when the user reads back. A
-                  // strict system override makes the model echo the exact
-                  // text without running any tools or doing real work.
-                  await opencodeClient.session.promptAsync({
-                    sessionID: targetSessionId,
-                    parts: [
-                      {
-                        type: "text" as const,
-                        text: `Reply with EXACTLY the following message and nothing else:\n\n${blockMessage}\n\nOpen the Sprintnex Tasks page to log this request as a task and continue.`,
-                      },
-                    ],
-                    model: local.prefs.defaultModel ?? undefined,
-                    ...(modelVariantValue
-                      ? { variant: modelVariantValue }
-                      : {}),
-                    system:
-                      "You are a message router. Output only the exact text given to you. Do not call tools, do not add commentary, and do not use markdown.",
-                  });
-                  return;
-                }
-                await opencodeClient.session.promptAsync({
-                  sessionID: targetSessionId,
-                  parts: [
-                    {
-                      type: "text" as const,
-                      text: "Continue with the previous request.",
-                    },
-                  ],
-                  model: local.prefs.defaultModel ?? undefined,
-                  ...(modelVariantValue ? { variant: modelVariantValue } : {}),
-                  ...selectedAgentOption,
-                  system: selectedAgentSystem,
-                });
-              } catch {
-                /* ignore */
-              }
-            })();
+            if (result.error) {
+              throw new Error(serializeSDKError(result.error));
+            }
+          } catch (error) {
+            console.warn("[sprintnex-classification] failed", error);
           }
           return;
         }
@@ -2044,6 +1987,11 @@ export function SessionRoute() {
   const handleExecuteSprintnexTask = useCallback(
     async (task: SprintnexTaskRecord): Promise<string | null> => {
       setSprintnexTaskExecuting(true);
+      // Always try to set polling and reset agent on task execution
+      // The store will validate the workspace/session IDs
+      setPolling(selectedWorkspaceId || "", selectedSessionId || "", true);
+      setSelectedAgent(null); // Fallback to default agent context
+
       const workspace = workspaces.find((item) => item.id === task.workspaceId);
       if (
         !workspace ||
@@ -2171,6 +2119,8 @@ export function SessionRoute() {
       } finally {
         setSprintnexTaskCreateBusy(false);
         setSprintnexTaskExecuting(false);
+        // Turn off polling indicator when task execution completes
+        setPolling(selectedWorkspaceId || "", selectedSessionId || "", false);
       }
     },
     [
@@ -2180,6 +2130,10 @@ export function SessionRoute() {
       refreshRouteState,
       rememberPendingCreatedSession,
       retryingWorkspaceIds,
+      selectedSessionId,
+      selectedWorkspaceId,
+      setPolling,
+      setSelectedAgent,
       token,
       workspaces,
     ],
