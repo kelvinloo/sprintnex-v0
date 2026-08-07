@@ -38,7 +38,7 @@ export const MODEL_STUDIO_PRESET = {
   cnProviderId: "alibaba-cn",
   cnName: "Alibaba (China)",
   cnBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-  defaultModelId: "qwen-plus",
+  defaultModelId: "qwen3.7-flash",
 } as const;
 
 export const OPENAI_IMAGE_EXTENSION_ID = "openai-image-generation";

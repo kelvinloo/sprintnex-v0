@@ -26,10 +26,7 @@ import { ProjectTaskHub } from "./project-task-hub";
 // import { SprintnexIntake } from "./sprintnex-intake";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import type { SprintnexAicoeTask } from "@/app/lib/sprintnex-aicoe-api";
-import {
-  WORKSPACE_AGENT_PROMPT,
-  DELIVERY_AGENT_PROMPT,
-} from "@/app/lib/sprintnex-agent-prompts";
+import { useLocal } from "@/react-app/kernel/local-provider";
 
 /** Marker that separates visible instructions from hidden system context.
  *  The model receives the full content, but the chat UI truncates at this marker. */
@@ -47,6 +44,7 @@ export function SprintnexTasksPage() {
   const [taskCount, setTaskCount] = useState(0);
   const intakeRefreshRef = useRef<(() => void) | null>(null);
 
+  const local = useLocal();
   const scope = readSprintnexAicoeScope();
 
   const handleOpenExecutionSession = useCallback(
@@ -329,9 +327,11 @@ export function SprintnexTasksPage() {
         stageIndex,
         hasSystemContext: !!stage.system,
       });
+
       const parsed = await client.session.promptAsync({
         sessionID: sessionId,
         parts: [{ type: "text", text: fullInstructions }],
+        model: local.prefs.defaultModel || undefined,
       });
       if (parsed.error) {
         console.warn("[sprintnex] promptAsync error", parsed.error);

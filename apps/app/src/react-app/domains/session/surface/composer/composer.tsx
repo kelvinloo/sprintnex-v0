@@ -169,7 +169,7 @@ const IMAGE_COMPRESS_QUALITY = 0.82;
 const IMAGE_COMPRESS_TARGET_BYTES = 1_500_000;
 const FILE_URL_RE = /^file:\/\//i;
 const HTTP_URL_RE = /^https?:\/\//i;
-const DEFAULT_AGENT_NAME = "openwork";
+const DEFAULT_AGENT_NAME = "sprintnex-agent";
 
 function isNonDefaultAgent(agent: Agent) {
   return agent.name !== DEFAULT_AGENT_NAME;
@@ -1648,7 +1648,7 @@ export function ReactSessionComposer(props: ComposerProps) {
                         <div className="border-r border-dls-border bg-gray-2/30 p-2">
                           {(
                             [
-                              ["agents", t("composer.agents_label")],
+                              // ["agents", t("composer.agents_label")],
                               ["commands", t("dashboard.commands")],
                               ["skills", t("dashboard.skills")],
                               ["extensions", "Extensions"],
@@ -1700,7 +1700,7 @@ export function ReactSessionComposer(props: ComposerProps) {
                               {t("composer.configure")}
                             </button>
                           </div>
-                          {toolMenuSection === "agents" ? (
+                          {/* {toolMenuSection === "agents" ? (
                             <div className="grid gap-1">
                               <button
                                 type="button"
@@ -1758,7 +1758,7 @@ export function ReactSessionComposer(props: ComposerProps) {
                                 );
                               })}
                             </div>
-                          ) : null}
+                          ) : null} */}
                           {toolMenuSection === "commands" ? (
                             toolCommandItems.length > 0 ? (
                               <div className="grid gap-1">

@@ -186,13 +186,11 @@ import {
   mapSprintnexProjectToWorkspace,
   readSprintnexAicoeScope,
   resolveSprintnexAgent,
+  getDefaultAgents,
+  ensureSprintnexAgentsCached,
   type SprintnexAicoeScope,
   type SprintnexAicoeTask,
 } from "@/app/lib/sprintnex-aicoe-api";
-import {
-  WORKSPACE_AGENT_PROMPT,
-  WORKSPACE_AGENT_OUTPUT_FORMAT,
-} from "@/app/lib/sprintnex-agent-prompts";
 import {
   buildSprintnexExecutionPrompt,
   cacheSprintnexTasks,
@@ -414,9 +412,15 @@ async function classifySprintnexWithModel(opts: {
     );
     sid = created.id;
 
+    // Get default agents from endpoint — user should select one from dropdown
+    // For now, use the first default agent available
+    const defaultAgents = getDefaultAgents();
+    const selectedAgent = defaultAgents[0];
+    const outputFormatPrompt = selectedAgent?.prompt ?? "";
+
     const prompt = `Classify the following user request according to the Sprintnex Workspace Agent instructions. Respond with ONLY the JSON decision object — no markdown fences, no explanation, no surrounding text.
 
-${WORKSPACE_AGENT_OUTPUT_FORMAT}
+${outputFormatPrompt}
 
 USER REQUEST:
 ${draftText}`;
@@ -1181,14 +1185,14 @@ export function SessionRoute() {
     // agent files become available, even when the inline picker is hidden.
     void engineReloadVersion;
     if (!opencodeClient) return [];
-    const local = unwrap(await opencodeClient.app.agents()).filter(
-      (agent) => !agent.hidden && agent.mode !== "subagent",
-    );
+    // const local = unwrap(await opencodeClient.app.agents()).filter(
+    //   (agent) => !agent.hidden && agent.mode !== "subagent",
+    // );
     // Sprintnex client agents from n8n take precedence; fall back to the
     // local OpenCode agents when the webhook is unavailable or returns none.
     const sprintnex = await fetchSprintnexAgents();
     const seen = new Set<string>();
-    return [...sprintnex, ...local].filter((agent) => {
+    return [...sprintnex].filter((agent) => {
       if (seen.has(agent.name)) return false;
       seen.add(agent.name);
       return true;
@@ -1408,10 +1412,15 @@ export function SessionRoute() {
           cacheKey: targetSessionId,
           runtimeKey: environmentRuntimeKey,
         });
-        // Merge Workspace Agent prompt when Sprintnex project is active
+        // Merge Workspace Agent prompt when Sprintnex project is active.
+        // Get default agent from endpoint — user can select specific agent from UI dropdown.
         const currentScope = readSprintnexAicoeScope();
+        const defaultAgents = getDefaultAgents();
+        const defaultAgent = defaultAgents[0];
         const systemParts = [
-          currentScope.projectId ? WORKSPACE_AGENT_PROMPT : null,
+          currentScope.projectId && defaultAgent?.prompt
+            ? defaultAgent.prompt
+            : null,
           envSystemContext,
         ].filter(Boolean);
         const combinedSystem =
@@ -1426,12 +1435,14 @@ export function SessionRoute() {
           selectedAgent != null
             ? await resolveSprintnexAgent(selectedAgent)
             : undefined;
+        console.log("selectedAgentResolution", selectedAgentResolution);
         const isSelectedSprintnexAgent =
           selectedAgentResolution?.isSprintnex === true;
+        console.log("isSelectedSprintnexAgent", isSelectedSprintnexAgent);
         const selectedSprintnexPrompt = selectedAgentResolution?.prompt;
         const selectedAgentSystem =
           isSelectedSprintnexAgent && selectedSprintnexPrompt
-            ? [selectedSprintnexPrompt, combinedSystem]
+            ? [selectedSprintnexPrompt, "## Additional Context", combinedSystem]
                 .filter(Boolean)
                 .join("\n\n")
             : combinedSystem;
@@ -1440,12 +1451,13 @@ export function SessionRoute() {
             ? { agent: selectedAgent }
             : {};
 
+        console.log("selectedAgentOption", selectedAgentOption);
+
         // Sprintnex: integrated blocking classification with task creation.
         // The model can include a task object in structured output to create a task.
         if (currentScope.projectId) {
           const sprintnexSystem = [
             selectedAgentSystem,
-            WORKSPACE_AGENT_OUTPUT_FORMAT,
             `organizationId: ${currentScope.organizationId}`,
             `teamId: ${currentScope.teamId}`,
             `projectId: ${currentScope.projectId}`,
@@ -1454,6 +1466,10 @@ export function SessionRoute() {
             .filter(Boolean)
             .join("\n\n");
 
+          console.log(
+            "[sprintnex-classification] sending prompt with model",
+            local.prefs.defaultModel,
+          );
           try {
             const result = await opencodeClient.session.promptAsync({
               sessionID: targetSessionId,
@@ -1473,6 +1489,10 @@ export function SessionRoute() {
           return;
         }
 
+        console.log(
+          "[sprintnex-classification] sending prompt with model",
+          local.prefs.defaultModel,
+        );
         const result = await opencodeClient.session.promptAsync({
           sessionID: targetSessionId,
           parts,

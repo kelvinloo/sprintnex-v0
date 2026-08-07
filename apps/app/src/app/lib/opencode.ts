@@ -1,12 +1,24 @@
-import { createOpencodeClient, type Message, type Part, type Session, type Todo } from "@opencode-ai/sdk/v2/client";
+import {
+  createOpencodeClient,
+  type Message,
+  type Part,
+  type Session,
+  type Todo,
+} from "@opencode-ai/sdk/v2/client";
 
 import { desktopFetch } from "./desktop";
-import { createOpenworkServerClient, OpenworkServerError } from "./openwork-server";
+import {
+  createOpenworkServerClient,
+  OpenworkServerError,
+} from "./openwork-server";
 import { isDesktopRuntime } from "./runtime-env";
 
 type FieldsResult<T> =
   | ({ data: T; error?: undefined } & { request: Request; response: Response })
-  | ({ data?: undefined; error: unknown } & { request: Request; response: Response });
+  | ({ data?: undefined; error: unknown } & {
+      request: Request;
+      response: Response;
+    });
 
 type PromptAsyncParameters = {
   sessionID: string;
@@ -64,16 +76,21 @@ export type OpencodeAuth = {
 const DEFAULT_OPENCODE_REQUEST_TIMEOUT_MS = 10_000;
 const OAUTH_OPENCODE_REQUEST_TIMEOUT_MS = 5 * 60_000;
 const MCP_AUTH_OPENCODE_REQUEST_TIMEOUT_MS = 90_000;
-const SESSION_LONG_RUNNING_URL_RE = /\/session\/[^/?#]+\/(?:command|prompt_async|summarize)(?:[?#]|$)/;
+const SESSION_LONG_RUNNING_URL_RE =
+  /\/session\/[^/?#]+\/(?:command|prompt_async|summarize)(?:[?#]|$)/;
 
 function getRequestUrl(input: RequestInfo | URL): string {
   if (typeof input === "string") return input;
   if (input instanceof URL) return input.toString();
-  if (typeof Request !== "undefined" && input instanceof Request) return input.url;
+  if (typeof Request !== "undefined" && input instanceof Request)
+    return input.url;
   return String(input);
 }
 
-function resolveRequestTimeoutMs(input: RequestInfo | URL, fallbackMs: number): number {
+function resolveRequestTimeoutMs(
+  input: RequestInfo | URL,
+  fallbackMs: number,
+): number {
   const url = getRequestUrl(input);
   if (SESSION_LONG_RUNNING_URL_RE.test(url)) {
     return 0;
@@ -87,7 +104,6 @@ function resolveRequestTimeoutMs(input: RequestInfo | URL, fallbackMs: number): 
   return fallbackMs;
 }
 
-
 function buildDirectoryHeader(directory?: string) {
   if (!directory?.trim()) return undefined;
   const trimmed = directory.trim();
@@ -99,7 +115,11 @@ async function postSessionRequest<T>(
   baseUrl: string,
   path: string,
   body: Record<string, unknown>,
-  options?: { headers?: Record<string, string>; directory?: string; throwOnError?: boolean },
+  options?: {
+    headers?: Record<string, string>;
+    directory?: string;
+    throwOnError?: boolean;
+  },
 ): Promise<FieldsResult<T>> {
   const headers = new Headers(options?.headers);
   headers.set("Content-Type", "application/json");
@@ -121,7 +141,8 @@ async function postSessionRequest<T>(
   });
 
   if (response.ok) {
-    const data = response.status === 204 ? ({} as T) : ((await response.json()) as T);
+    const data =
+      response.status === 204 ? ({} as T) : ((await response.json()) as T);
     return { data, request, response };
   }
 
@@ -136,7 +157,9 @@ async function postSessionRequest<T>(
   return { error, request, response };
 }
 
-function resolveOpenworkWorkspaceMount(baseUrl: string): { baseUrl: string; workspaceId: string } | null {
+function resolveOpenworkWorkspaceMount(
+  baseUrl: string,
+): { baseUrl: string; workspaceId: string } | null {
   try {
     const url = new URL(baseUrl);
     const match = url.pathname
@@ -226,9 +249,11 @@ async function fetchWithTimeout(
     return fetchImpl(input, init);
   }
 
-  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const controller =
+    typeof AbortController !== "undefined" ? new AbortController() : null;
   const signal = controller?.signal;
-  const initWithSignal = signal && !init?.signal ? { ...(init ?? {}), signal } : init;
+  const initWithSignal =
+    signal && !init?.signal ? { ...(init ?? {}), signal } : init;
 
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   const timeoutPromise = new Promise<never>((_, reject) => {
@@ -243,9 +268,16 @@ async function fetchWithTimeout(
   });
 
   try {
-    return await Promise.race([fetchImpl(input, initWithSignal), timeoutPromise]);
+    return await Promise.race([
+      fetchImpl(input, initWithSignal),
+      timeoutPromise,
+    ]);
   } catch (error) {
-    const name = (error && typeof error === "object" && "name" in error ? (error as any).name : "") as string;
+    const name = (
+      error && typeof error === "object" && "name" in error
+        ? (error as any).name
+        : ""
+    ) as string;
     if (name === "AbortError") {
       throw new Error("Request timed out.");
     }
@@ -259,8 +291,16 @@ const encodeBasicAuth = (auth?: OpencodeAuth) => {
   if (!auth?.username || !auth?.password) return null;
   const token = `${auth.username}:${auth.password}`;
   if (typeof btoa === "function") return btoa(token);
-  const buffer = (globalThis as { Buffer?: { from: (input: string, encoding: string) => { toString: (encoding: string) => string } } })
-    .Buffer;
+  const buffer = (
+    globalThis as {
+      Buffer?: {
+        from: (
+          input: string,
+          encoding: string,
+        ) => { toString: (encoding: string) => string };
+      };
+    }
+  ).Buffer;
   return buffer ? buffer.from(token, "utf8").toString("base64") : null;
 };
 
@@ -283,18 +323,26 @@ const resolveAuthHeader = (auth?: OpencodeAuth) => {
  */
 const STREAM_URL_RE = /\/(event|stream)(\b|\/|$|\?)/;
 
-function requestIsStreaming(input: RequestInfo | URL, init?: RequestInit): boolean {
+function requestIsStreaming(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): boolean {
   const url = getRequestUrl(input);
   if (STREAM_URL_RE.test(url)) return true;
   const accept =
     input instanceof Request
-      ? input.headers.get("accept") ?? input.headers.get("Accept")
-      : new Headers(init?.headers).get("accept") ?? new Headers(init?.headers).get("Accept");
-  return typeof accept === "string" && accept.toLowerCase().includes("text/event-stream");
+      ? (input.headers.get("accept") ?? input.headers.get("Accept"))
+      : (new Headers(init?.headers).get("accept") ??
+        new Headers(init?.headers).get("Accept"));
+  return (
+    typeof accept === "string" &&
+    accept.toLowerCase().includes("text/event-stream")
+  );
 }
 
 function nativeFetchRef(): typeof globalThis.fetch {
-  if (typeof window !== "undefined" && typeof window.fetch === "function") return window.fetch.bind(window);
+  if (typeof window !== "undefined" && typeof window.fetch === "function")
+    return window.fetch.bind(window);
   return globalThis.fetch as typeof globalThis.fetch;
 }
 
@@ -309,9 +357,7 @@ const createDesktopFetch = (auth?: OpencodeAuth) => {
     // Streams must go through the webview's native fetch to avoid the
     // Tauri HTTP plugin's `fetch_read_body` hang on never-closing bodies.
     const shouldStream = requestIsStreaming(input, init);
-    const underlyingFetch = shouldStream
-      ? nativeFetchRef()
-      : desktopFetch;
+    const underlyingFetch = shouldStream ? nativeFetchRef() : desktopFetch;
     // Streams should never be timed out at the transport layer; the caller
     // aborts via AbortSignal when the subscription unmounts.
     const timeoutMs = shouldStream ? 0 : DEFAULT_OPENCODE_REQUEST_TIMEOUT_MS;
@@ -350,7 +396,11 @@ export function unwrap<T>(result: FieldsResult<T>): NonNullable<T> {
   throw new Error(message || "Unknown error");
 }
 
-export function createClient(baseUrl: string, directory?: string, auth?: OpencodeAuth) {
+export function createClient(
+  baseUrl: string,
+  directory?: string,
+  auth?: OpencodeAuth,
+) {
   const headers: Record<string, string> = {};
   if (!isDesktopRuntime()) {
     const authHeader = resolveAuthHeader(auth);
@@ -362,7 +412,12 @@ export function createClient(baseUrl: string, directory?: string, auth?: Opencod
   const fetchImpl = isDesktopRuntime()
     ? createDesktopFetch(auth)
     : (input: RequestInfo | URL, init?: RequestInit) =>
-        fetchWithTimeout(globalThis.fetch, input, init, DEFAULT_OPENCODE_REQUEST_TIMEOUT_MS);
+        fetchWithTimeout(
+          globalThis.fetch,
+          input,
+          init,
+          DEFAULT_OPENCODE_REQUEST_TIMEOUT_MS,
+        );
   const client = createOpencodeClient({
     baseUrl,
     directory,
@@ -371,112 +426,193 @@ export function createClient(baseUrl: string, directory?: string, auth?: Opencod
   });
 
   const session = client.session as typeof client.session;
-  const openworkMount = auth?.mode === "openwork" ? resolveOpenworkWorkspaceMount(baseUrl) : null;
+  const openworkMount =
+    auth?.mode === "openwork" ? resolveOpenworkWorkspaceMount(baseUrl) : null;
   const openworkSessionClient =
     openworkMount && auth?.token
-      ? createOpenworkServerClient({ baseUrl: openworkMount.baseUrl, token: auth.token })
+      ? createOpenworkServerClient({
+          baseUrl: openworkMount.baseUrl,
+          token: auth.token,
+        })
       : null;
   // TODO(2026-04-12): remove the old-server compatibility path here once all
   // OpenWork servers expose the workspace-scoped session read APIs.
   const sessionOverrides = session as any as {
-    list: (parameters?: SessionListParameters, options?: { throwOnError?: boolean }) => Promise<FieldsResult<Session[]>>;
-    get: (parameters: SessionLookupParameters, options?: { throwOnError?: boolean }) => Promise<FieldsResult<Session>>;
-    messages: (parameters: SessionMessagesParameters, options?: { throwOnError?: boolean }) => Promise<FieldsResult<Array<{ info: Message; parts: Part[] }>>>;
-    todo: (parameters: SessionLookupParameters, options?: { throwOnError?: boolean }) => Promise<FieldsResult<Todo[]>>;
-    promptAsync: (parameters: PromptAsyncParameters, options?: { throwOnError?: boolean }) => Promise<FieldsResult<{}>>;
-    command: (parameters: CommandParameters, options?: { throwOnError?: boolean }) => Promise<FieldsResult<{}>>;
+    list: (
+      parameters?: SessionListParameters,
+      options?: { throwOnError?: boolean },
+    ) => Promise<FieldsResult<Session[]>>;
+    get: (
+      parameters: SessionLookupParameters,
+      options?: { throwOnError?: boolean },
+    ) => Promise<FieldsResult<Session>>;
+    messages: (
+      parameters: SessionMessagesParameters,
+      options?: { throwOnError?: boolean },
+    ) => Promise<FieldsResult<Array<{ info: Message; parts: Part[] }>>>;
+    todo: (
+      parameters: SessionLookupParameters,
+      options?: { throwOnError?: boolean },
+    ) => Promise<FieldsResult<Todo[]>>;
+    promptAsync: (
+      parameters: PromptAsyncParameters,
+      options?: { throwOnError?: boolean },
+    ) => Promise<FieldsResult<{}>>;
+    command: (
+      parameters: CommandParameters,
+      options?: { throwOnError?: boolean },
+    ) => Promise<FieldsResult<{}>>;
   };
 
   const listOriginal = sessionOverrides.list.bind(session);
-  sessionOverrides.list = (parameters?: SessionListParameters, options?: { throwOnError?: boolean }) => {
+  sessionOverrides.list = (
+    parameters?: SessionListParameters,
+    options?: { throwOnError?: boolean },
+  ) => {
     if (!openworkMount || !openworkSessionClient) {
       return listOriginal(parameters, options);
     }
     const query = new URLSearchParams();
-    if (typeof parameters?.roots === "boolean") query.set("roots", String(parameters.roots));
-    if (typeof parameters?.start === "number") query.set("start", String(parameters.start));
-    if (parameters?.search?.trim()) query.set("search", parameters.search.trim());
-    if (typeof parameters?.limit === "number") query.set("limit", String(parameters.limit));
+    if (typeof parameters?.roots === "boolean")
+      query.set("roots", String(parameters.roots));
+    if (typeof parameters?.start === "number")
+      query.set("start", String(parameters.start));
+    if (parameters?.search?.trim())
+      query.set("search", parameters.search.trim());
+    if (typeof parameters?.limit === "number")
+      query.set("limit", String(parameters.limit));
     const url = `${openworkMount.baseUrl}/workspace/${encodeURIComponent(openworkMount.workspaceId)}/sessions${query.size ? `?${query.toString()}` : ""}`;
     return wrapOpenworkReadWithFallback(
       url,
-      async () => (await openworkSessionClient.listSessions(openworkMount.workspaceId, parameters)).items,
+      async () =>
+        (
+          await openworkSessionClient.listSessions(
+            openworkMount.workspaceId,
+            parameters,
+          )
+        ).items,
       () => listOriginal(parameters, options),
       options,
     );
   };
 
   const getOriginal = sessionOverrides.get.bind(session);
-  sessionOverrides.get = (parameters: SessionLookupParameters, options?: { throwOnError?: boolean }) => {
+  sessionOverrides.get = (
+    parameters: SessionLookupParameters,
+    options?: { throwOnError?: boolean },
+  ) => {
     if (!openworkMount || !openworkSessionClient) {
       return getOriginal(parameters, options);
     }
     const url = `${openworkMount.baseUrl}/workspace/${encodeURIComponent(openworkMount.workspaceId)}/sessions/${encodeURIComponent(parameters.sessionID)}`;
     return wrapOpenworkReadWithFallback(
       url,
-      async () => (await openworkSessionClient.getSession(openworkMount.workspaceId, parameters.sessionID)).item,
+      async () =>
+        (
+          await openworkSessionClient.getSession(
+            openworkMount.workspaceId,
+            parameters.sessionID,
+          )
+        ).item,
       () => getOriginal(parameters, options),
       options,
     );
   };
 
   const messagesOriginal = sessionOverrides.messages.bind(session);
-  sessionOverrides.messages = (parameters: SessionMessagesParameters, options?: { throwOnError?: boolean }) => {
+  sessionOverrides.messages = (
+    parameters: SessionMessagesParameters,
+    options?: { throwOnError?: boolean },
+  ) => {
     if (!openworkMount || !openworkSessionClient) {
       return messagesOriginal(parameters, options);
     }
     const query = new URLSearchParams();
-    if (typeof parameters.limit === "number") query.set("limit", String(parameters.limit));
+    if (typeof parameters.limit === "number")
+      query.set("limit", String(parameters.limit));
     const url = `${openworkMount.baseUrl}/workspace/${encodeURIComponent(openworkMount.workspaceId)}/sessions/${encodeURIComponent(parameters.sessionID)}/messages${query.size ? `?${query.toString()}` : ""}`;
     return wrapOpenworkReadWithFallback(
       url,
       async () =>
-        (await openworkSessionClient.getSessionMessages(openworkMount.workspaceId, parameters.sessionID, {
-          limit: parameters.limit,
-        })).items,
+        (
+          await openworkSessionClient.getSessionMessages(
+            openworkMount.workspaceId,
+            parameters.sessionID,
+            {
+              limit: parameters.limit,
+            },
+          )
+        ).items,
       () => messagesOriginal(parameters, options),
       options,
     );
   };
 
   const todoOriginal = sessionOverrides.todo.bind(session);
-  sessionOverrides.todo = (parameters: SessionLookupParameters, options?: { throwOnError?: boolean }) => {
+  sessionOverrides.todo = (
+    parameters: SessionLookupParameters,
+    options?: { throwOnError?: boolean },
+  ) => {
     if (!openworkMount || !openworkSessionClient) {
       return todoOriginal(parameters, options);
     }
     const url = `${openworkMount.baseUrl}/workspace/${encodeURIComponent(openworkMount.workspaceId)}/sessions/${encodeURIComponent(parameters.sessionID)}/snapshot`;
     return wrapOpenworkReadWithFallback(
       url,
-      async () => (await openworkSessionClient.getSessionSnapshot(openworkMount.workspaceId, parameters.sessionID)).item.todos,
+      async () =>
+        (
+          await openworkSessionClient.getSessionSnapshot(
+            openworkMount.workspaceId,
+            parameters.sessionID,
+          )
+        ).item.todos,
       () => todoOriginal(parameters, options),
       options,
     );
   };
 
   const promptAsyncOriginal = sessionOverrides.promptAsync.bind(session);
-  sessionOverrides.promptAsync = (parameters: PromptAsyncParameters, options?: { throwOnError?: boolean }) => {
+  sessionOverrides.promptAsync = (
+    parameters: PromptAsyncParameters,
+    options?: { throwOnError?: boolean },
+  ) => {
     if (!openworkMount && !("reasoning_effort" in parameters)) {
       return promptAsyncOriginal(parameters, options);
     }
     const { sessionID, directory: requestDirectory, ...body } = parameters;
-    return postSessionRequest(fetchImpl, baseUrl, `/session/${encodeURIComponent(sessionID)}/prompt_async`, body, {
-      headers: Object.keys(headers).length ? headers : undefined,
-      directory: requestDirectory ?? directory,
-      throwOnError: options?.throwOnError,
-    });
+    return postSessionRequest(
+      fetchImpl,
+      baseUrl,
+      `/session/${encodeURIComponent(sessionID)}/prompt_async`,
+      body,
+      {
+        headers: Object.keys(headers).length ? headers : undefined,
+        directory: requestDirectory ?? directory,
+        throwOnError: options?.throwOnError,
+      },
+    );
   };
 
   const commandOriginal = sessionOverrides.command.bind(session);
-  sessionOverrides.command = (parameters: CommandParameters, options?: { throwOnError?: boolean }) => {
+  sessionOverrides.command = (
+    parameters: CommandParameters,
+    options?: { throwOnError?: boolean },
+  ) => {
     if (!openworkMount && !("reasoning_effort" in parameters)) {
       return commandOriginal(parameters, options);
     }
     const { sessionID, directory: requestDirectory, ...body } = parameters;
-    return postSessionRequest(fetchImpl, baseUrl, `/session/${encodeURIComponent(sessionID)}/command`, body, {
-      headers: Object.keys(headers).length ? headers : undefined,
-      directory: requestDirectory ?? directory,
-      throwOnError: options?.throwOnError,
-    });
+    return postSessionRequest(
+      fetchImpl,
+      baseUrl,
+      `/session/${encodeURIComponent(sessionID)}/command`,
+      body,
+      {
+        headers: Object.keys(headers).length ? headers : undefined,
+        directory: requestDirectory ?? directory,
+        throwOnError: options?.throwOnError,
+      },
+    );
   };
 
   return client;

@@ -6,20 +6,19 @@ OpenWork helps users run agents, skills, and MCP. It is an open-source alternati
 
 OpenWork is a practical control surface for agentic work:
 
-* Run local and remote agent workflows from one place.
-* Use OpenCode capabilities directly through OpenWork.
-* Compose desktop app, server, and messaging connectors without lock-in.
-* Treat the OpenWork app as a client of the OpenWork server API surface.
-* Connect to hosted workers through a simple user flow: `Add a worker` -> `Connect remote`.
+- Run local and remote agent workflows from one place.
+- Use OpenCode capabilities directly through OpenWork.
+- Compose desktop app, server, and messaging connectors without lock-in.
+- Treat the OpenWork app as a client of the OpenWork server API surface.
+- Connect to hosted workers through a simple user flow: `Add a worker` -> `Connect remote`.
 
 ## Core Philosophy
 
-* **Local-first, cloud-ready**: OpenWork runs on your machine in one click and can connect to cloud workflows when needed.
-* **Server-consumption first**: the app should consume OpenWork server surfaces (self-hosted or hosted), not invent parallel behavior.
-* **Composable**: use the desktop app, WhatsApp/Slack/Telegram connectors, or server mode based on the task.
-* **Ejectable**: OpenWork is powered by OpenCode, so anything OpenCode can do is available in OpenWork, even before a dedicated UI exists.
-* **Sharing is caring**: start solo, then share quickly; one CLI or desktop command can spin up an instantly shareable instance.
-
+- **Local-first, cloud-ready**: OpenWork runs on your machine in one click and can connect to cloud workflows when needed.
+- **Server-consumption first**: the app should consume OpenWork server surfaces (self-hosted or hosted), not invent parallel behavior.
+- **Composable**: use the desktop app, WhatsApp/Slack/Telegram connectors, or server mode based on the task.
+- **Ejectable**: OpenWork is powered by OpenCode, so anything OpenCode can do is available in OpenWork, even before a dedicated UI exists.
+- **Sharing is caring**: start solo, then share quickly; one CLI or desktop command can spin up an instantly shareable instance.
 
 ## Pull Request Expectations (Fast Merge)
 
@@ -27,8 +26,8 @@ If you open a PR, you must run tests and report what you ran (commands + result)
 
 To maximize merge speed, include evidence of the end-to-end flow:
 
-* Ideally: attach a short video/screen recording showing the flow running successfully.
-* Otherwise: screenshots are acceptable, but video is preferred.
+- Ideally: attach a short video/screen recording showing the flow running successfully.
+- Otherwise: screenshots are acceptable, but video is preferred.
 
 If you cannot run tests or capture the video, say so explicitly and explain why, and include the exact commands/steps for the reviewer to reproduce.
 
@@ -40,7 +39,7 @@ or config. So the default is not "write code and hope"; it is **propose a
 flow, then drive it as the end user and validate it against reality until
 it actually holds.**
 
-A change is an *experience*: it might be a persistent feature, a single new
+A change is an _experience_: it might be a persistent feature, a single new
 button, or an entirely new screen. Every experience gets validated the same
 way — by producing **fraimz**, the frame-by-frame proof
 (`evals/results/<run-id>/fraimz.html`) where each frame binds a claim, the user

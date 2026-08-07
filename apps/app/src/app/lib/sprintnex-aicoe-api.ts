@@ -767,9 +767,48 @@ export async function fetchSprintnexAgents(): Promise<Agent[]> {
       })
       .filter((agent): agent is Agent => agent !== null);
     sprintnexAgentsCache = agents;
+    console.log("[sprintnex] fetched agents", { count: agents.length });
+    console.log("[sprintnex] agent names", sprintnexAgentsCache);
     return agents;
   } catch {
     return [];
+  }
+}
+
+// ─── Agent Selection & Usage ───────────────────────────────────────────────
+
+/**
+ * Select an agent by its exact name as returned from the endpoint.
+ * Returns the full Agent object (with prompt, description, isDefault, etc.).
+ * Returns null if not found or if cache is empty.
+ *
+ * Call ensureSprintnexAgentsCached() first to guarantee fresh data.
+ */
+export function selectAgent(agentName: string): Agent | null {
+  const agents = getCachedSprintnexAgents();
+  return agents.find((a) => a.name === agentName) ?? null;
+}
+
+/**
+ * Get all agents marked as default (isDefault: true).
+ * Useful for finding the primary agent for a context without assuming names.
+ * Returns empty array if no defaults or cache is empty.
+ */
+export function getDefaultAgents(): Agent[] {
+  const agents = getCachedSprintnexAgents();
+  return agents.filter(
+    (a) => (a.description === "sprintnex-default-agent") === true,
+  );
+}
+
+/**
+ * Ensure agents are fetched and cached before use.
+ * Safe to call multiple times — returns immediately if already cached.
+ */
+export async function ensureSprintnexAgentsCached(): Promise<void> {
+  const cached = getCachedSprintnexAgents();
+  if (cached.length === 0) {
+    await fetchSprintnexAgents();
   }
 }
 

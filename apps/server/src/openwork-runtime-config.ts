@@ -31,9 +31,9 @@ import {
   runtimeStorageDir,
 } from "./runtime-opencode-config-store.js";
 
-const OPENWORK_AGENT_PROMPT = `You are OpenWork.
+const OPENWORK_AGENT_PROMPT = `You are Sprintnex.
 
-When the user refers to "you", they mean the OpenWork app and the current workspace.
+When the user refers to "you", they mean the Sprintnex app and the current workspace.
 
 Your job:
 - Help the user work on files safely.
@@ -55,9 +55,9 @@ Hard rule: never copy private memory into repo files. Store only redacted summar
 - If steps repeat, factor them into a skill.
 - Prefer clear, practical steps over abstract explanations.
 
-## OpenWork Artifacts
+## Sprintnex Artifacts
 
-OpenWork can preview, edit, and download standard artifacts when you create or update them in the workspace.
+Sprintnex can preview, edit, and download standard artifacts when you create or update them in the workspace.
 
 - Prefer standard output files for user-visible deliverables: Markdown (.md), CSV (.csv), Excel workbooks (.xlsx), PowerPoint decks (.pptx), and browser previews (index.html or a local http://localhost:<port> URL).
 - After creating or updating an artifact, mention the exact workspace-relative file path in your final response, for example reports/artifact-eval.md or reports/artifact-eval.xlsx.
@@ -86,14 +86,17 @@ export async function buildOpenworkRuntimeConfigObject(
   config?: ServerConfig,
   workspaceId?: string,
 ): Promise<Record<string, unknown>> {
-  const runtimeConfig = config && workspaceId ? await readRuntimeOpencodeConfig(config, workspaceId) : {};
+  const runtimeConfig =
+    config && workspaceId
+      ? await readRuntimeOpencodeConfig(config, workspaceId)
+      : {};
   const disabledProviders = runtimeDisabledProviderList(runtimeConfig);
   return {
     ...runtimeConfig,
-    default_agent: runtimeConfig.default_agent ?? "openwork",
+    default_agent: runtimeConfig.default_agent ?? "sprintnex",
     agent: {
       openwork: {
-        description: "OpenWork default agent",
+        description: "Sprintnex default agent",
         mode: "primary",
         temperature: 0.2,
         prompt: OPENWORK_AGENT_PROMPT,
@@ -107,13 +110,20 @@ export async function buildOpenworkRuntimeConfigObject(
       openworkAnthropicToolSchemaPluginPath(),
       ...runtimePluginList(runtimeConfig),
     ],
-    ...(disabledProviders.length ? { disabled_providers: disabledProviders } : {}),
+    ...(disabledProviders.length
+      ? { disabled_providers: disabledProviders }
+      : {}),
     mcp: runtimeMcpMap(runtimeConfig),
   };
 }
 
-export async function buildOpenworkRuntimeConfig(config?: ServerConfig, workspaceId?: string): Promise<string> {
-  return JSON.stringify(await buildOpenworkRuntimeConfigObject(config, workspaceId));
+export async function buildOpenworkRuntimeConfig(
+  config?: ServerConfig,
+  workspaceId?: string,
+): Promise<string> {
+  return JSON.stringify(
+    await buildOpenworkRuntimeConfigObject(config, workspaceId),
+  );
 }
 
 export function openworkRuntimeConfigFilePath(config: ServerConfig): string {
@@ -130,7 +140,10 @@ const fileWriteQueue = new Map<string, Promise<void>>();
  * Atomic (temp file + rename) so the engine never reads a partial file
  * mid-dispose.
  */
-export async function writeOpenworkRuntimeConfigFile(config: ServerConfig, workspaceId: string): Promise<string> {
+export async function writeOpenworkRuntimeConfigFile(
+  config: ServerConfig,
+  workspaceId: string,
+): Promise<string> {
   const path = openworkRuntimeConfigFilePath(config);
   const job = async () => {
     const content = await buildOpenworkRuntimeConfig(config, workspaceId);
@@ -151,9 +164,14 @@ export async function writeOpenworkRuntimeConfigFile(config: ServerConfig, works
  * instance rebuild reads fresh state instead of a spawn-time snapshot.
  * Returns an unsubscribe function.
  */
-export function keepOpenworkRuntimeConfigFileFresh(config: ServerConfig, workspaceId: string): () => void {
+export function keepOpenworkRuntimeConfigFileFresh(
+  config: ServerConfig,
+  workspaceId: string,
+): () => void {
   return onRuntimeOpencodeConfigWrite((writeConfig, writtenWorkspaceId) => {
     if (writtenWorkspaceId !== workspaceId) return;
-    void writeOpenworkRuntimeConfigFile(writeConfig, workspaceId).catch(() => undefined);
+    void writeOpenworkRuntimeConfigFile(writeConfig, workspaceId).catch(
+      () => undefined,
+    );
   });
 }

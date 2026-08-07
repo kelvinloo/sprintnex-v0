@@ -5,8 +5,11 @@
 
 import { createClient } from "./opencode";
 import { McpBrowserClient } from "./mcp-browser-client";
-import { QA_AGENT_PROMPT } from "./sprintnex-agent-prompts";
-import type { SprintnexAicoeScope } from "./sprintnex-aicoe-api";
+import {
+  selectAgent,
+  ensureSprintnexAgentsCached,
+  type SprintnexAicoeScope,
+} from "./sprintnex-aicoe-api";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -270,6 +273,17 @@ export async function executeQaTask(
 // ── Internal ────────────────────────────────────────────────────────────────
 
 function buildQaPrompt(config: QaTaskConfig): string {
+  const qaAgent = selectAgent("sprintnex-qa-agent");
+
+  const defaultPrompt = [
+    `Execute these test steps using the available browser tools.`,
+    `Navigate to the target URL first, then follow each step.`,
+    `Take screenshots at key points. After completing all steps,`,
+    `produce a structured QA report in the format described in your instructions.`,
+  ].join("\n");
+
+  const agentPrompt = qaAgent?.prompt ?? defaultPrompt;
+
   const lines: string[] = [
     `## QA Test Execution`,
     ``,
@@ -279,10 +293,9 @@ function buildQaPrompt(config: QaTaskConfig): string {
     ``,
     config.testSteps,
     ``,
-    `Execute these test steps using the available browser tools.`,
-    `Navigate to the target URL first, then follow each step.`,
-    `Take screenshots at key points. After completing all steps,`,
-    `produce a structured QA report in the format described in your instructions.`,
+    `**Agent Instructions:**`,
+    ``,
+    agentPrompt,
   ];
   return lines.join("\n");
 }
