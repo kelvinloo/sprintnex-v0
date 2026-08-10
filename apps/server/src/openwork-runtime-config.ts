@@ -95,7 +95,7 @@ export async function buildOpenworkRuntimeConfigObject(
     ...runtimeConfig,
     default_agent: runtimeConfig.default_agent ?? "sprintnex",
     agent: {
-      openwork: {
+      sprintnex: {
         description: "Sprintnex default agent",
         mode: "primary",
         temperature: 0.2,
