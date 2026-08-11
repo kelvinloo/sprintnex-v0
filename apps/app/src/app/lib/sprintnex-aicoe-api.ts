@@ -735,7 +735,12 @@ export async function resolveSprintnexAgent(name: string): Promise<{
  */
 export async function fetchSprintnexAgents(): Promise<Agent[]> {
   try {
-    const res = await fetch(N8N_AGENT_CONTEXT_URL, { method: "GET" });
+    const scope = readSprintnexAicoeScope();
+    const res = await fetch(N8N_AGENT_CONTEXT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ organizationId: scope.organizationId }),
+    });
     if (!res.ok) return [];
     const data = (await res.json()) as Record<string, unknown>;
     const rawList =
