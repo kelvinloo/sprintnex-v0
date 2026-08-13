@@ -2,7 +2,7 @@ import {
   isLoopbackOpenworkServerUrl,
   normalizeOpenworkServerUrl,
   readOpenworkServerSettings,
-} from "../../app/lib/openwork-server";
+} from "../../app/lib/sprintnex-server";
 import { openworkServerInfo, type OpenworkServerInfo } from "../../app/lib/desktop";
 import { isDesktopRuntime } from "../../app/utils";
 

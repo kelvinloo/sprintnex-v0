@@ -18,7 +18,7 @@ const addHost = (value?: string | null) => {
 };
 
 envAllowedHosts.split(",").forEach(addHost);
-addHost(process.env.OPENWORK_PUBLIC_HOST ?? null);
+addHost(process.env.SPRINTNEX_PUBLIC_HOST ?? null);
 const hostname = os.hostname();
 addHost(hostname);
 const shortHostname = hostname.split(".")[0];
@@ -37,7 +37,7 @@ function readPackageVersion(packagePath: string): string | null {
 }
 
 const buildAppVersion =
-  process.env.VITE_OPENWORK_APP_VERSION?.trim() ||
+  process.env.VITE_SPRINTNEX_APP_VERSION?.trim() ||
   readPackageVersion(desktopPackagePath) ||
   readPackageVersion(appPackagePath) ||
   "0.0.0";
@@ -68,7 +68,7 @@ const migrationReleaseEnv = loadMigrationReleaseEnv();
 // Electron packaged builds load index.html via `file://`, so asset URLs
 // must be relative. Tauri serves via its own protocol so absolute paths
 // work there. Gate on an env var the electron build script sets.
-const isElectronPackagedBuild = process.env.OPENWORK_ELECTRON_BUILD === "1";
+const isElectronPackagedBuild = process.env.SPRINTNEX_ELECTRON_BUILD === "1";
 
 export default defineConfig({
   base: isElectronPackagedBuild ? "./" : "/",
@@ -79,7 +79,7 @@ export default defineConfig({
         JSON.stringify(v),
       ]),
     ),
-    "import.meta.env.VITE_OPENWORK_APP_VERSION": JSON.stringify(buildAppVersion),
+    "import.meta.env.VITE_SPRINTNEX_APP_VERSION": JSON.stringify(buildAppVersion),
   },
   plugins: [
     {

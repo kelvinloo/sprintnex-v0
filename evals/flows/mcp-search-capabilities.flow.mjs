@@ -14,8 +14,8 @@
  *    see changes, from ~129 tools to 2.
  *
  * Required env:
- * - OPENWORK_EVAL_DEN_API_URL    Den API base (e.g. http://127.0.0.1:8793)
- * - OPENWORK_EVAL_DEN_TOKEN      Bearer session token for the demo owner
+ * - SPRINTNEX_EVAL_DEN_API_URL    Den API base (e.g. http://127.0.0.1:8793)
+ * - SPRINTNEX_EVAL_DEN_TOKEN      Bearer session token for the demo owner
  */
 
 const revealHidden = async (ctx) => {
@@ -24,7 +24,7 @@ const revealHidden = async (ctx) => {
 };
 
 async function denFetch(ctx, path, options = {}) {
-  const base = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const base = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${base}${path}`, {
     ...options,
     headers: {
@@ -51,7 +51,7 @@ async function denFetch(ctx, path, options = {}) {
  * single message, so unwrap the `data: {...}` line.
  */
 async function mcpCallTo(ctx, path, mcpToken, method, params) {
-  const base = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const base = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${base}${path}`, {
     method: "POST",
     headers: {
@@ -82,7 +82,7 @@ export default {
   id: "mcp-search-capabilities",
   title: "search_capabilities ranks the real Den MCP catalog and the matched tool executes for real",
   spec: "evals/cloud-mcp-agent-flows.md",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_WORKSPACE_PATH"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_WORKSPACE_PATH"],
   steps: [
     {
       name: "App booted",
@@ -100,11 +100,11 @@ export default {
           ctx.log("Already signed in; reusing session.");
           return;
         }
-        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
           method: "POST",
           headers: {
-            authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
+            authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({}),
@@ -143,7 +143,7 @@ export default {
         // we landed on /welcome (idempotent if a workspace already exists).
         const onWelcome = await ctx.eval("location.hash.includes('/welcome')");
         if (onWelcome) {
-          const wsPath = ctx.env.OPENWORK_EVAL_WORKSPACE_PATH.trim();
+          const wsPath = ctx.env.SPRINTNEX_EVAL_WORKSPACE_PATH.trim();
           await ctx.fill("input", wsPath);
           await ctx.clickText("Use this folder", { timeoutMs: 10_000 });
           await ctx.waitFor("location.hash.includes('/workspace/')", {
@@ -185,7 +185,7 @@ export default {
       run: async (ctx) => {
         const minted = await denFetch(ctx, "/v1/mcp/token", {
           method: "POST",
-          headers: { authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}` },
+          headers: { authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}` },
           body: JSON.stringify({}),
         });
         ctx.assert(typeof minted.token === "string" && minted.token.startsWith("ow_mcp_at_"), "Expected a real opaque MCP token.");

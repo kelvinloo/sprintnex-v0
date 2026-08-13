@@ -11,14 +11,14 @@ const vo = await loadVoiceoverParagraphs(FLOW_ID);
 
 const DEN_API_URL = denApiUrl();
 const DEN_WEB_URL = denWebUrl();
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MAYA_EMAIL = process.env.OPENWORK_EVAL_MAYA_EMAIL?.trim() || process.env.OPENWORK_EVAL_MEMBER_EMAIL?.trim() || "maya.support@acme.test";
-const MAYA_PASSWORD = process.env.OPENWORK_EVAL_MAYA_PASSWORD?.trim() || process.env.OPENWORK_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
-const PLATFORM_ADMIN_EMAIL = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
-const PLATFORM_ADMIN_PASSWORD = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
-const MOCK_PORT = Number(process.env.OPENWORK_EVAL_MARKETPLACE_SLACK_MOCK_PORT ?? 4537);
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MAYA_EMAIL = process.env.SPRINTNEX_EVAL_MAYA_EMAIL?.trim() || process.env.SPRINTNEX_EVAL_MEMBER_EMAIL?.trim() || "maya.support@acme.test";
+const MAYA_PASSWORD = process.env.SPRINTNEX_EVAL_MAYA_PASSWORD?.trim() || process.env.SPRINTNEX_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const PLATFORM_ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
+const PLATFORM_ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
+const MOCK_PORT = Number(process.env.SPRINTNEX_EVAL_MARKETPLACE_SLACK_MOCK_PORT ?? 4537);
 const MOCK_BASE = `http://127.0.0.1:${MOCK_PORT}`;
 const MOCK_MCP_URL = `${MOCK_BASE}/mcp`;
 const MOCK_CLIENT_ID = process.env.MOCK_CLIENT_ID || "mock-preregistered-client";
@@ -74,7 +74,7 @@ export default {
   kind: "user-facing",
   preserveTheme: true,
   spec: "evals/voiceovers/marketplace-plugin-mcp-auth.md",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "Setup",
@@ -431,7 +431,7 @@ async function ensureMcpConnectionsCapability(ctx) {
   if (context.capabilities?.mcpConnections === true) return;
   ctx.assert(
     PLATFORM_ADMIN_EMAIL.length > 0 && PLATFORM_ADMIN_PASSWORD.length > 0,
-    "MCP Connections are disabled for this org. Provide OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL/PASSWORD to enable the eval capability, or run against a seeded org with MCP Connections on.",
+    "MCP Connections are disabled for this org. Provide SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL/PASSWORD to enable the eval capability, or run against a seeded org with MCP Connections on.",
   );
   const platformToken = await signInApi(PLATFORM_ADMIN_EMAIL, PLATFORM_ADMIN_PASSWORD);
   ctx.assert(Boolean(platformToken), "Platform admin sign-in failed while enabling MCP Connections.");
@@ -501,7 +501,7 @@ async function acceptInvite(ctx, inviteToken) {
 function markEmailVerified(ctx, email) {
   ctx.assert(
     MARK_VERIFIED_CMD.length > 0,
-    `Maya account bootstrap needs email verification. Set OPENWORK_EVAL_MARK_VERIFIED_CMD with an {email} placeholder, or pre-seed ${email}.`,
+    `Maya account bootstrap needs email verification. Set SPRINTNEX_EVAL_MARK_VERIFIED_CMD with an {email} placeholder, or pre-seed ${email}.`,
   );
   execSync(MARK_VERIFIED_CMD.replaceAll("{email}", email), { stdio: "ignore" });
 }
@@ -702,7 +702,7 @@ async function cleanupSupportTeam(ctx) {
 
 async function startMock(ctx) {
   if (mockChild) return;
-  ctx.assert(!(await mockHealthy()), `Port ${MOCK_PORT} is already serving. Stop that process or set OPENWORK_EVAL_MARKETPLACE_SLACK_MOCK_PORT.`);
+  ctx.assert(!(await mockHealthy()), `Port ${MOCK_PORT} is already serving. Stop that process or set SPRINTNEX_EVAL_MARKETPLACE_SLACK_MOCK_PORT.`);
   mockChild = spawn(process.execPath, [MOCK_SERVER_SCRIPT], {
     env: {
       ...process.env,

@@ -25,7 +25,7 @@ Marketplace containing built-in OpenWork extension capabilities.
 5. If recording, verify `wmctrl` and `xdotool` are installed in the Electron sandbox.
 6. Close stale native dialogs such as `Authorize folder` before recording.
 7. Prefer Den Web production mode (`next build` + `next start`) for the founder journey recording; Next dev can fail to hydrate through Daytona proxy/HMR.
-8. Validate dev auth before UI recording: direct Den API sign-in with the seeded user should return `200` when `OPENWORK_DEV_MODE=1`.
+8. Validate dev auth before UI recording: direct Den API sign-in with the seeded user should return `200` when `SPRINTNEX_DEV_MODE=1`.
 
 ## Demo Standard
 

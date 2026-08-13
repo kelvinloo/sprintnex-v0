@@ -16,7 +16,7 @@
  * (CDP 9924): pnpm fraimz --flow oauth-mcp-install --cdp-url http://127.0.0.1:9924
  *
  * Required env:
- * - OPENWORK_EVAL_DEN_API_URL  local Den API (e.g. http://127.0.0.1:8790)
+ * - SPRINTNEX_EVAL_DEN_API_URL  local Den API (e.g. http://127.0.0.1:8790)
  * Prereqs: member rashmi@acme.test / OpenWorkDemo123! exists in the org.
  */
 import { mkdir } from "node:fs/promises";
@@ -36,8 +36,8 @@ const SHARED = {
 const CLICK_ANY = "button, [role=button], a, div, article, li, label";
 
 async function denFetch(ctx, path, init = {}) {
-  const base = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
-  const origin = ctx.env.OPENWORK_EVAL_DEN_ORIGIN?.trim() || base.replace("127.0.0.1", "localhost");
+  const base = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const origin = ctx.env.SPRINTNEX_EVAL_DEN_ORIGIN?.trim() || base.replace("127.0.0.1", "localhost");
   const response = await fetch(`${base}${path}`, {
     ...init,
     headers: { "content-type": "application/json", origin, ...(init.headers ?? {}) },
@@ -109,7 +109,7 @@ export default {
   id: "oauth-mcp-install",
   title: "Member installs the plugin; OAuth MCP arrives sign-in-required, secret never travels",
   spec: "apps/server/src/extensions-export.ts",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL"],
   steps: [
     {
       name: "App B boots; member signs in via desktop handoff",

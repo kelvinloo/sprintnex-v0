@@ -10,7 +10,7 @@ openwork-bootstrap install --bin-dir ~/.local/bin --install-dir ~/.openwork/boot
 openwork-bootstrap doctor --json
 openwork-bootstrap install app --manifest https://example.com/openwork-install-manifest.json
 openwork-bootstrap doctor --app --json
-OPENWORK_OWNER_PASSWORD='<generated-password>' openwork-bootstrap cloud onboard --base-url https://den.example.com --owner-email ada@example.com --org-name 'Ada Workspace' --invite-email teammate@example.com --skill-name 'First skill' --json
+SPRINTNEX_OWNER_PASSWORD='<generated-password>' openwork-bootstrap cloud onboard --base-url https://den.example.com --owner-email ada@example.com --org-name 'Ada Workspace' --invite-email teammate@example.com --skill-name 'First skill' --json
 ```
 
 Current scope:

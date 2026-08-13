@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["OPENWORK_DEV_MODE"],
+  "globalEnv": ["SPRINTNEX_DEV_MODE"],
   "tasks": {
     "dev": {
       "cache": false,

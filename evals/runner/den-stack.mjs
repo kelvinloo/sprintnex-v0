@@ -9,8 +9,8 @@
  *   4. Demo-org seed (only when the demo owner cannot sign in)
  *   5. Desktop bootstrap pointed at the local Den + dev Electron with CDP
  *      (only when no CDP endpoint is reachable)
- *   6. A demo-owner session token, exported as OPENWORK_EVAL_DEN_API_URL /
- *      OPENWORK_EVAL_DEN_TOKEN so env-gated flows run without manual setup.
+ *   6. A demo-owner session token, exported as SPRINTNEX_EVAL_DEN_API_URL /
+ *      SPRINTNEX_EVAL_DEN_TOKEN so env-gated flows run without manual setup.
  *
  * `pnpm evals --stack-down` stops what the harness started.
  */
@@ -28,7 +28,7 @@ const RUNNER_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(RUNNER_DIR, "..", "..");
 const STATE_DIR = join(RUNNER_DIR, "..", "results", ".den-stack");
 
-const DEN_API_PORT = Number(process.env.OPENWORK_EVAL_DEN_PORT ?? 8790);
+const DEN_API_PORT = Number(process.env.SPRINTNEX_EVAL_DEN_PORT ?? 8790);
 const DEN_API_INTERNAL_PORT = DEN_API_PORT + 1;
 const DEN_API_URL = `http://127.0.0.1:${DEN_API_PORT}`;
 const DEN_API_INTERNAL_URL = `http://127.0.0.1:${DEN_API_INTERNAL_PORT}`;
@@ -37,11 +37,11 @@ const DEMO_EMAIL = process.env.DEN_DEMO_OWNER_EMAIL ?? "alex@acme.test";
 const DEMO_PASSWORD = process.env.DEN_DEMO_OWNER_PASSWORD ?? "OpenWorkDemo123!";
 const MYSQL_CONTAINER = "openwork-web-local-mysql";
 const COMPOSE_ARGS = ["compose", "-p", "openwork-den-local", "-f", "packaging/docker/docker-compose.web-local.yml"];
-const DEN_WEB_ORIGIN = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? "http://localhost:3005").replace(/\/+$/, "");
+const DEN_WEB_ORIGIN = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? "http://localhost:3005").replace(/\/+$/, "");
 const DEN_TRUSTED_ORIGINS = `${DEN_BASE_URL},${DEN_WEB_ORIGIN},http://localhost:5173,http://127.0.0.1:5173`;
 
 const DEN_ENV = {
-  OPENWORK_DEV_MODE: "1",
+  SPRINTNEX_DEV_MODE: "1",
   PORT: String(DEN_API_INTERNAL_PORT),
   DATABASE_URL: "mysql://root:password@127.0.0.1:3306/openwork_den",
   DEN_DB_ENCRYPTION_KEY: "local-dev-db-encryption-key-please-change-1234567890",
@@ -70,7 +70,7 @@ function devUserDataHome() {
 }
 
 function devBootstrapPath() {
-  return join(devUserDataHome(), "openwork-dev-data", "home", ".config", "openwork", "desktop-bootstrap.json");
+  return join(devUserDataHome(), "sprintnex-dev-data", "home", ".config", "openwork", "desktop-bootstrap.json");
 }
 
 async function httpOk(url, timeoutMs = 2_500) {
@@ -185,7 +185,7 @@ async function ensureDenApi(log) {
   if (publicHealthOk) {
     throw new Error(
       `A den-api is already healthy on :${DEN_API_PORT}, but it does not serve /api/den. ` +
-      "The desktop app cannot use a bare den-api there; rerun with OPENWORK_EVAL_DEN_PORT=<free port>.",
+      "The desktop app cannot use a bare den-api there; rerun with SPRINTNEX_EVAL_DEN_PORT=<free port>.",
     );
   }
 
@@ -316,9 +316,9 @@ export async function ensureDenStack({ log, cdpCandidates, skipApp = false }) {
   const token = await signInDemoOwner();
   if (!token) throw new Error("Could not obtain a demo-owner session token.");
 
-  process.env.OPENWORK_EVAL_DEN_API_URL = DEN_API_URL;
-  process.env.OPENWORK_EVAL_DEN_TOKEN = token;
-  log(`Den stack ready — flows get OPENWORK_EVAL_DEN_API_URL=${DEN_API_URL} and a fresh ${DEMO_EMAIL} token.`);
+  process.env.SPRINTNEX_EVAL_DEN_API_URL = DEN_API_URL;
+  process.env.SPRINTNEX_EVAL_DEN_TOKEN = token;
+  log(`Den stack ready — flows get SPRINTNEX_EVAL_DEN_API_URL=${DEN_API_URL} and a fresh ${DEMO_EMAIL} token.`);
 }
 
 export async function denStackDown({ log }) {

@@ -4,7 +4,7 @@ import { openworkServerRestart, type OpenworkServerInfo } from "../../../app/lib
 import {
   readOpenworkServerSettings,
   writeOpenworkServerSettings,
-} from "../../../app/lib/openwork-server";
+} from "../../../app/lib/sprintnex-server";
 import { t } from "../../../i18n";
 
 export type RemoteAccessRestartPhase =

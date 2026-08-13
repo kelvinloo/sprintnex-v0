@@ -39,7 +39,7 @@ const browserOpenUrlArgsSchema = z.object({
 });
 
 const browserSetProxyArgsSchema = z.object({
-  proxy: z.string().describe("Proxy URL like http://user:pass@host:8080 or socks5://host:1080. Prefer env:NAME (resolves the OPENWORK_BROWSER_PROXY_NAME environment variable on the user's machine) so credentials never enter the conversation."),
+  proxy: z.string().describe("Proxy URL like http://user:pass@host:8080 or socks5://host:1080. Prefer env:NAME (resolves the SPRINTNEX_BROWSER_PROXY_NAME environment variable on the user's machine) so credentials never enter the conversation."),
 });
 
 const sessionSearchArgsSchema = z.object({
@@ -130,14 +130,14 @@ export type OpenWorkExtensionConnectState = {
   };
 };
 
-export const OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION =
+export const SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION =
   "If the user asks for something you cannot do with obvious built-in tools, check OpenWork extensions before saying the capability is unavailable. Use openwork_extension_list_actions to inspect available extension actions, then call the matching action with openwork_extension_call.";
 
-export const OPENWORK_CLOUD_CONNECTION_INSTRUCTION =
+export const SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION =
   "The OpenWork Cloud connection is active. For email (Gmail), calendar, Google Drive, and org-connected services such as Notion, Linear, Slack, etc., FIRST call openwork-cloud_search_capabilities with 2-4 keyword variants, then call openwork-cloud_execute_capability with an exact returned name. Do not claim these are unavailable without searching. OpenWork extensions (openwork_extension_list_actions / openwork_extension_call) remain available for other local actions such as image generation, but do NOT use them for Google Workspace, and never direct the user to Settings > Extensions for Google Workspace; use Settings > Connect. A successful search proves OpenWork Cloud itself is authorized, so never tell the user to reconnect OpenWork Cloud because a downstream connector failed. If a result has kind connection_status, name connectionStatus.connectionName and relay connectionStatus.action exactly: use Your Connections for the member, the organization Connections dashboard for an org admin, or the provider admin console for a provider-side failure. After the requested human fixes that connector, search again in the same task. Do not try browser_* or openwork_ui_* workarounds or repeat the same call unchanged; results are live, not cached, so unchanged retries return the same error.";
 
-export const OPENWORK_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION =
-  `${OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION} Google Workspace is not connected on this device; if the user asks for email, calendar, or Google Drive, tell them to connect their account in Settings > Connect (never Settings > Extensions).`;
+export const SPRINTNEX_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION =
+  `${SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION} Google Workspace is not connected on this device; if the user asks for email, calendar, or Google Drive, tell them to connect their account in Settings > Connect (never Settings > Extensions).`;
 
 const CONNECT_STATE_CACHE_MS = 15_000;
 
@@ -152,11 +152,11 @@ let cachedOpenWorkExtensionDiscoveryInstruction: CachedOpenWorkExtensionDiscover
 
 export function composeOpenWorkExtensionDiscoveryInstruction(state: OpenWorkExtensionConnectState | null): string {
   if (!state || !state.connectEnabled || state.googleWorkspace.legacyConfigured) {
-    return OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION;
+    return SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION;
   }
   return state.cloudMcpPresent
-    ? OPENWORK_CLOUD_CONNECTION_INSTRUCTION
-    : OPENWORK_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION;
+    ? SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION
+    : SPRINTNEX_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION;
 }
 
 export function resetOpenWorkExtensionDiscoveryInstructionCacheForTests(): void {
@@ -172,18 +172,18 @@ export async function resolveOpenWorkExtensionDiscoveryInstruction(fetcher: Open
     return cachedOpenWorkExtensionDiscoveryInstruction.instruction;
   }
 
-  let instruction = OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION;
+  let instruction = SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION;
   try {
     instruction = composeOpenWorkExtensionDiscoveryInstruction(await fetchOpenWorkConnectState(fetcher));
   } catch {
-    instruction = OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION;
+    instruction = SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION;
   }
 
   cachedOpenWorkExtensionDiscoveryInstruction = { at: currentTime, instruction };
   return instruction;
 }
 
-const OPENWORK_UI_CONTROL_INSTRUCTION =
+const SPRINTNEX_UI_CONTROL_INSTRUCTION =
   `IMPORTANT: You are running inside the OpenWork desktop app. When the user asks you to open settings, navigate the app, add providers, or control the OpenWork UI in any way, ALWAYS use the openwork_ui_* tools — NOT the browser_* tools. The browser tools are for external websites only. The openwork_ui_* tools control the app directly and are instant (one tool call).
 
 To open settings: openwork_ui_execute_action with actionId "settings.panel.open" and args {panel:"general"} (or "ai", "extensions", "permissions", "skills", "appearance", etc.)
@@ -192,13 +192,13 @@ To see what the user sees: openwork_ui_snapshot
 To list all available actions: openwork_ui_list_actions
 To ask what OpenWork can do: openwork_ui_execute_action with actionId "help.capabilities"`;
 
-const OPENWORK_SESSION_MEMORY_INSTRUCTION =
+const SPRINTNEX_SESSION_MEMORY_INSTRUCTION =
   `## Cross-session memory
 When the user asks what they said, what happened, or what was decided in another OpenWork chat/session, treat it as a session-history lookup, not hidden model memory.
 Use openwork_session_search first to search session titles and message transcripts across workspaces. If there is one clear match, use openwork_session_read with the returned sessionId/workspaceId to retrieve transcript context without navigating the UI.
 Answer only from the returned search/read results. If multiple sessions match, ask a short clarifying question. If the returned transcript is limited or missing the older context needed, say so instead of guessing.`;
 
-const OPENWORK_BROWSER_INSTRUCTION =
+const SPRINTNEX_BROWSER_INSTRUCTION =
   `Do NOT use browser_navigate, browser_click, or browser_snapshot to interact with the OpenWork app itself. Those are for browsing external websites.
 
 ## Built-in Browser (external websites)
@@ -246,16 +246,16 @@ function userAppDataDir(): string {
 // The agent-facing UI-control surface (system steering + openwork_ui_* tools)
 // is opt-in: it noises every session's prompt/tool list, and the supported way
 // to grant agents UI control is the hidden "OpenWork UI Control" MCP in
-// Settings -> Extensions. Set OPENWORK_UI_CONTROL_TOOLS=1 to re-enable the
+// Settings -> Extensions. Set SPRINTNEX_UI_CONTROL_TOOLS=1 to re-enable the
 // built-in preview surface (used by internal tooling).
 function uiControlToolsEnabled(): boolean {
-  const raw = process.env.OPENWORK_UI_CONTROL_TOOLS?.trim().toLowerCase() ?? "";
+  const raw = process.env.SPRINTNEX_UI_CONTROL_TOOLS?.trim().toLowerCase() ?? "";
   return raw === "1" || raw === "true";
 }
 
 function uiControlDiscoveryPaths(): string[] {
   return [
-    process.env.OPENWORK_UI_CONTROL_DISCOVERY?.trim(),
+    process.env.SPRINTNEX_UI_CONTROL_DISCOVERY?.trim(),
     join(userAppDataDir(), "com.differentai.openwork", "openwork-ui-control.json"),
     join(userAppDataDir(), "com.differentai.openwork.dev", "openwork-ui-control.json"),
   ].filter((p): p is string => Boolean(p));
@@ -572,11 +572,11 @@ async function readOpenWorkSession(rawArgs: unknown): Promise<object> {
 }
 
 function serverUrl(): string {
-  return String(process.env.OPENWORK_SERVER_URL || "").replace(/\/$/, "");
+  return String(process.env.SPRINTNEX_SERVER_URL || "").replace(/\/$/, "");
 }
 
 function serverToken(): string {
-  return String(process.env.OPENWORK_SERVER_TOKEN || "");
+  return String(process.env.SPRINTNEX_SERVER_TOKEN || "");
 }
 
 function requireOpenWorkServer(): { url: string; token: string } {
@@ -699,13 +699,13 @@ export const OpenWorkExtensionsPreview = async () => {
   return {
   "experimental.chat.system.transform": async (_input: unknown, output: { system: string[] }) => {
     output.system.push(await resolveOpenWorkExtensionDiscoveryInstruction());
-    output.system.push(OPENWORK_SESSION_MEMORY_INSTRUCTION);
-    output.system.push(OPENWORK_BROWSER_INSTRUCTION);
-    if (uiControlEnabled) output.system.push(OPENWORK_UI_CONTROL_INSTRUCTION);
+    output.system.push(SPRINTNEX_SESSION_MEMORY_INSTRUCTION);
+    output.system.push(SPRINTNEX_BROWSER_INSTRUCTION);
+    if (uiControlEnabled) output.system.push(SPRINTNEX_UI_CONTROL_INSTRUCTION);
   },
   tool: {
     openwork_extension_list_actions: {
-      description: `List extension actions currently exposed by OpenWork. ${OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION}`,
+      description: `List extension actions currently exposed by OpenWork. ${SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION}`,
       args: listActionsArgsSchema.shape,
       async execute(rawArgs: unknown, context: OpenCodeContext) {
         const args = listActionsArgsSchema.parse(rawArgs);
@@ -720,7 +720,7 @@ export const OpenWorkExtensionsPreview = async () => {
       },
     },
     openwork_extension_call: {
-      description: `Call an OpenWork extension action. Use openwork_extension_list_actions first to inspect available actions and schemas. ${OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION}`,
+      description: `Call an OpenWork extension action. Use openwork_extension_list_actions first to inspect available actions and schemas. ${SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION}`,
       args: callArgsSchema.shape,
       async execute(rawArgs: unknown, context: OpenCodeContext) {
         const args = callArgsSchema.parse(rawArgs);
@@ -743,7 +743,7 @@ export const OpenWorkExtensionsPreview = async () => {
       },
     },
     openwork_ui_list_actions: {
-      description: `List all UI control actions currently available in OpenWork. Each action has an id you can pass to openwork_ui_execute_action. ${OPENWORK_UI_CONTROL_INSTRUCTION}`,
+      description: `List all UI control actions currently available in OpenWork. Each action has an id you can pass to openwork_ui_execute_action. ${SPRINTNEX_UI_CONTROL_INSTRUCTION}`,
       args: {},
       async execute() {
         const result = await uiBridgeRequest("/actions");
@@ -751,7 +751,7 @@ export const OpenWorkExtensionsPreview = async () => {
       },
     },
     openwork_ui_execute_action: {
-      description: `Execute an OpenWork UI action by its id. Use openwork_ui_list_actions first to see available actions. ${OPENWORK_UI_CONTROL_INSTRUCTION}`,
+      description: `Execute an OpenWork UI action by its id. Use openwork_ui_list_actions first to see available actions. ${SPRINTNEX_UI_CONTROL_INSTRUCTION}`,
       args: uiExecuteArgsSchema.shape,
       async execute(rawArgs: unknown) {
         const { actionId, args } = uiExecuteArgsSchema.parse(rawArgs);
@@ -807,7 +807,7 @@ export const OpenWorkExtensionsPreview = async () => {
       },
     },
     openwork_browser_set_proxy: {
-      description: "Route all OpenWork built-in browser traffic through an HTTP/SOCKS proxy — for example to fetch search results or pages as seen from another location. Applies to every built-in browser tab (including browser_* automation) until cleared with openwork_browser_clear_proxy. If the user has named proxies configured as OPENWORK_BROWSER_PROXY_<NAME> environment variables, pass env:NAME instead of a raw URL.",
+      description: "Route all OpenWork built-in browser traffic through an HTTP/SOCKS proxy — for example to fetch search results or pages as seen from another location. Applies to every built-in browser tab (including browser_* automation) until cleared with openwork_browser_clear_proxy. If the user has named proxies configured as SPRINTNEX_BROWSER_PROXY_<NAME> environment variables, pass env:NAME instead of a raw URL.",
       args: browserSetProxyArgsSchema.shape,
       async execute(rawArgs: unknown) {
         const args = browserSetProxyArgsSchema.parse(rawArgs);

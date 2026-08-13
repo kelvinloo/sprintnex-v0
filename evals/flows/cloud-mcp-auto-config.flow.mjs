@@ -5,8 +5,8 @@
  * persisted.
  *
  * Requires the programmatic runner (evals/runner) and a reachable Den API:
- * - OPENWORK_EVAL_DEN_API_URL    Den API base, e.g. http://127.0.0.1:8790
- * - OPENWORK_EVAL_DEN_TOKEN      Bearer session token for a Den account
+ * - SPRINTNEX_EVAL_DEN_API_URL    Den API base, e.g. http://127.0.0.1:8790
+ * - SPRINTNEX_EVAL_DEN_TOKEN      Bearer session token for a Den account
  *
  * The app under test must be bootstrapped against the same Den control
  * plane (desktop-bootstrap.json) and signed out at start, or already signed
@@ -22,7 +22,7 @@ export default {
   id: "cloud-mcp-auto-config",
   title: "Cloud MCP auto-configures with first-party token on sign-in",
   spec: "evals/cloud-auth-flows.md",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "App booted",
@@ -41,11 +41,11 @@ export default {
           return;
         }
 
-        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
           method: "POST",
           headers: {
-            authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
+            authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({ desktopScheme: "openwork" }),

@@ -14,13 +14,13 @@
 
 import { execSync } from "node:child_process";
 
-const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
-const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? DEN_API_URL.replace("127.0.0.1", "localhost")).trim().replace(/\/+$/, "");
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MEMBER_EMAIL = process.env.OPENWORK_EVAL_MEMBER_EMAIL?.trim() || "jordan.demo@acme.test";
-const MEMBER_PASSWORD = process.env.OPENWORK_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? DEN_API_URL.replace("127.0.0.1", "localhost")).trim().replace(/\/+$/, "");
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MEMBER_EMAIL = process.env.SPRINTNEX_EVAL_MEMBER_EMAIL?.trim() || "jordan.demo@acme.test";
+const MEMBER_PASSWORD = process.env.SPRINTNEX_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
 const MOCK_SERVER_URL = (process.env.MOCK_OAUTH_MCP_URL ?? "http://127.0.0.1:3978").trim().replace(/\/+$/, "");
 const RUN_TAG = Date.now();
 const CONNECTION_NAME = `Team Knowledge Base ${RUN_TAG}`;
@@ -86,7 +86,7 @@ async function ensureMember(ctx) {
     body: JSON.stringify({ email: MEMBER_EMAIL, name: "Jordan Demo", password: MEMBER_PASSWORD }),
   });
   ctx.assert(signUp.response.ok, `Member sign-up failed: ${signUp.response.status}`);
-  ctx.assert(MARK_VERIFIED_CMD.length > 0, "Set OPENWORK_EVAL_MARK_VERIFIED_CMD to verify the member's email.");
+  ctx.assert(MARK_VERIFIED_CMD.length > 0, "Set SPRINTNEX_EVAL_MARK_VERIFIED_CMD to verify the member's email.");
   execSync(MARK_VERIFIED_CMD.replaceAll("{email}", MEMBER_EMAIL), { stdio: "ignore" });
 
   state.memberSession = await signIn(MEMBER_EMAIL, MEMBER_PASSWORD);
@@ -309,7 +309,7 @@ export default {
   title: "Desktop app: org MCP connections appear in Marketplace, connect through browser OAuth, and work in chat",
   kind: "user-facing",
   spec: "evals/desktop-org-mcp-demo.md",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL"],
   steps: [
     {
       name: "Setup: publish a per-member org MCP connection for Jordan",
@@ -361,10 +361,10 @@ export default {
       name: "Desktop app boots and signs in as Jordan",
       run: async (ctx) => {
         await ctx.waitFor("Boolean(window.__openworkControl)", { timeoutMs: 120_000 });
-        await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
+        await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
         const bootstrap = { baseUrl: DEN_API_URL, apiBaseUrl: DEN_API_URL, requireSignin: false, handoff: null };
         const written = await ctx.eval(`(async () => {
-          const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
+          const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
           if (!bridge) return { ok: false };
           await bridge("setDesktopBootstrapConfig", ${JSON.stringify(bootstrap)});
           return { ok: true };

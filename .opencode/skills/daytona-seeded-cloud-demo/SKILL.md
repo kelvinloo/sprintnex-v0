@@ -42,7 +42,7 @@ DEN_WORKER_PROXY_URL="<printed Worker Proxy URL>"
 Seed the sandbox after the Den stack is healthy. The seed uses the same encryption and auth secrets as `.devcontainer/start-daytona-server.sh`.
 
 ```bash
-daytona exec "$SANDBOX" -- 'bash -lc '\''cd /workspace && pnpm --filter @openwork/email build && cd /workspace/ee/apps/den-api && OPENWORK_DEV_MODE=1 DATABASE_URL=mysql://root:password@127.0.0.1:3306/openwork_den DEN_DB_ENCRYPTION_KEY=daytona-den-db-encryption-key-please-change-1234567890 BETTER_AUTH_SECRET=daytona-den-auth-secret-please-change-1234567890 BETTER_AUTH_URL="'"$DEN_WEB_URL"'" pnpm exec tsx scripts/seed-demo-org.ts --reset'\'''
+daytona exec "$SANDBOX" -- 'bash -lc '\''cd /workspace && pnpm --filter @openwork/email build && cd /workspace/ee/apps/den-api && SPRINTNEX_DEV_MODE=1 DATABASE_URL=mysql://root:password@127.0.0.1:3306/openwork_den DEN_DB_ENCRYPTION_KEY=daytona-den-db-encryption-key-please-change-1234567890 BETTER_AUTH_SECRET=daytona-den-auth-secret-please-change-1234567890 BETTER_AUTH_URL="'"$DEN_WEB_URL"'" pnpm exec tsx scripts/seed-demo-org.ts --reset'\'''
 ```
 
 Expected seeded credentials:
@@ -152,6 +152,6 @@ If older docs suggest running the Electron helper in a server-only mode, do not
 use that path unless this checkout supports it. Use
 `.devcontainer/test-server-on-daytona.sh` for server-only cloud demos.
 
-If sign-in returns `403` for email verification, Den API is not running with `OPENWORK_DEV_MODE=1` or did not restart after env changes. Restart the Den stack and rerun the seed.
+If sign-in returns `403` for email verification, Den API is not running with `SPRINTNEX_DEV_MODE=1` or did not restart after env changes. Restart the Den stack and rerun the seed.
 
 If Den Web health passes but auth through Den Web fails while direct Den API auth passes, report that distinction and debug the Den Web proxy separately. Do not claim the browser-facing demo path passed from direct API auth alone.

@@ -18,15 +18,15 @@ import { denSessionUpdatedEvent, type DenSessionUpdatedDetail } from "./den-sess
 import { recordInspectorEvent } from "./app-inspector";
 import { resolvePosthogKey } from "./analytics-key";
 
-const ENV_POSTHOG_HOST = String(import.meta.env.VITE_OPENWORK_POSTHOG_HOST ?? "").trim();
-const ENV_APP_VERSION = String(import.meta.env.VITE_OPENWORK_APP_VERSION ?? "").trim();
+const ENV_POSTHOG_HOST = String(import.meta.env.VITE_SPRINTNEX_POSTHOG_HOST ?? "").trim();
+const ENV_APP_VERSION = String(import.meta.env.VITE_SPRINTNEX_APP_VERSION ?? "").trim();
 
 const DEFAULT_POSTHOG_HOST = "https://us.i.posthog.com";
 
 // Packaged releases use the default publishable key; dev builds stay silent
-// unless VITE_OPENWORK_POSTHOG_KEY is set. Set it to "" to disable analytics
+// unless VITE_SPRINTNEX_POSTHOG_KEY is set. Set it to "" to disable analytics
 // in any build. The inspector mirror still records events locally either way.
-const POSTHOG_KEY = resolvePosthogKey(import.meta.env.VITE_OPENWORK_POSTHOG_KEY, import.meta.env.DEV);
+const POSTHOG_KEY = resolvePosthogKey(import.meta.env.VITE_SPRINTNEX_POSTHOG_KEY, import.meta.env.DEV);
 const POSTHOG_HOST = (ENV_POSTHOG_HOST || DEFAULT_POSTHOG_HOST).replace(/\/+$/, "");
 
 const PREFS_STORAGE_KEY = "openwork.preferences";

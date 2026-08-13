@@ -21,7 +21,7 @@ import {
   hydrateOpenworkServerSettingsFromEnv,
   readOpenworkServerSettings,
   writeOpenworkServerSettings,
-} from "../../app/lib/openwork-server";
+} from "../../app/lib/sprintnex-server";
 import {
   isDesktopRuntime,
   isElectronRuntime,
@@ -120,7 +120,7 @@ export function useDesktopRuntimeBoot() {
           });
           try {
             window.dispatchEvent(
-              new CustomEvent("openwork-server-settings-changed"),
+              new CustomEvent("sprintnex-server-settings-changed"),
             );
           } catch {
             /* ignore */
@@ -224,7 +224,7 @@ export function useDesktopRuntimeBoot() {
 
         // FAST PATH ─────────────────────────────────────────────────────
         // Cheap status probe: if engine is already running just publish the
-        // current openwork-server base URL + token and finish in <1s.
+        // current sprintnex-server base URL + token and finish in <1s.
         // This mirrors Solid's bootstrap at context/workspace.ts:3883-3907
         // ("localAttachExisting"), which never restarts a running stack.
         try {
@@ -247,7 +247,7 @@ export function useDesktopRuntimeBoot() {
               });
               try {
                 window.dispatchEvent(
-                  new CustomEvent("openwork-server-settings-changed"),
+                  new CustomEvent("sprintnex-server-settings-changed"),
                 );
               } catch {
                 /* ignore */
@@ -262,7 +262,7 @@ export function useDesktopRuntimeBoot() {
 
         // SLOW PATH ─────────────────────────────────────────────────────
         // No running engine. Tauri now mirrors Electron: engine_start boots
-        // openwork-server and lets that server manage OpenCode.
+        // sprintnex-server and lets that server manage OpenCode.
         const localPaths = list.workspaces.flatMap((entry: WorkspaceInfo) => {
           const path =
             entry.workspaceType !== "remote" ? (entry.path?.trim() ?? "") : "";
@@ -355,7 +355,7 @@ export function useDesktopRuntimeBoot() {
               });
               try {
                 window.dispatchEvent(
-                  new CustomEvent("openwork-server-settings-changed"),
+                  new CustomEvent("sprintnex-server-settings-changed"),
                 );
               } catch {
                 /* ignore */

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { resolve } from "node:path";
-import { OpenWorkCapabilitiesKnowledge } from "./openwork-capabilities-knowledge.js";
+import { OpenWorkCapabilitiesKnowledge } from "./sprintnex-capabilities-knowledge.js";
 
 describe("OpenWork capabilities knowledge plugin", () => {
   test("injects current OpenWork Connect guidance", async () => {
@@ -38,7 +38,7 @@ describe("OpenWork capabilities knowledge plugin", () => {
   });
 
   test("retrieves Slack connection guidance from bundled docs", async () => {
-    process.env.OPENWORK_DOCS_DIR = resolve(import.meta.dir, "../../../../packages/docs");
+    process.env.SPRINTNEX_DOCS_DIR = resolve(import.meta.dir, "../../../../packages/docs");
 
     const plugin = await OpenWorkCapabilitiesKnowledge();
     const search = await plugin.tool.openwork_docs_search.execute({ query: "how can i connect slack", limit: 3 });
@@ -57,7 +57,7 @@ describe("OpenWork capabilities knowledge plugin", () => {
   });
 
   test("retrieves the Connect-first member flow from bundled docs", async () => {
-    process.env.OPENWORK_DOCS_DIR = resolve(import.meta.dir, "../../../../packages/docs");
+    process.env.SPRINTNEX_DOCS_DIR = resolve(import.meta.dir, "../../../../packages/docs");
 
     const plugin = await OpenWorkCapabilitiesKnowledge();
     const search = await plugin.tool.openwork_docs_search.execute({ query: "connect gmail calendar slack", limit: 3 });
@@ -75,7 +75,7 @@ describe("OpenWork capabilities knowledge plugin", () => {
   });
 
   test("reads current Cloud MCP endpoint and proxy guidance from bundled docs", async () => {
-    process.env.OPENWORK_DOCS_DIR = resolve(import.meta.dir, "../../../../packages/docs");
+    process.env.SPRINTNEX_DOCS_DIR = resolve(import.meta.dir, "../../../../packages/docs");
 
     const plugin = await OpenWorkCapabilitiesKnowledge();
     const read = await plugin.tool.openwork_docs_read.execute({

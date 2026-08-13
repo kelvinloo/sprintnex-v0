@@ -1,5 +1,5 @@
 {
-  "name": "@openwork/install-config",
+  "name": "@sprintnex/install-config",
   "private": true,
   "type": "module",
   "exports": {

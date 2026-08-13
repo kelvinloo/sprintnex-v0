@@ -3,7 +3,7 @@
 import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
 
-export const MOCK_TELEGRAM_BOT_TOKEN = "900100:OPENWORK_TEST_TOKEN";
+export const MOCK_TELEGRAM_BOT_TOKEN = "900100:SPRINTNEX_TEST_TOKEN";
 export const MOCK_TELEGRAM_WEBHOOK_SECRET = "openwork-telegram-webhook-secret";
 export const MOCK_MICROSOFT_ACCESS_TOKEN = "mock-microsoft-access-token";
 export const MOCK_MICROSOFT_REFRESH_TOKEN = "mock-microsoft-refresh-token";

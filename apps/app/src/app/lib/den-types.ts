@@ -1,5 +1,5 @@
 // Den wire types shared across module boundaries (den.ts, den-session-events,
-// openwork-server, desktop cloud sync). Extracted from den.ts so that modules
+// sprintnex-server, desktop cloud sync). Extracted from den.ts so that modules
 // needing only the shapes do not import the 2k-line client implementation —
 // den.ts re-exports everything here, so existing imports keep working.
 import type {

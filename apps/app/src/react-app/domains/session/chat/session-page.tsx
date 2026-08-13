@@ -18,11 +18,11 @@ import {
 
 import { resolveExtensionIconSrc } from "@/react-app/design-system/extension-icon-src";
 import { t } from "../../../../i18n";
-import { OPENWORK_EXTENSION_CATALOG } from "../../../../app/constants";
+import { SPRINTNEX_EXTENSION_CATALOG } from "../../../../app/constants";
 import {
   type OpenworkServerClient,
   type OpenworkServerStatus,
-} from "../../../../app/lib/openwork-server";
+} from "../../../../app/lib/sprintnex-server";
 import { getDisplaySessionTitle } from "../../../../app/lib/session-title";
 import type { BootPhase } from "../../../../app/lib/startup-boot";
 import {
@@ -111,7 +111,7 @@ import {
 import {
   getExtensionId,
   isOpenWorkExtensionEnabled,
-  OPENWORK_EXTENSION_STATE_CHANGED,
+  SPRINTNEX_EXTENSION_STATE_CHANGED,
 } from "../../settings/extension-state";
 import { cn } from "@/lib/utils";
 import {
@@ -446,7 +446,7 @@ export function SessionPage(props: SessionPageProps) {
   const voiceRailActive = activeSidePanel === "voice";
   const voiceExtension = useMemo(
     () =>
-      OPENWORK_EXTENSION_CATALOG.find(
+      SPRINTNEX_EXTENSION_CATALOG.find(
         (entry) => getExtensionId(entry) === "openwork-voice",
       ) ?? null,
     [],
@@ -519,7 +519,7 @@ export function SessionPage(props: SessionPageProps) {
   // the panel opened and doesn't render the unified panel chrome.
   useEffect(() => {
     if (!isElectronRuntime()) return;
-    const browser = (window as Window).__OPENWORK_ELECTRON__?.browser;
+    const browser = (window as Window).__SPRINTNEX_ELECTRON__?.browser;
     if (!browser) return;
     const unsubOpen = browser.onPanelOpened?.(() => {
       if (preserveSidePanelOnPanelOpenRef.current) {
@@ -605,7 +605,7 @@ export function SessionPage(props: SessionPageProps) {
         const url = browserUrlForTarget(target);
         if (isElectronRuntime()) {
           setCurrentSidePanel("panel");
-          void window.__OPENWORK_ELECTRON__?.browser?.createTab?.(url);
+          void window.__SPRINTNEX_ELECTRON__?.browser?.createTab?.(url);
         } else {
           window.open(url, "_blank", "noopener,noreferrer");
         }
@@ -685,7 +685,7 @@ export function SessionPage(props: SessionPageProps) {
         (tab) => tab.type === "browser",
       );
       if (!hasBrowserTab) {
-        void window.__OPENWORK_ELECTRON__?.browser?.createTab?.();
+        void window.__SPRINTNEX_ELECTRON__?.browser?.createTab?.();
       }
     }
     toggleCurrentSidePanel("panel");
@@ -725,7 +725,7 @@ export function SessionPage(props: SessionPageProps) {
           };
         }
         setCurrentSidePanel("panel");
-        return window.__OPENWORK_ELECTRON__?.browser?.openUrl?.(url, provider);
+        return window.__SPRINTNEX_ELECTRON__?.browser?.openUrl?.(url, provider);
       },
     }),
     [setCurrentSidePanel],
@@ -743,14 +743,14 @@ export function SessionPage(props: SessionPageProps) {
           name: "proxy",
           type: "string",
           description:
-            "Proxy URL like http://user:pass@host:8080 or socks5://host:1080, env:NAME to use the OPENWORK_BROWSER_PROXY_NAME environment variable, or empty to clear.",
+            "Proxy URL like http://user:pass@host:8080 or socks5://host:1080, env:NAME to use the SPRINTNEX_BROWSER_PROXY_NAME environment variable, or empty to clear.",
         },
       ],
       previewArgs: { proxy: "env:DE" },
       disabled: !isElectronRuntime(),
       execute: async (args) => {
         const proxy = controlStringArg(args, "proxy") || "";
-        const setProxy = window.__OPENWORK_ELECTRON__?.browser?.setProxy;
+        const setProxy = window.__SPRINTNEX_ELECTRON__?.browser?.setProxy;
         if (!setProxy)
           return { ok: false, error: "Built-in browser is not available." };
         return setProxy(proxy);
@@ -860,10 +860,10 @@ export function SessionPage(props: SessionPageProps) {
   }, [setCurrentSidePanel]);
   useEffect(() => {
     const refresh = () => setExtensionStateVersion((value) => value + 1);
-    window.addEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
+    window.addEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
     window.addEventListener("storage", refresh);
     return () => {
-      window.removeEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
+      window.removeEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
       window.removeEventListener("storage", refresh);
     };
   }, []);

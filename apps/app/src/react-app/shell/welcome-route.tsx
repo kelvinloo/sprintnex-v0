@@ -28,7 +28,7 @@ import { captureAnalyticsEvent } from "../../app/lib/analytics";
 import {
   buildOpenworkWorkspaceBaseUrl,
   createOpenworkServerClient,
-} from "../../app/lib/openwork-server";
+} from "../../app/lib/sprintnex-server";
 import {
   buildDenAuthUrl,
   clearDenSession,

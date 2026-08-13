@@ -1,6 +1,6 @@
 FROM node:22-bookworm-slim
 
-ARG OPENWORK_ORCHESTRATOR_VERSION=0.11.22
+ARG SPRINTNEX_ORCHESTRATOR_VERSION=0.11.22
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
@@ -11,14 +11,14 @@ RUN apt-get update \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g "openwork-orchestrator@${OPENWORK_ORCHESTRATOR_VERSION}"
+RUN npm install -g "sprintnex-orchestrator@${SPRINTNEX_ORCHESTRATOR_VERSION}"
 
 # Persistent directories (mount volumes here on PaaS/SSH).
-ENV OPENWORK_DATA_DIR=/data/openwork-orchestrator
-ENV OPENWORK_SIDECAR_DIR=/data/sidecars
+ENV SPRINTNEX_DATA_DIR=/data/sprintnex-orchestrator
+ENV SPRINTNEX_SIDECAR_DIR=/data/sidecars
 
 # The workspace is mounted from the host/volume.
-ENV OPENWORK_WORKSPACE=/workspace
+ENV SPRINTNEX_WORKSPACE=/workspace
 
 # OpenWork host contract surface.
 EXPOSE 8787

@@ -87,7 +87,7 @@ step is: **observe → act → observe → assert** — and repair before verdic
 Local Electron (fastest for a worktree you changed):
 
 ```bash
-OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=9826 pnpm dev   # & in background
+SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT=9826 pnpm dev   # & in background
 pnpm fraimz --flow <id> --cdp-url http://127.0.0.1:9826
 ```
 

@@ -14,11 +14,11 @@ type Served = {
 const HOST_TOKEN = "owt_env_host_token";
 const stops: Array<() => void | Promise<void>> = [];
 const dirs: string[] = [];
-const priorEnvStore = process.env.OPENWORK_ENV_STORE;
-const priorTokenStore = process.env.OPENWORK_TOKEN_STORE;
+const priorEnvStore = process.env.SPRINTNEX_ENV_STORE;
+const priorTokenStore = process.env.SPRINTNEX_TOKEN_STORE;
 const priorOpenAiApiKey = process.env.OPENAI_API_KEY;
-const priorOpenWorkApiKey = process.env.OPENWORK_API_KEY;
-const priorOpenWorkInferenceBaseUrl = process.env.OPENWORK_INFERENCE_BASE_URL;
+const priorOpenWorkApiKey = process.env.SPRINTNEX_API_KEY;
+const priorOpenWorkInferenceBaseUrl = process.env.SPRINTNEX_INFERENCE_BASE_URL;
 const nativeFetch = globalThis.fetch;
 
 function baseConfig(): ServerConfig {
@@ -58,8 +58,8 @@ beforeEach(() => {
   dirs.push(dir);
   // Redirect the shared env.json path into a throwaway dir so the test never
   // touches the developer's real ~/.config/openwork/env.json.
-  process.env.OPENWORK_ENV_STORE = join(dir, "env.json");
-  process.env.OPENWORK_TOKEN_STORE = join(dir, "tokens.json");
+  process.env.SPRINTNEX_ENV_STORE = join(dir, "env.json");
+  process.env.SPRINTNEX_TOKEN_STORE = join(dir, "tokens.json");
 });
 
 afterEach(async () => {
@@ -70,14 +70,14 @@ afterEach(async () => {
     rmSync(dirs.pop()!, { recursive: true, force: true });
   }
   if (priorEnvStore === undefined) {
-    delete process.env.OPENWORK_ENV_STORE;
+    delete process.env.SPRINTNEX_ENV_STORE;
   } else {
-    process.env.OPENWORK_ENV_STORE = priorEnvStore;
+    process.env.SPRINTNEX_ENV_STORE = priorEnvStore;
   }
   if (priorTokenStore === undefined) {
-    delete process.env.OPENWORK_TOKEN_STORE;
+    delete process.env.SPRINTNEX_TOKEN_STORE;
   } else {
-    process.env.OPENWORK_TOKEN_STORE = priorTokenStore;
+    process.env.SPRINTNEX_TOKEN_STORE = priorTokenStore;
   }
   if (priorOpenAiApiKey === undefined) {
     delete process.env.OPENAI_API_KEY;
@@ -85,14 +85,14 @@ afterEach(async () => {
     process.env.OPENAI_API_KEY = priorOpenAiApiKey;
   }
   if (priorOpenWorkApiKey === undefined) {
-    delete process.env.OPENWORK_API_KEY;
+    delete process.env.SPRINTNEX_API_KEY;
   } else {
-    process.env.OPENWORK_API_KEY = priorOpenWorkApiKey;
+    process.env.SPRINTNEX_API_KEY = priorOpenWorkApiKey;
   }
   if (priorOpenWorkInferenceBaseUrl === undefined) {
-    delete process.env.OPENWORK_INFERENCE_BASE_URL;
+    delete process.env.SPRINTNEX_INFERENCE_BASE_URL;
   } else {
-    process.env.OPENWORK_INFERENCE_BASE_URL = priorOpenWorkInferenceBaseUrl;
+    process.env.SPRINTNEX_INFERENCE_BASE_URL = priorOpenWorkInferenceBaseUrl;
   }
   globalThis.fetch = nativeFetch;
 });
@@ -235,7 +235,7 @@ describe("env routes", () => {
   });
 
   test("invalid env store returns 409 instead of overwriting on PUT", async () => {
-    writeFileSync(process.env.OPENWORK_ENV_STORE!, "{ this is not json");
+    writeFileSync(process.env.SPRINTNEX_ENV_STORE!, "{ this is not json");
     const { base } = await boot();
 
     const put = await fetch(`${base}/env`, {
@@ -289,13 +289,13 @@ describe("env routes", () => {
     const put = await fetch(`${base}/env`, {
       method: "PUT",
       headers: hostAuth(),
-      body: JSON.stringify({ key: "OPENWORK_TOKEN", value: "x" }),
+      body: JSON.stringify({ key: "SPRINTNEX_TOKEN", value: "x" }),
     });
     expect(put.status).toBe(400);
     const body = (await put.json()) as { code: string; message: string };
     expect(body.code).toBe("reserved_env_key");
     expect(body.message).toBe("Environment variable name is reserved for OpenWork internals");
-    expect(body.message).not.toContain("OPENWORK_TOKEN");
+    expect(body.message).not.toContain("SPRINTNEX_TOKEN");
   });
 
   test("PUT with no entries returns 400", async () => {
@@ -376,8 +376,8 @@ describe("env routes", () => {
       headers: hostAuth(),
       body: JSON.stringify({
         entries: [
-          { key: "OPENWORK_API_KEY", value: "ow_inf_test" },
-          { key: "OPENWORK_INFERENCE_BASE_URL", value: "https://inference.example.test" },
+          { key: "SPRINTNEX_API_KEY", value: "ow_inf_test" },
+          { key: "SPRINTNEX_INFERENCE_BASE_URL", value: "https://inference.example.test" },
         ],
       }),
     });
@@ -437,8 +437,8 @@ describe("env routes", () => {
       headers: hostAuth(),
       body: JSON.stringify({
         entries: [
-          { key: "OPENWORK_API_KEY", value: "ow_inf_test" },
-          { key: "OPENWORK_INFERENCE_BASE_URL", value: "https://inference.example.test" },
+          { key: "SPRINTNEX_API_KEY", value: "ow_inf_test" },
+          { key: "SPRINTNEX_INFERENCE_BASE_URL", value: "https://inference.example.test" },
         ],
       }),
     });
@@ -482,7 +482,7 @@ describe("env routes", () => {
   test("voice realtime session shows clear error when broker 503 and no local key", async () => {
     delete process.env.OPENAI_API_KEY;
     delete process.env.OPENAI_REALTIME_API_KEY;
-    delete process.env.OPENWORK_OPENAI_REALTIME_API_KEY;
+    delete process.env.SPRINTNEX_OPENAI_REALTIME_API_KEY;
     const { base } = await boot();
 
     await fetch(`${base}/env`, {
@@ -490,8 +490,8 @@ describe("env routes", () => {
       headers: hostAuth(),
       body: JSON.stringify({
         entries: [
-          { key: "OPENWORK_API_KEY", value: "ow_inf_test" },
-          { key: "OPENWORK_INFERENCE_BASE_URL", value: "https://inference.example.test" },
+          { key: "SPRINTNEX_API_KEY", value: "ow_inf_test" },
+          { key: "SPRINTNEX_INFERENCE_BASE_URL", value: "https://inference.example.test" },
         ],
       }),
     });
@@ -534,8 +534,8 @@ describe("env routes", () => {
       headers: hostAuth(),
       body: JSON.stringify({
         entries: [
-          { key: "OPENWORK_API_KEY", value: "ow_inf_test" },
-          { key: "OPENWORK_INFERENCE_BASE_URL", value: "https://inference.example.test" },
+          { key: "SPRINTNEX_API_KEY", value: "ow_inf_test" },
+          { key: "SPRINTNEX_INFERENCE_BASE_URL", value: "https://inference.example.test" },
         ],
       }),
     });

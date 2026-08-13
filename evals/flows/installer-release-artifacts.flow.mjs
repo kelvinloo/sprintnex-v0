@@ -10,24 +10,24 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 // The runner fails this flow if the narration drifts from that script.
 const vo = await loadVoiceoverParagraphs("installer-release-artifacts");
 
-const DEN_API_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_API_URL);
-const DEN_WEB_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL);
-const ADMIN_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_ADMIN);
-const INVITEE_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_INVITEE);
-const RELEASE_TAG = process.env.OPENWORK_EVAL_RELEASE_TAG?.trim() || "";
-const RELEASE_REPO = process.env.OPENWORK_EVAL_RELEASE_REPO?.trim() || "different-ai/openwork";
-const DEN_API_LOG = process.env.OPENWORK_EVAL_DEN_API_LOG?.trim() || "/tmp/ow-rel-den-api.log";
-const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
-const PLATFORM_ADMIN_EMAIL = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
-const PLATFORM_ADMIN_PASSWORD = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_API_URL);
+const DEN_WEB_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL);
+const ADMIN_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_ADMIN);
+const INVITEE_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_INVITEE);
+const RELEASE_TAG = process.env.SPRINTNEX_EVAL_RELEASE_TAG?.trim() || "";
+const RELEASE_REPO = process.env.SPRINTNEX_EVAL_RELEASE_REPO?.trim() || "different-ai/openwork";
+const DEN_API_LOG = process.env.SPRINTNEX_EVAL_DEN_API_LOG?.trim() || "/tmp/ow-rel-den-api.log";
+const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const PLATFORM_ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
+const PLATFORM_ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 
 const MAC_ASSET = "openwork-installer-mac-arm64.zip";
 const WIN_ASSET = "openwork-installer-win-x64.exe";
 const INSTALL_SIDECAR_FILENAME = "openwork-installer.json";
 const APP_BUNDLE_NAME = "OpenWork Installer.app";
-// Must match den-api's default OPENWORK_INSTALLER_CACHE_DIR (env.installerCacheDir).
+// Must match den-api's default SPRINTNEX_INSTALLER_CACHE_DIR (env.installerCacheDir).
 const INSTALLER_CACHE_DIR = path.join(os.tmpdir(), "openwork-installer-artifacts");
 
 const state = {
@@ -46,15 +46,15 @@ export default {
   title: "One published release feeds every stamped install: the Mac download stays signed and notarized",
   kind: "user-facing",
   requiredEnv: [
-    "OPENWORK_EVAL_DEN_API_URL",
-    "OPENWORK_EVAL_DEN_TOKEN",
-    "OPENWORK_EVAL_DEN_WEB_URL",
-    "OPENWORK_EVAL_WEB_CDP_ADMIN",
-    "OPENWORK_EVAL_WEB_CDP_INVITEE",
-    "OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL",
-    "OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD",
-    "OPENWORK_EVAL_MARK_VERIFIED_CMD",
-    "OPENWORK_EVAL_RELEASE_TAG",
+    "SPRINTNEX_EVAL_DEN_API_URL",
+    "SPRINTNEX_EVAL_DEN_TOKEN",
+    "SPRINTNEX_EVAL_DEN_WEB_URL",
+    "SPRINTNEX_EVAL_WEB_CDP_ADMIN",
+    "SPRINTNEX_EVAL_WEB_CDP_INVITEE",
+    "SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL",
+    "SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD",
+    "SPRINTNEX_EVAL_MARK_VERIFIED_CMD",
+    "SPRINTNEX_EVAL_RELEASE_TAG",
   ],
   steps: [
     {
@@ -434,8 +434,8 @@ async function ensureAdminToken(ctx) {
     state.adminToken = signedIn.body.token;
     return state.adminToken;
   }
-  const token = process.env.OPENWORK_EVAL_DEN_TOKEN?.trim() ?? "";
-  ctx.assert(token.length > 0, `Admin sign-in failed and OPENWORK_EVAL_DEN_TOKEN is missing: ${signedIn.response.status}`);
+  const token = process.env.SPRINTNEX_EVAL_DEN_TOKEN?.trim() ?? "";
+  ctx.assert(token.length > 0, `Admin sign-in failed and SPRINTNEX_EVAL_DEN_TOKEN is missing: ${signedIn.response.status}`);
   state.adminToken = token;
   return token;
 }
@@ -496,7 +496,7 @@ async function ensurePlatformAdmin(ctx) {
 function markEmailVerified(ctx, email) {
   ctx.assert(
     MARK_VERIFIED_CMD.length > 0,
-    "Platform-admin provisioning requires a verified email; set OPENWORK_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
+    "Platform-admin provisioning requires a verified email; set SPRINTNEX_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
   );
   execSync(MARK_VERIFIED_CMD.replaceAll("{email}", email), { stdio: "ignore" });
 }
@@ -580,13 +580,13 @@ function sha256File(filePath) {
 async function startExtractedInstallerUi(binaryPath, cwd) {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("OPENWORK_INSTALLER_") || key === "OPENWORK_DESKTOP_BOOTSTRAP_PATH") {
+    if (key.startsWith("SPRINTNEX_INSTALLER_") || key === "SPRINTNEX_DESKTOP_BOOTSTRAP_PATH") {
       delete env[key];
     }
   }
   const child = spawn(binaryPath, [], {
     cwd,
-    env: { ...env, OPENWORK_INSTALLER_UI: "manual" },
+    env: { ...env, SPRINTNEX_INSTALLER_UI: "manual" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   let output = "";

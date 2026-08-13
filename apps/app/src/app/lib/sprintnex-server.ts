@@ -54,7 +54,7 @@ export type OpenworkServerDiagnostics = {
   tokenSource: { client: string; host: string };
 };
 
-export type OpenworkRuntimeServiceName = "openwork-server" | "opencode";
+export type OpenworkRuntimeServiceName = "sprintnex-server" | "opencode";
 
 export type OpenworkRuntimeServiceSnapshot = {
   name: OpenworkRuntimeServiceName;
@@ -565,7 +565,7 @@ export type OpenworkSessionGroupEvent = {
 
 // Fallback for explicit server-mode URL derivation. Desktop local workers replace this
 // with the persisted runtime-discovered port once the host reports it.
-export const DEFAULT_OPENWORK_SERVER_PORT = 8787;
+export const DEFAULT_SPRINTNEX_SERVER_PORT = 8787;
 
 const STORAGE_URL_OVERRIDE = "openwork.server.urlOverride";
 const STORAGE_PORT_OVERRIDE = "openwork.server.port";
@@ -649,10 +649,10 @@ export function buildOpenworkWorkspaceBaseUrl(hostUrl: string, workspaceId?: str
   }
 }
 
-const OPENWORK_INVITE_PARAM_URL = "ow_url";
-const OPENWORK_INVITE_PARAM_TOKEN = "ow_token";
-const OPENWORK_INVITE_PARAM_STARTUP = "ow_startup";
-const OPENWORK_INVITE_PARAM_AUTO_CONNECT = "ow_auto_connect";
+const SPRINTNEX_INVITE_PARAM_URL = "ow_url";
+const SPRINTNEX_INVITE_PARAM_TOKEN = "ow_token";
+const SPRINTNEX_INVITE_PARAM_STARTUP = "ow_startup";
+const SPRINTNEX_INVITE_PARAM_AUTO_CONNECT = "ow_auto_connect";
 
 export type OpenworkConnectInvite = {
   url: string;
@@ -667,14 +667,14 @@ export function readOpenworkConnectInviteFromSearch(input: string | URLSearchPar
       ? new URLSearchParams(input.startsWith("?") ? input.slice(1) : input)
       : input;
 
-  const rawUrl = search.get(OPENWORK_INVITE_PARAM_URL)?.trim() ?? "";
+  const rawUrl = search.get(SPRINTNEX_INVITE_PARAM_URL)?.trim() ?? "";
   const url = normalizeOpenworkServerUrl(rawUrl);
   if (!url) return null;
 
-  const token = search.get(OPENWORK_INVITE_PARAM_TOKEN)?.trim() ?? "";
-  const startupRaw = search.get(OPENWORK_INVITE_PARAM_STARTUP)?.trim() ?? "";
+  const token = search.get(SPRINTNEX_INVITE_PARAM_TOKEN)?.trim() ?? "";
+  const startupRaw = search.get(SPRINTNEX_INVITE_PARAM_STARTUP)?.trim() ?? "";
   const startup = startupRaw === "server" ? "server" : undefined;
-  const autoConnect = search.get(OPENWORK_INVITE_PARAM_AUTO_CONNECT)?.trim() === "1";
+  const autoConnect = search.get(SPRINTNEX_INVITE_PARAM_AUTO_CONNECT)?.trim() === "1";
 
   return {
     url,
@@ -687,10 +687,10 @@ export function readOpenworkConnectInviteFromSearch(input: string | URLSearchPar
 export function stripOpenworkConnectInviteFromUrl(input: string) {
   try {
     const url = new URL(input);
-    url.searchParams.delete(OPENWORK_INVITE_PARAM_URL);
-    url.searchParams.delete(OPENWORK_INVITE_PARAM_TOKEN);
-    url.searchParams.delete(OPENWORK_INVITE_PARAM_STARTUP);
-    url.searchParams.delete(OPENWORK_INVITE_PARAM_AUTO_CONNECT);
+    url.searchParams.delete(SPRINTNEX_INVITE_PARAM_URL);
+    url.searchParams.delete(SPRINTNEX_INVITE_PARAM_TOKEN);
+    url.searchParams.delete(SPRINTNEX_INVITE_PARAM_STARTUP);
+    url.searchParams.delete(SPRINTNEX_INVITE_PARAM_AUTO_CONNECT);
     return url.toString();
   } catch {
     return input;
@@ -768,17 +768,17 @@ export function writeOpenworkServerSettings(next: OpenworkServerSettings): Openw
 export function hydrateOpenworkServerSettingsFromEnv() {
   if (typeof window === "undefined") return;
 
-  const envUrl = typeof import.meta.env?.VITE_OPENWORK_URL === "string"
-    ? import.meta.env.VITE_OPENWORK_URL.trim()
+  const envUrl = typeof import.meta.env?.VITE_SPRINTNEX_URL === "string"
+    ? import.meta.env.VITE_SPRINTNEX_URL.trim()
     : "";
-  const envPort = typeof import.meta.env?.VITE_OPENWORK_PORT === "string"
-    ? import.meta.env.VITE_OPENWORK_PORT.trim()
+  const envPort = typeof import.meta.env?.VITE_SPRINTNEX_PORT === "string"
+    ? import.meta.env.VITE_SPRINTNEX_PORT.trim()
     : "";
-  const envToken = typeof import.meta.env?.VITE_OPENWORK_TOKEN === "string"
-    ? import.meta.env.VITE_OPENWORK_TOKEN.trim()
+  const envToken = typeof import.meta.env?.VITE_SPRINTNEX_TOKEN === "string"
+    ? import.meta.env.VITE_SPRINTNEX_TOKEN.trim()
     : "";
-  const envHostToken = typeof import.meta.env?.VITE_OPENWORK_HOST_TOKEN === "string"
-    ? import.meta.env.VITE_OPENWORK_HOST_TOKEN.trim()
+  const envHostToken = typeof import.meta.env?.VITE_SPRINTNEX_HOST_TOKEN === "string"
+    ? import.meta.env.VITE_SPRINTNEX_HOST_TOKEN.trim()
     : "";
 
   if (!envUrl && !envPort && !envToken && !envHostToken) return;
@@ -880,10 +880,10 @@ function buildAuthHeaders(token?: string, hostToken?: string, extra?: Record<str
 // Use Tauri's fetch when running in the desktop app to avoid CORS issues.
 // Stream URLs (SSE) bypass the plugin because its `fetch_read_body` IPC call
 // blocks until the body closes — that freezes the webview for infinite bodies.
-const OPENWORK_STREAM_URL_RE = /\/events(\b|\?)|\/event-stream\b|\/stream\b/;
+const SPRINTNEX_STREAM_URL_RE = /\/events(\b|\?)|\/event-stream\b|\/stream\b/;
 
 function isStreamUrl(url: string): boolean {
-  return OPENWORK_STREAM_URL_RE.test(url);
+  return SPRINTNEX_STREAM_URL_RE.test(url);
 }
 
 const resolveFetch = (url?: string) => {
@@ -894,7 +894,7 @@ const resolveFetch = (url?: string) => {
   return desktopFetch;
 };
 
-const DEFAULT_OPENWORK_SERVER_TIMEOUT_MS = 10_000;
+const DEFAULT_SPRINTNEX_SERVER_TIMEOUT_MS = 10_000;
 const ENGINE_RELOAD_TIMEOUT_MS = 60_000;
 
 type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
@@ -953,7 +953,7 @@ async function requestJson<T>(
       headers: buildHeaders(options.token, options.hostToken),
       body: options.body ? JSON.stringify(options.body) : undefined,
     },
-    options.timeoutMs ?? DEFAULT_OPENWORK_SERVER_TIMEOUT_MS,
+    options.timeoutMs ?? DEFAULT_SPRINTNEX_SERVER_TIMEOUT_MS,
   );
 
   const text = await response.text();
@@ -983,7 +983,7 @@ async function requestMultipartRaw(
       headers: buildAuthHeaders(options.token, options.hostToken),
       body: options.body,
     },
-    options.timeoutMs ?? DEFAULT_OPENWORK_SERVER_TIMEOUT_MS,
+    options.timeoutMs ?? DEFAULT_SPRINTNEX_SERVER_TIMEOUT_MS,
   );
   const text = await response.text();
   return { ok: response.ok, status: response.status, text };
@@ -1003,7 +1003,7 @@ async function requestBinary(
       method: options.method ?? "GET",
       headers: buildAuthHeaders(options.token, options.hostToken),
     },
-    options.timeoutMs ?? DEFAULT_OPENWORK_SERVER_TIMEOUT_MS,
+    options.timeoutMs ?? DEFAULT_SPRINTNEX_SERVER_TIMEOUT_MS,
   );
 
   if (!response.ok) {

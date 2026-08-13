@@ -44,7 +44,7 @@ import type {
   OpenworkServerCapabilities,
   OpenworkServerClient,
   OpenworkServerStatus,
-} from "../../../../app/lib/openwork-server";
+} from "../../../../app/lib/sprintnex-server";
 import {
   createDenClient,
   fetchDenOrgSkillsCatalog,
@@ -68,7 +68,7 @@ import {
   type PendingCloudPluginChange,
 } from "../../../../app/cloud/desktop-cloud-sync";
 import { notifyEvent } from "../../../shell/notifications";
-import type { OpenworkServerStore } from "../../connections/openwork-server-store";
+import type { OpenworkServerStore } from "../../connections/sprintnex-server-store";
 
 const OPENCODE_SKILL_NAME_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const OPENCODE_MCP_NAME_RE = /^[A-Za-z0-9_][A-Za-z0-9_-]*$/;

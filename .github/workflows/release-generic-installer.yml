@@ -80,7 +80,7 @@ jobs:
   resolve:
     name: Resolve release + platforms
     # Auto-attach only to published app releases (vX.Y.Z); skip prereleases
-    # and secondary releases like openwork-orchestrator-v*. Reusable workflows
+    # and secondary releases like sprintnex-orchestrator-v*. Reusable workflows
     # retain their caller's event name (normally "push" here), so every
     # non-release invocation is an explicit dispatch/call and must run.
     if: github.event_name != 'release' || (github.event.release.prerelease == false && startsWith(github.event.release.tag_name, 'v'))

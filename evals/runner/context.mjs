@@ -476,9 +476,9 @@ export class EvalContext {
     this.screenshotIndex += 1;
     const fileName = `${this.flowId}-${String(this.screenshotIndex).padStart(2, "0")}-${slug(name)}.png`;
     const sandbox = options.sandboxCapture === "computer-use"
-      ? (this.env.OPENWORK_EVAL_DAYTONA_SANDBOX_ID || this.env.OPENWORK_EVAL_DAYTONA_SANDBOX)?.trim()
+      ? (this.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX_ID || this.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX)?.trim()
       : options.sandboxCapture
-        ? this.env.OPENWORK_EVAL_DAYTONA_SANDBOX?.trim()
+        ? this.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX?.trim()
         : null;
     const targetSelector = !sandbox && (options.targetId || options.targetUrlIncludes);
     const textTargetSelector = options.textTargetId || options.textTargetUrlIncludes;

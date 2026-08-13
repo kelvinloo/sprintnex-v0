@@ -24,7 +24,7 @@ import {
   buildOpenworkWorkspaceBaseUrl,
   createOpenworkServerClient,
   type OpenworkServerClient,
-} from "./openwork-server";
+} from "./sprintnex-server";
 
 export type ResolvedWorkspaceEndpoint = {
   /** Host URL of the OpenWork server that owns this workspace (no `/workspace` mount). */

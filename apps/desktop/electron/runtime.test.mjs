@@ -130,7 +130,7 @@ describe("embeddedServerImportUrl", () => {
 describe("resolveOpenworkServerConfigPath", () => {
   it("respects explicit server config path", () => {
     assert.equal(
-      resolveOpenworkServerConfigPath({ OPENWORK_SERVER_CONFIG: "/tmp/openwork/server.json" }),
+      resolveOpenworkServerConfigPath({ SPRINTNEX_SERVER_CONFIG: "/tmp/openwork/server.json" }),
       "/tmp/openwork/server.json",
     );
   });

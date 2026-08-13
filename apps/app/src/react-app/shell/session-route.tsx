@@ -29,7 +29,7 @@ import {
   readOpenworkServerSettings,
   type OpenworkServerClient,
   type OpenworkWorkspaceInfo,
-} from "@/app/lib/openwork-server";
+} from "@/app/lib/sprintnex-server";
 import {
   resolveWorkspaceEndpoint,
   workspaceServerId,

@@ -334,15 +334,15 @@ async function closeServer(server) {
 }
 
 async function desktopWorkspaceList(ctx) {
-  await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", {
+  await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", {
     timeoutMs: 30_000,
     label: "desktop bridge",
   });
-  return ctx.eval("window.__OPENWORK_ELECTRON__.invokeDesktop('workspaceBootstrap')", { awaitPromise: true });
+  return ctx.eval("window.__SPRINTNEX_ELECTRON__.invokeDesktop('workspaceBootstrap')", { awaitPromise: true });
 }
 
 async function forgetDesktopWorkspace(ctx, workspaceId) {
-  await ctx.eval(`window.__OPENWORK_ELECTRON__.invokeDesktop('workspaceForget', ${JSON.stringify(workspaceId)})`, {
+  await ctx.eval(`window.__SPRINTNEX_ELECTRON__.invokeDesktop('workspaceForget', ${JSON.stringify(workspaceId)})`, {
     awaitPromise: true,
   });
 }
@@ -351,13 +351,13 @@ async function deleteOpenworkServerWorkspace(ctx, workspaceId) {
   if (!workspaceId) return;
   await ctx.eval(`(async () => {
     const baseUrl = localStorage.getItem('openwork.server.urlOverride') || localStorage.getItem('openwork.server.active');
-    if (!baseUrl || !window.__OPENWORK_ELECTRON__?.invokeDesktop) return null;
+    if (!baseUrl || !window.__SPRINTNEX_ELECTRON__?.invokeDesktop) return null;
     const token = localStorage.getItem('openwork.server.token') || '';
     const hostToken = localStorage.getItem('openwork.server.hostToken') || '';
     const headers = {};
     if (token) headers.authorization = 'Bearer ' + token;
     if (hostToken) headers['x-openwork-host-token'] = hostToken;
-    return window.__OPENWORK_ELECTRON__.invokeDesktop('__fetch', baseUrl.replace(/\/+$/, '') + '/workspaces/' + encodeURIComponent(${JSON.stringify(workspaceId)}), {
+    return window.__SPRINTNEX_ELECTRON__.invokeDesktop('__fetch', baseUrl.replace(/\/+$/, '') + '/workspaces/' + encodeURIComponent(${JSON.stringify(workspaceId)}), {
       method: 'DELETE',
       headers,
       timeoutMs: 8_000,
@@ -366,7 +366,7 @@ async function deleteOpenworkServerWorkspace(ctx, workspaceId) {
 }
 
 async function restartOpenworkServer(ctx) {
-  await ctx.eval("window.__OPENWORK_ELECTRON__.invokeDesktop('openworkServerRestart', {})", { awaitPromise: true }).catch(() => null);
+  await ctx.eval("window.__SPRINTNEX_ELECTRON__.invokeDesktop('openworkServerRestart', {})", { awaitPromise: true }).catch(() => null);
 }
 
 function isEvalStarterWorkspace(workspace) {
@@ -417,7 +417,7 @@ async function pruneEvalStarterRecoveryStores() {
     }
   }
 
-  const tokenStorePath = join(userDataDir, "openwork-server-tokens.json");
+  const tokenStorePath = join(userDataDir, "sprintnex-server-tokens.json");
   const tokenStore = await readJson(tokenStorePath, null);
   if (tokenStore?.workspaces && typeof tokenStore.workspaces === "object") {
     const workspaces = Object.fromEntries(Object.entries(tokenStore.workspaces).filter(([workspacePath]) => !isEvalStarterPath(workspacePath)));
@@ -426,7 +426,7 @@ async function pruneEvalStarterRecoveryStores() {
     }
   }
 
-  const serverStatePath = join(userDataDir, "openwork-server-state.json");
+  const serverStatePath = join(userDataDir, "sprintnex-server-state.json");
   const serverState = await readJson(serverStatePath, null);
   if (serverState?.workspacePorts && typeof serverState.workspacePorts === "object") {
     const workspacePorts = Object.fromEntries(Object.entries(serverState.workspacePorts).filter(([workspacePath]) => !isEvalStarterPath(workspacePath)));
@@ -436,8 +436,8 @@ async function pruneEvalStarterRecoveryStores() {
   }
 
   for (const serverConfigPath of [
-    join(userDataDir, "openwork-dev-data", "xdg", "config", "openwork", "server.json"),
-    join(userDataDir, "openwork-dev-data", "home", ".config", "openwork", "server.json"),
+    join(userDataDir, "sprintnex-dev-data", "xdg", "config", "openwork", "server.json"),
+    join(userDataDir, "sprintnex-dev-data", "home", ".config", "openwork", "server.json"),
   ]) {
     const serverConfig = await readJson(serverConfigPath, null);
     if (!serverConfig) continue;
@@ -514,10 +514,10 @@ async function cleanupCreatedWorkspace(ctx) {
     await restartOpenworkServer(ctx);
   }
   if (state.previousWorkspaceId) {
-    await ctx.eval(`window.__OPENWORK_ELECTRON__.invokeDesktop('workspaceSetSelected', ${JSON.stringify(state.previousWorkspaceId)})`, {
+    await ctx.eval(`window.__SPRINTNEX_ELECTRON__.invokeDesktop('workspaceSetSelected', ${JSON.stringify(state.previousWorkspaceId)})`, {
       awaitPromise: true,
     });
-    await ctx.eval(`window.__OPENWORK_ELECTRON__.invokeDesktop('workspaceSetRuntimeActive', ${JSON.stringify(state.previousWorkspaceId)})`, {
+    await ctx.eval(`window.__SPRINTNEX_ELECTRON__.invokeDesktop('workspaceSetRuntimeActive', ${JSON.stringify(state.previousWorkspaceId)})`, {
       awaitPromise: true,
     });
   }

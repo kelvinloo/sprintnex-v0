@@ -24,7 +24,7 @@ import {
 import type {
   OpenworkServerClient,
   OpenworkSessionSnapshot,
-} from "@/app/lib/openwork-server";
+} from "@/app/lib/sprintnex-server";
 import type {
   ComposerAttachment,
   ComposerDraft,
@@ -55,7 +55,7 @@ import {
 import { desktopBridge } from "@/app/lib/desktop";
 import { parseSlashCommandInvocation } from "./composer/slash-command";
 import { DevProfiler } from "@/react-app/shell/dev-profiler";
-import { PaperGrainGradient } from "@openwork/ui/react";
+import { PaperGrainGradient } from "@sprintnex/ui/react";
 import { useShellConfig } from "@/react-app/shell/shell-config";
 import { useReactRenderWatchdog } from "@/react-app/shell/react-render-watchdog";
 import { SessionDebugPanel } from "./debug-panel";

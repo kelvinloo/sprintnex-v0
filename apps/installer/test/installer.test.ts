@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test"
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import os from "node:os"
 import path from "node:path"
-import { installConfigUrlFor, parseInstallerFilenameTag } from "@openwork/install-config"
+import { installConfigUrlFor, parseInstallerFilenameTag } from "@sprintnex/install-config"
 
 import { desktopBootstrapPath, legacyDesktopBootstrapPath } from "../src/bootstrap-path"
 import { parseInstallLinkInput, resolveInstallerConfig } from "../src/config"
@@ -12,7 +12,7 @@ import { releaseAssetFor } from "../src/release-asset"
 
 describe("desktopBootstrapPath", () => {
   test("honors the explicit override", () => {
-    expect(desktopBootstrapPath({ OPENWORK_DESKTOP_BOOTSTRAP_PATH: "/tmp/custom.json" }, "darwin")).toBe("/tmp/custom.json")
+    expect(desktopBootstrapPath({ SPRINTNEX_DESKTOP_BOOTSTRAP_PATH: "/tmp/custom.json" }, "darwin")).toBe("/tmp/custom.json")
   })
 
   test("prefers XDG_CONFIG_HOME on every platform", () => {
@@ -61,11 +61,11 @@ describe("releaseAssetFor", () => {
 describe("resolveInstallerConfig", () => {
   test("reads env overrides and normalizes URLs", async () => {
     const { config, source } = await resolveInstallerConfig({ env: {
-      OPENWORK_INSTALLER_APP_NAME: "Acme Work",
-      OPENWORK_INSTALLER_CLIENT_NAME: "Acme Corp",
-      OPENWORK_INSTALLER_WEB_URL: "https://openwork.acme.com/",
-      OPENWORK_INSTALLER_API_URL: "https://openwork-api.acme.com",
-      OPENWORK_INSTALLER_REQUIRE_SIGNIN: "true",
+      SPRINTNEX_INSTALLER_APP_NAME: "Acme Work",
+      SPRINTNEX_INSTALLER_CLIENT_NAME: "Acme Corp",
+      SPRINTNEX_INSTALLER_WEB_URL: "https://openwork.acme.com/",
+      SPRINTNEX_INSTALLER_API_URL: "https://openwork-api.acme.com",
+      SPRINTNEX_INSTALLER_REQUIRE_SIGNIN: "true",
     } })
     expect(source).toBe("env")
     expect(config).toEqual({
@@ -80,19 +80,19 @@ describe("resolveInstallerConfig", () => {
 
   test("accepts an optional logo URL and rejects non-http logos", async () => {
     const { config } = await resolveInstallerConfig({ env: {
-      OPENWORK_INSTALLER_CLIENT_NAME: "Acme",
-      OPENWORK_INSTALLER_WEB_URL: "https://openwork.acme.com",
-      OPENWORK_INSTALLER_API_URL: "https://openwork-api.acme.com",
-      OPENWORK_INSTALLER_LOGO_URL: "https://acme.com/logo.svg",
+      SPRINTNEX_INSTALLER_CLIENT_NAME: "Acme",
+      SPRINTNEX_INSTALLER_WEB_URL: "https://openwork.acme.com",
+      SPRINTNEX_INSTALLER_API_URL: "https://openwork-api.acme.com",
+      SPRINTNEX_INSTALLER_LOGO_URL: "https://acme.com/logo.svg",
     } })
     expect(config.logoUrl).toBe("https://acme.com/logo.svg")
     await expect(
       resolveInstallerConfig({
         env: {
-        OPENWORK_INSTALLER_CLIENT_NAME: "Acme",
-        OPENWORK_INSTALLER_WEB_URL: "https://openwork.acme.com",
-        OPENWORK_INSTALLER_API_URL: "https://openwork-api.acme.com",
-        OPENWORK_INSTALLER_LOGO_URL: "file:///etc/passwd",
+        SPRINTNEX_INSTALLER_CLIENT_NAME: "Acme",
+        SPRINTNEX_INSTALLER_WEB_URL: "https://openwork.acme.com",
+        SPRINTNEX_INSTALLER_API_URL: "https://openwork-api.acme.com",
+        SPRINTNEX_INSTALLER_LOGO_URL: "file:///etc/passwd",
         },
       }),
     ).rejects.toThrow()
@@ -117,9 +117,9 @@ describe("resolveInstallerConfig", () => {
 
       const resolution = await resolveInstallerConfig({
         env: {
-          OPENWORK_INSTALLER_CLIENT_NAME: "Env",
-          OPENWORK_INSTALLER_WEB_URL: "https://env.example.com",
-          OPENWORK_INSTALLER_API_URL: "https://env-api.example.com",
+          SPRINTNEX_INSTALLER_CLIENT_NAME: "Env",
+          SPRINTNEX_INSTALLER_WEB_URL: "https://env.example.com",
+          SPRINTNEX_INSTALLER_API_URL: "https://env-api.example.com",
         },
         execPath,
       })

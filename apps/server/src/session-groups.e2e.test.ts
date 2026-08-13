@@ -9,19 +9,19 @@ import type { ServerConfig } from "./types.js";
 
 const stops: Array<() => void | Promise<void>> = [];
 const roots: string[] = [];
-const previousRuntimeDb = process.env.OPENWORK_RUNTIME_DB;
+const previousRuntimeDb = process.env.SPRINTNEX_RUNTIME_DB;
 
 afterEach(async () => {
   while (stops.length) await stops.pop()?.();
   while (roots.length) await rm(roots.pop()!, { recursive: true, force: true });
-  if (previousRuntimeDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-  else process.env.OPENWORK_RUNTIME_DB = previousRuntimeDb;
+  if (previousRuntimeDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+  else process.env.SPRINTNEX_RUNTIME_DB = previousRuntimeDb;
 });
 
 async function createWorkspaceRoot() {
   const root = await mkdtemp(join(tmpdir(), "openwork-session-groups-"));
   roots.push(root);
-  process.env.OPENWORK_RUNTIME_DB = join(root, "runtime.sqlite");
+  process.env.SPRINTNEX_RUNTIME_DB = join(root, "runtime.sqlite");
   return root;
 }
 

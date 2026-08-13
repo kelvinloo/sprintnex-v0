@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { engineInfo, engineRestart } from "@/app/lib/desktop";
 import type { EngineInfo } from "@/app/lib/desktop-types";
 import { isDesktopRuntime } from "@/app/lib/runtime-env";
-import { OpenworkServerError, type OpenworkServerClient } from "@/app/lib/openwork-server";
+import { OpenworkServerError, type OpenworkServerClient } from "@/app/lib/sprintnex-server";
 import type { ResolvedWorkspaceEndpoint } from "@/app/lib/workspace-endpoint";
 import { t } from "@/i18n";
 import { useReloadCoordinator } from "./reload-coordinator";
@@ -80,7 +80,7 @@ export function useEngineReload(input: UseEngineReloadInput) {
     }
     setEngineReloadVersion((v) => v + 1);
     try {
-      window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
+      window.dispatchEvent(new CustomEvent("sprintnex-server-settings-changed"));
     } catch {
       // ignore browser event dispatch failures
     }

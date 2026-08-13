@@ -74,7 +74,7 @@ export function readMaterializedBlueprintSessions(openwork: Record<string, unkno
     .filter((item): item is MaterializedBlueprintSession => Boolean(item));
 }
 
-export function sanitizeOpenworkTemplateConfig(openwork: Record<string, unknown> | null | undefined): Record<string, unknown> {
+export function sanitizeSprintnexTemplateConfig(openwork: Record<string, unknown> | null | undefined): Record<string, unknown> {
   const next = cloneRecord(openwork ?? {});
   const blueprint = readRecord(next.blueprint);
   if (!blueprint) return next;
@@ -98,7 +98,7 @@ export function applyMaterializedBlueprintSessions(
   items: MaterializedBlueprintSession[],
   hydratedAt: number,
 ): Record<string, unknown> {
-  const next = sanitizeOpenworkTemplateConfig(openwork);
+  const next = sanitizeSprintnexTemplateConfig(openwork);
   const blueprint = readRecord(next.blueprint) ?? {};
   const materialized = readRecord(blueprint.materialized) ?? {};
   materialized.sessions = {

@@ -34,7 +34,7 @@ const vo = await loadVoiceoverParagraphs(FLOW_ID);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function routeUrl(ctx, path) {
-  return new URL(path, ctx.env.OPENWORK_EVAL_LANDING_URL).toString();
+  return new URL(path, ctx.env.SPRINTNEX_EVAL_LANDING_URL).toString();
 }
 
 function recordAssertion(ctx, assertion, passed, actual) {
@@ -53,7 +53,7 @@ async function grantClipboardPermissions(ctx) {
     return;
   }
 
-  const origin = new URL(ctx.env.OPENWORK_EVAL_LANDING_URL).origin;
+  const origin = new URL(ctx.env.SPRINTNEX_EVAL_LANDING_URL).origin;
   await ctx.client.send("Browser.grantPermissions", {
     origin,
     permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"],
@@ -183,7 +183,7 @@ export default {
   kind: "user-facing",
   spec: "evals/README.md",
   preserveTheme: true,
-  requiredEnv: ["OPENWORK_EVAL_LANDING_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_LANDING_URL"],
   steps: [
     {
       name: "Frame 1",

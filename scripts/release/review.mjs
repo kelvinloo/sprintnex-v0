@@ -29,7 +29,7 @@ const versions = {
   orchestrator: orchestratorPkg.version ?? null,
   opencode: pinnedOpencodeVersion || null,
   orchestratorOpenworkServerRange:
-    orchestratorPkg.dependencies?.["openwork-server"] ?? null,
+    orchestratorPkg.dependencies?.["sprintnex-server"] ?? null,
 };
 
 const checks = [];
@@ -49,14 +49,14 @@ addCheck(
   `${versions.app ?? "?"} vs ${versions.desktop ?? "?"}`,
 );
 addCheck(
-  "App/openwork-orchestrator versions match",
+  "App/sprintnex-orchestrator versions match",
   versions.app &&
     versions.orchestrator &&
     versions.app === versions.orchestrator,
   `${versions.app ?? "?"} vs ${versions.orchestrator ?? "?"}`,
 );
 addCheck(
-  "App/openwork-server versions match",
+  "App/sprintnex-server versions match",
   versions.app && versions.server && versions.app === versions.server,
   `${versions.app ?? "?"} vs ${versions.server ?? "?"}`,
 );
@@ -75,10 +75,10 @@ if (versions.opencode) {
 const openworkServerRange = versions.orchestratorOpenworkServerRange ?? "";
 const openworkServerPinned = /^\d+\.\d+\.\d+/.test(openworkServerRange);
 if (!openworkServerRange) {
-  addWarning("openwork-orchestrator is missing an openwork-server dependency.");
+  addWarning("sprintnex-orchestrator is missing an sprintnex-server dependency.");
 } else if (!openworkServerPinned) {
   addWarning(
-    `openwork-orchestrator openwork-server dependency is not pinned (${openworkServerRange}).`,
+    `sprintnex-orchestrator sprintnex-server dependency is not pinned (${openworkServerRange}).`,
   );
 } else {
   addCheck(
@@ -94,26 +94,26 @@ const sidecarManifestPath = resolve(
   "orchestrator",
   "dist",
   "sidecars",
-  "openwork-orchestrator-sidecars.json",
+  "sprintnex-orchestrator-sidecars.json",
 );
 if (existsSync(sidecarManifestPath)) {
   const manifest = readJson(sidecarManifestPath);
   addCheck(
-    "Sidecar manifest version matches openwork-orchestrator",
+    "Sidecar manifest version matches sprintnex-orchestrator",
     versions.orchestrator && manifest.version === versions.orchestrator,
     `${manifest.version ?? "?"} vs ${versions.orchestrator ?? "?"}`,
   );
-  const serverEntry = manifest.entries?.["openwork-server"]?.version;
+  const serverEntry = manifest.entries?.["sprintnex-server"]?.version;
   if (serverEntry) {
     addCheck(
-      "Sidecar manifest openwork-server version matches",
+      "Sidecar manifest sprintnex-server version matches",
       versions.server && serverEntry === versions.server,
       `${serverEntry ?? "?"} vs ${versions.server ?? "?"}`,
     );
   }
 } else {
   addWarning(
-    "Sidecar manifest missing (run pnpm --filter openwork-orchestrator build:sidecars).",
+    "Sidecar manifest missing (run pnpm --filter sprintnex-orchestrator build:sidecars).",
   );
 }
 

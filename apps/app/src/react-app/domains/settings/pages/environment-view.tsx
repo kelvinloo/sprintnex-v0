@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { OpenworkServerClient } from "@/app/lib/openwork-server";
+import type { OpenworkServerClient } from "@/app/lib/sprintnex-server";
 import { t } from "@/i18n";
 import {
   EnvironmentVariableProvider,

@@ -8,7 +8,7 @@ import {
   type DenMcpToken,
   type DenSettings,
 } from "../../../app/lib/den";
-import type { OpenworkServerClient } from "../../../app/lib/openwork-server";
+import type { OpenworkServerClient } from "../../../app/lib/sprintnex-server";
 import { unwrap } from "../../../app/lib/opencode";
 import type { Client, McpServerEntry, McpStatusMap } from "../../../app/types";
 import { attemptSilentMcpReauth } from "./mcp-silent-reauth";

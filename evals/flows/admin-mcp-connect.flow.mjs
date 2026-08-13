@@ -17,8 +17,8 @@
  *      succeed end-to-end against den-api /mcp/admin.
  *
  * Required env:
- * - OPENWORK_EVAL_DEN_API_URL  Den API base (the fixed sandbox Den)
- * - OPENWORK_EVAL_DEN_TOKEN    Bearer session token for the admin account
+ * - SPRINTNEX_EVAL_DEN_API_URL  Den API base (the fixed sandbox Den)
+ * - SPRINTNEX_EVAL_DEN_TOKEN    Bearer session token for the admin account
  */
 
 const ADMIN_TITLE = "OpenWork Admin Analytics";
@@ -45,7 +45,7 @@ export default {
   id: "admin-mcp-connect",
   title: "Admin MCP connects end-to-end after OAuth discovery fix",
   spec: "evals/cloud-mcp-agent-flows.md",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "App booted",
@@ -63,11 +63,11 @@ export default {
           ctx.log("Already signed in; reusing session.");
           return;
         }
-        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
           method: "POST",
           headers: {
-            authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
+            authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({ desktopScheme: "openwork" }),

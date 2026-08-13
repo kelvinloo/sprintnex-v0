@@ -12,11 +12,11 @@
 #   diagnose-hang   classify Electron crash/hang/sidecar/app-state failures
 #   stop            full, layered teardown of the dev stack (no cache wipe)
 #   start           launch pnpm dev in the background with the log sink on
-#   wait-healthy    block until openwork-server reports /health = 200
+#   wait-healthy    block until sprintnex-server reports /health = 200
 #   reset           stop + wipe Vite dep cache + truncate log sink + start
 #   restart         alias for reset
 #
-# Variant (OPENWORK_DEV_VARIANT):
+# Variant (SPRINTNEX_DEV_VARIANT):
 #   electron   (default) pnpm --filter @openwork/desktop dev:electron
 #              Electron shell + CDP on 127.0.0.1:9823 for chrome-devtools MCP.
 #              Sidecars run from apps/desktop/src-tauri/sidecars/*.
@@ -29,7 +29,7 @@
 #   3. Tauri webview       (target/debug/OpenWork-Dev)  <-- never /Applications/
 #   4. Electron main+helpers (node_modules/electron/...Electron.app)
 #   5. Vite                (node node_modules/.../vite)
-#   6. orchestrator + openwork-server + opencode
+#   6. orchestrator + sprintnex-server + opencode
 #      (both target/debug/* and src-tauri/sidecars/* trees)
 #
 # Cache/ephemeral state wiped by `reset`:
@@ -55,18 +55,18 @@ if [[ -z "$REPO_ROOT" ]]; then
   REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 fi
 
-DEV_LOG_FILE="${OPENWORK_DEV_LOG_FILE:-$HOME/.openwork/debug/openwork-dev.log}"
-PNPM_DEV_LOG="${OPENWORK_PNPM_DEV_LOG:-/tmp/openwork-test/pnpm-dev.log}"
-PNPM_DEV_PID_FILE="${OPENWORK_PNPM_DEV_PID:-/tmp/openwork-test/pnpm-dev.pid}"
-WAIT_HEALTHY_SECS="${OPENWORK_WAIT_HEALTHY_SECS:-90}"
-ELECTRON_CDP_PORT="${OPENWORK_ELECTRON_REMOTE_DEBUG_PORT:-9823}"
+DEV_LOG_FILE="${SPRINTNEX_DEV_LOG_FILE:-$HOME/.openwork/debug/openwork-dev.log}"
+PNPM_DEV_LOG="${SPRINTNEX_PNPM_DEV_LOG:-/tmp/openwork-test/pnpm-dev.log}"
+PNPM_DEV_PID_FILE="${SPRINTNEX_PNPM_DEV_PID:-/tmp/openwork-test/pnpm-dev.pid}"
+WAIT_HEALTHY_SECS="${SPRINTNEX_WAIT_HEALTHY_SECS:-90}"
+ELECTRON_CDP_PORT="${SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT:-9823}"
 
 # Dev variant. 'electron' (default) launches pnpm dev:electron with CDP on
 # 127.0.0.1:9823 so chrome-devtools MCP can attach. 'tauri' preserves the
 # legacy pnpm dev (Tauri webview) for users still on that path.
-DEV_VARIANT="${OPENWORK_DEV_VARIANT:-electron}"
+DEV_VARIANT="${SPRINTNEX_DEV_VARIANT:-electron}"
 case "$DEV_VARIANT" in electron|tauri) ;; *)
-  printf '[openwork-debug] unknown OPENWORK_DEV_VARIANT=%s (expected electron|tauri)\n' "$DEV_VARIANT" >&2
+  printf '[openwork-debug] unknown SPRINTNEX_DEV_VARIANT=%s (expected electron|tauri)\n' "$DEV_VARIANT" >&2
   exit 2
   ;;
 esac
@@ -112,7 +112,7 @@ kill_pid_file() {
 
 discover_openwork_server_port() {
   ps -Ao command \
-    | grep -E "(target/debug|apps/desktop/src-tauri/sidecars)/openwork-server" \
+    | grep -E "(target/debug|apps/desktop/src-tauri/sidecars)/sprintnex-server" \
     | grep -v grep \
     | grep -oE '\-\-port [0-9]+' \
     | head -1 \
@@ -136,7 +136,7 @@ electron_renderer_cpu() {
 
 probe_electron_page_cdp() {
   node <<'NODE'
-const port = process.env.OPENWORK_ELECTRON_REMOTE_DEBUG_PORT || "9823";
+const port = process.env.SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT || "9823";
 const controller = new AbortController();
 const fail = (message) => {
   console.error(message);
@@ -196,14 +196,14 @@ NODE
 
 snapshot() {
   echo "=== dev stack processes ==="
-  ps -Ao pid,ppid,command | awk '/target\/debug\/OpenWork-Dev|node_modules\/electron\/dist\/Electron\.app\/Contents\/MacOS\/Electron|apps\/desktop\/scripts\/electron-dev\.mjs|target\/debug\/openwork-server|target\/debug\/openwork-orchestrator|target\/debug\/opencode( |\/)|apps\/desktop\/src-tauri\/sidecars\/openwork-server|apps\/desktop\/src-tauri\/sidecars\/openwork-orchestrator|apps\/desktop\/src-tauri\/sidecars\/opencode( |\/)|vite|pnpm .*dev/ && !/awk/ && !/grep/' | sed -E 's#/Users/[^ ]*/#…/#g' | head -20
+  ps -Ao pid,ppid,command | awk '/target\/debug\/OpenWork-Dev|node_modules\/electron\/dist\/Electron\.app\/Contents\/MacOS\/Electron|apps\/desktop\/scripts\/electron-dev\.mjs|target\/debug\/sprintnex-server|target\/debug\/sprintnex-orchestrator|target\/debug\/opencode( |\/)|apps\/desktop\/src-tauri\/sidecars\/sprintnex-server|apps\/desktop\/src-tauri\/sidecars\/sprintnex-orchestrator|apps\/desktop\/src-tauri\/sidecars\/opencode( |\/)|vite|pnpm .*dev/ && !/awk/ && !/grep/' | sed -E 's#/Users/[^ ]*/#…/#g' | head -20
 
   echo
-  echo "=== openwork-server ==="
+  echo "=== sprintnex-server ==="
   local port
   port=$(discover_openwork_server_port)
   if [[ -z "$port" ]]; then
-    echo "  (no dev openwork-server running)"
+    echo "  (no dev sprintnex-server running)"
   else
     echo "  port=$port  health:"
     curl -sS --max-time 2 "http://127.0.0.1:$port/health" || echo "    unreachable"
@@ -214,7 +214,7 @@ snapshot() {
   echo "=== opencode (via orchestrator) ==="
   local oc_port
   oc_port=$(ps -Ao command \
-    | grep -E "(target/debug|apps/desktop/src-tauri/sidecars)/openwork-orchestrator" \
+    | grep -E "(target/debug|apps/desktop/src-tauri/sidecars)/sprintnex-orchestrator" \
     | grep -v grep \
     | grep -oE '\-\-opencode-port [0-9]+' \
     | head -1 \
@@ -230,7 +230,7 @@ snapshot() {
 
   echo
   echo "=== orphans (parent == 1) ==="
-  ps -Ao pid,ppid,command | awk '$2 == 1 && $3 ~ /openwork-server|openwork-orchestrator|opencode( |\/)/' | head
+  ps -Ao pid,ppid,command | awk '$2 == 1 && $3 ~ /sprintnex-server|sprintnex-orchestrator|opencode( |\/)/' | head
 
   echo
   echo "=== dev log sink ==="
@@ -240,7 +240,7 @@ snapshot() {
     echo "  last 5 entries:"
     tail -5 "$DEV_LOG_FILE"
   else
-    echo "  (no sink file yet — run the dev app with OPENWORK_DEV_LOG_FILE set)"
+    echo "  (no sink file yet — run the dev app with SPRINTNEX_DEV_LOG_FILE set)"
   fi
 }
 
@@ -258,7 +258,7 @@ tail_logs() {
 
 kill_orphans() {
   local pids
-  pids=$(ps -Ao pid,ppid,command | awk '$2 == 1 && $3 ~ /openwork-server|openwork-orchestrator|opencode( |\/)/ {print $1}')
+  pids=$(ps -Ao pid,ppid,command | awk '$2 == 1 && $3 ~ /sprintnex-server|sprintnex-orchestrator|opencode( |\/)/ {print $1}')
   if [[ -z "$pids" ]]; then
     log "no orphans"
     return 0
@@ -319,7 +319,7 @@ diagnose_hang() {
   echo "=== page CDP probe ==="
   local page_probe="skipped"
   if [[ "$browser_json" == *"webSocketDebuggerUrl"* && "$target_json" == *"webSocketDebuggerUrl"* ]]; then
-    if page_probe=$(OPENWORK_ELECTRON_REMOTE_DEBUG_PORT="$ELECTRON_CDP_PORT" probe_electron_page_cdp 2>&1); then
+    if page_probe=$(SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT="$ELECTRON_CDP_PORT" probe_electron_page_cdp 2>&1); then
       echo "  page: responsive ($page_probe)"
       page_probe="ok"
     else
@@ -369,11 +369,11 @@ diagnose_hang() {
   local port
   port=$(discover_openwork_server_port)
   if [[ -n "$port" ]]; then
-    echo "  openwork-server port=$port"
+    echo "  sprintnex-server port=$port"
     curl -sS --max-time 2 "http://127.0.0.1:$port/health" || echo "unreachable"
     echo
   else
-    echo "  no openwork-server port discovered"
+    echo "  no sprintnex-server port discovered"
   fi
 
   echo
@@ -407,7 +407,7 @@ diagnose_hang() {
       echo "  sample failed for pid=$renderer_pid"
     fi
   elif [[ -n "$renderer_pid" ]]; then
-    echo "  skipped (renderer responsive and CPU not high). Set OPENWORK_FORCE_SAMPLE=1 not currently supported."
+    echo "  skipped (renderer responsive and CPU not high). Set SPRINTNEX_FORCE_SAMPLE=1 not currently supported."
   else
     echo "  skipped (no renderer process to sample)."
   fi
@@ -449,16 +449,16 @@ stop() {
   kill_by_pattern "node_modules/\.bin/vite"
   kill_by_pattern "node_modules/vite/bin/vite\.js"
 
-  # 5. openwork-server / orchestrator / opencode for the
+  # 5. sprintnex-server / orchestrator / opencode for the
   #    current dev build. These are the longest-lived children and the ones
   #    most likely to orphan after an unclean shutdown.
   #    Tauri dev runs them from target/debug/, Electron dev runs them from
   #    src-tauri/sidecars/ — kill both trees, both are idempotent.
-  kill_by_pattern "target/debug/openwork-server"
-  kill_by_pattern "target/debug/openwork-orchestrator"
+  kill_by_pattern "target/debug/sprintnex-server"
+  kill_by_pattern "target/debug/sprintnex-orchestrator"
   kill_by_pattern "target/debug/opencode"
-  kill_by_pattern "apps/desktop/src-tauri/sidecars/openwork-server"
-  kill_by_pattern "apps/desktop/src-tauri/sidecars/openwork-orchestrator"
+  kill_by_pattern "apps/desktop/src-tauri/sidecars/sprintnex-server"
+  kill_by_pattern "apps/desktop/src-tauri/sidecars/sprintnex-orchestrator"
   kill_by_pattern "apps/desktop/src-tauri/sidecars/opencode( |/)"
 
   # Safety net for stragglers we don't own directly.
@@ -487,13 +487,13 @@ start() {
   case "$DEV_VARIANT" in
     electron)
       log "starting pnpm dev:electron (variant=electron, log sink: $DEV_LOG_FILE, CDP: 127.0.0.1:9823)"
-      env OPENWORK_DEV_LOG_FILE="$DEV_LOG_FILE" \
+      env SPRINTNEX_DEV_LOG_FILE="$DEV_LOG_FILE" \
         nohup pnpm --filter @openwork/desktop dev:electron >"$PNPM_DEV_LOG" 2>&1 &
       pid=$!
       ;;
     tauri)
       log "starting pnpm dev (variant=tauri, log sink: $DEV_LOG_FILE)"
-      env OPENWORK_DEV_LOG_FILE="$DEV_LOG_FILE" \
+      env SPRINTNEX_DEV_LOG_FILE="$DEV_LOG_FILE" \
         nohup pnpm dev >"$PNPM_DEV_LOG" 2>&1 &
       pid=$!
       ;;
@@ -512,13 +512,13 @@ wait_healthy() {
       local code
       code=$(curl -sS --max-time 2 -o /dev/null -w "%{http_code}" "http://127.0.0.1:$port/health" 2>/dev/null || true)
       if [[ "$code" == "200" ]]; then
-        log "openwork-server healthy on :$port"
+        log "sprintnex-server healthy on :$port"
         return 0
       fi
     fi
     sleep 1
   done
-  log "openwork-server did not become healthy within ${WAIT_HEALTHY_SECS}s" >&2
+  log "sprintnex-server did not become healthy within ${WAIT_HEALTHY_SECS}s" >&2
   return 1
 }
 

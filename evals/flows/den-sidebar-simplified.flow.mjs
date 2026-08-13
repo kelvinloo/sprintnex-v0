@@ -3,7 +3,7 @@
  * sixteen flat rows become seven top-level entries with grouped children.
  *
  * Drives den-web through a Chrome CDP target (like the llm-provider flows):
- * point --cdp-url at a Chrome whose single tab is OPENWORK_EVAL_DEN_WEB_URL.
+ * point --cdp-url at a Chrome whose single tab is SPRINTNEX_EVAL_DEN_WEB_URL.
  * Setup (member invite) goes through the Den API; every visible claim is
  * asserted in the real UI as Alex (admin) and Jordan (member).
  */
@@ -12,12 +12,12 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 
 const vo = await loadVoiceoverParagraphs("den-sidebar-simplified");
 
-const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
-const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? "").trim().replace(/\/+$/, "");
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MEMBER_EMAIL = process.env.OPENWORK_EVAL_MEMBER_EMAIL?.trim() || "jordan.demo@acme.test";
-const MEMBER_PASSWORD = process.env.OPENWORK_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? "").trim().replace(/\/+$/, "");
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MEMBER_EMAIL = process.env.SPRINTNEX_EVAL_MEMBER_EMAIL?.trim() || "jordan.demo@acme.test";
+const MEMBER_PASSWORD = process.env.SPRINTNEX_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
 
 const TOP_LEVEL = ["Dashboard", "Your Connections", "Extensions", "Models", "Members", "Analytics", "Settings"];
 const RETIRED_TOP_LEVEL = ["MCP Connections", "Integrations", "OpenWork Models", "LLM Providers", "Desktop Policies", "API Keys", "SCIM", "SSO", "Billing", "Org Settings"];
@@ -177,7 +177,7 @@ export default {
   title: "Den sidebar: sixteen rows become seven — tools, models, people, settings",
   kind: "user-facing",
   spec: "evals/voiceovers/den-sidebar-simplified.md",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "Frame 1",

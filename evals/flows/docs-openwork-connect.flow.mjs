@@ -60,7 +60,7 @@ async function grantDocsClipboardPermissions(ctx) {
   if (!ctx.client?.send) return;
 
   await ctx.client.send("Browser.grantPermissions", {
-    origin: new URL(baseUrl("OPENWORK_EVAL_DOCS_URL")).origin,
+    origin: new URL(baseUrl("SPRINTNEX_EVAL_DOCS_URL")).origin,
     permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"],
   });
 }
@@ -70,7 +70,7 @@ export default {
   title: "Use the OpenWork Connect installer from the docs or landing page",
   kind: "user-facing",
   preserveTheme: true,
-  requiredEnv: ["OPENWORK_EVAL_DOCS_URL", "OPENWORK_EVAL_LANDING_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DOCS_URL", "SPRINTNEX_EVAL_LANDING_URL"],
   steps: [
     {
       name: "Frame 1",
@@ -78,7 +78,7 @@ export default {
         await ctx.prove("The OpenWork Connect docs put the complete client installer at the top of the page.", {
           voiceover: vo[0],
           action: async () => {
-            await navigate(ctx, `${baseUrl("OPENWORK_EVAL_DOCS_URL")}/cloud/run-in-the-cloud/cloud-mcp`);
+            await navigate(ctx, `${baseUrl("SPRINTNEX_EVAL_DOCS_URL")}/cloud/run-in-the-cloud/cloud-mcp`);
             await waitForInstaller(ctx);
           },
           assert: async () => {
@@ -235,7 +235,7 @@ export default {
         await ctx.prove("The direct OpenCode docs link opens the installer with OpenCode selected.", {
           voiceover: vo[3],
           action: async () => {
-            await navigate(ctx, `${baseUrl("OPENWORK_EVAL_DOCS_URL")}/cloud/run-in-the-cloud/cloud-mcp#connect-mcp-install-opencode`);
+            await navigate(ctx, `${baseUrl("SPRINTNEX_EVAL_DOCS_URL")}/cloud/run-in-the-cloud/cloud-mcp#connect-mcp-install-opencode`);
             await waitForInstaller(ctx);
           },
           assert: async () => {
@@ -267,7 +267,7 @@ export default {
         await ctx.prove("The landing page keeps the same OpenWork Connect installer, including Codex and ChatGPT Desktop.", {
           voiceover: vo[4],
           action: async () => {
-            await navigate(ctx, `${baseUrl("OPENWORK_EVAL_LANDING_URL")}/#connect-mcp`);
+            await navigate(ctx, `${baseUrl("SPRINTNEX_EVAL_LANDING_URL")}/#connect-mcp`);
             await waitForInstaller(ctx);
             await clickTab(ctx, "Codex");
           },

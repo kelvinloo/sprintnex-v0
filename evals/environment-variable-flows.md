@@ -61,7 +61,7 @@ overwriting existing values.
 
 1. Preseed `DUPLICATE_KEY=original` through the env API or eval store file.
 2. Try to add `1BAD=value`.
-3. Try to add `OPENWORK_TOKEN=value`.
+3. Try to add `SPRINTNEX_TOKEN=value`.
 4. Try to add `DUPLICATE_KEY=overwritten`.
 
 ### CDP steering
@@ -78,7 +78,7 @@ overwriting existing values.
 ### Pass criteria
 
 - Invalid names show a user-readable validation message.
-- Reserved `OPENWORK_`/`OPENCODE_` names are blocked.
+- Reserved `SPRINTNEX_`/`OPENCODE_` names are blocked.
 - Duplicate names do not overwrite existing values.
 
 ## Flow 3: Apply changes activates the runtime environment

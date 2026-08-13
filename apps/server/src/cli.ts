@@ -31,7 +31,7 @@ if (!config.readOnly) {
   await ensureLocalWorkspaceFiles(config.workspaces);
 }
 
-if (!config.opencodeBaseUrl && process.env.OPENWORK_MANAGE_OPENCODE === "1") {
+if (!config.opencodeBaseUrl && process.env.SPRINTNEX_MANAGE_OPENCODE === "1") {
   const workspace = findManagedEngineWorkspace(config.workspaces);
   if (workspace) {
     // Server-managed config file: the engine re-reads it from disk on every
@@ -39,17 +39,17 @@ if (!config.opencodeBaseUrl && process.env.OPENWORK_MANAGE_OPENCODE === "1") {
     // on every runtime-DB write — so disposes always pick up current state.
     const runtimeConfigPath = await writeOpenworkRuntimeConfigFile(config, workspace.id);
     keepOpenworkRuntimeConfigFileFresh(config, workspace.id);
-    const managedOpencodeCwd = process.env.OPENWORK_MANAGED_OPENCODE_CWD?.trim() || workspace.path;
+    const managedOpencodeCwd = process.env.SPRINTNEX_MANAGED_OPENCODE_CWD?.trim() || workspace.path;
     await mkdir(managedOpencodeCwd, { recursive: true });
     managedOpencode = await createManagedOpencodeServer({
-      bin: process.env.OPENWORK_OPENCODE_BIN,
+      bin: process.env.SPRINTNEX_OPENCODE_BIN,
       cwd: managedOpencodeCwd,
       excludedPorts: [config.port],
       env: {
-        ...(process.env.OPENWORK_DEV_MODE ? { OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE } : {}),
-        ...(process.env.OPENWORK_UI_CONTROL_DISCOVERY ? { OPENWORK_UI_CONTROL_DISCOVERY: process.env.OPENWORK_UI_CONTROL_DISCOVERY } : {}),
-        OPENWORK_SERVER_URL: serverUrl,
-        OPENWORK_SERVER_TOKEN: config.token,
+        ...(process.env.SPRINTNEX_DEV_MODE ? { SPRINTNEX_DEV_MODE: process.env.SPRINTNEX_DEV_MODE } : {}),
+        ...(process.env.SPRINTNEX_UI_CONTROL_DISCOVERY ? { SPRINTNEX_UI_CONTROL_DISCOVERY: process.env.SPRINTNEX_UI_CONTROL_DISCOVERY } : {}),
+        SPRINTNEX_SERVER_URL: serverUrl,
+        SPRINTNEX_SERVER_TOKEN: config.token,
         OPENCODE_CONFIG: runtimeConfigPath,
       },
     });

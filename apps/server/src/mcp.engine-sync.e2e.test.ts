@@ -17,7 +17,7 @@ type EngineRequest = {
 };
 
 // Keep the engine sync retry backoff tiny so failure-path tests stay fast.
-process.env.OPENWORK_MCP_SYNC_RETRY_DELAY_MS = "10";
+process.env.SPRINTNEX_MCP_SYNC_RETRY_DELAY_MS = "10";
 
 const stops: Array<() => void | Promise<void>> = [];
 const roots: string[] = [];
@@ -113,8 +113,8 @@ const POSTHOG_CONFIG = {
 describe("runtime MCP engine sync", () => {
   test("hot-adds a runtime MCP into the running engine when added", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const mock = startMockOpencode();
       const openwork = await startOpenworkServer(workspaceRoot, `http://127.0.0.1:${mock.server.port}`);
@@ -131,15 +131,15 @@ describe("runtime MCP engine sync", () => {
       expect(addRequest?.body).toEqual({ name: "posthog", config: POSTHOG_CONFIG });
       expect(addRequest?.search).toContain(`directory=${encodeURIComponent(workspaceRoot)}`);
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("cloud plugin install writes a remote MCP and hot-syncs it into the engine", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const mock = startMockOpencode();
       const openwork = await startOpenworkServer(workspaceRoot, `http://127.0.0.1:${mock.server.port}`);
@@ -196,15 +196,15 @@ describe("runtime MCP engine sync", () => {
         config: { type: "remote", url: "https://example.com/mcp", enabled: true },
       });
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("cloud plugin install warns for dropped MCP payloads while still installing skills", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const mock = startMockOpencode();
       const openwork = await startOpenworkServer(workspaceRoot, `http://127.0.0.1:${mock.server.port}`);
@@ -278,15 +278,15 @@ describe("runtime MCP engine sync", () => {
       expect((await readRuntimeOpencodeConfig(openwork.config, "ws_1")).mcp?.broken).toBeUndefined();
       expect(mock.requests.some((entry) => entry.method === "POST" && entry.pathname === "/mcp")).toBe(false);
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("re-registers runtime MCPs with the engine after a reload", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const mock = startMockOpencode();
       const openwork = await startOpenworkServer(workspaceRoot, `http://127.0.0.1:${mock.server.port}`);
@@ -311,15 +311,15 @@ describe("runtime MCP engine sync", () => {
       expect(syncIndex).toBeGreaterThan(disposeIndex);
       expect(mock.requests[syncIndex]?.body).toEqual({ name: "posthog", config: POSTHOG_CONFIG });
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("pushes toggled enabled state to the engine", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const mock = startMockOpencode();
       const openwork = await startOpenworkServer(workspaceRoot, `http://127.0.0.1:${mock.server.port}`);
@@ -343,15 +343,15 @@ describe("runtime MCP engine sync", () => {
       expect(syncRequest).toBeDefined();
       expect(syncRequest?.body).toEqual({ name: "posthog", config: { ...POSTHOG_CONFIG, enabled: false } });
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("disconnects a removed MCP from the engine", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const mock = startMockOpencode();
       const openwork = await startOpenworkServer(workspaceRoot, `http://127.0.0.1:${mock.server.port}`);
@@ -376,15 +376,15 @@ describe("runtime MCP engine sync", () => {
       expect(disconnectRequest).toBeDefined();
       expect(disconnectRequest?.search).toContain(`directory=${encodeURIComponent(workspaceRoot)}`);
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("reload keeps registering remaining MCPs when one entry fails", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const mock = startMockOpencode({ failMcpNames: ["bad"] });
       const openwork = await startOpenworkServer(workspaceRoot, `http://127.0.0.1:${mock.server.port}`);
@@ -427,16 +427,16 @@ describe("runtime MCP engine sync", () => {
       expect(listBody.engineSync?.failures.map((failure) => failure.name)).toContain("bad");
       expect(listBody.engineSync?.failures.map((failure) => failure.name)).not.toContain("posthog");
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("startup sync pushes runtime MCPs for every workspace", async () => {
     const rootA = await createWorkspaceRoot();
     const rootB = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(rootA, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(rootA, "runtime.sqlite");
     try {
       const mock = startMockOpencode();
       const baseUrl = `http://127.0.0.1:${mock.server.port}`;
@@ -470,15 +470,15 @@ describe("runtime MCP engine sync", () => {
       expect(byName.get("posthog")).toContain(`directory=${encodeURIComponent(rootA)}`);
       expect(byName.get("stripe")).toContain(`directory=${encodeURIComponent(rootB)}`);
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
   test("MCP add still succeeds when the engine is unreachable", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const openwork = await startOpenworkServer(workspaceRoot, "http://127.0.0.1:9");
 
@@ -491,8 +491,8 @@ describe("runtime MCP engine sync", () => {
       const body = await response.json() as { items: Array<{ name: string }> };
       expect(body.items.some((item) => item.name === "posthog")).toBe(true);
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 
@@ -504,8 +504,8 @@ describe("runtime MCP engine sync", () => {
   // The desktop client uses this code to escalate to a full engine restart.
   test("engine reload reports engine-unreachable when the engine is down", async () => {
     const workspaceRoot = await createWorkspaceRoot();
-    const previousDb = process.env.OPENWORK_RUNTIME_DB;
-    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     try {
       const openwork = await startOpenworkServer(workspaceRoot, "http://127.0.0.1:9");
 
@@ -517,8 +517,8 @@ describe("runtime MCP engine sync", () => {
       const body = await response.json() as { code?: string };
       expect(body.code).toBe("opencode_engine_unreachable");
     } finally {
-      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-      else process.env.OPENWORK_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     }
   });
 });

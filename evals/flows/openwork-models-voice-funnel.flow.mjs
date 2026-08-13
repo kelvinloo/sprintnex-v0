@@ -14,13 +14,13 @@ const VOICE_TRANSCRIPT_TEXT = "What can you help me with?";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function apiBase(ctx) {
-  return ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  return ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
 }
 
 function jsonHeaders(token) {
   return {
     "content-type": "application/json",
-    origin: process.env.OPENWORK_EVAL_DEN_ORIGIN?.trim() || process.env.OPENWORK_EVAL_DEN_API_URL?.trim()?.replace(/\/+$/, "") || "http://localhost:8790",
+    origin: process.env.SPRINTNEX_EVAL_DEN_ORIGIN?.trim() || process.env.SPRINTNEX_EVAL_DEN_API_URL?.trim()?.replace(/\/+$/, "") || "http://localhost:8790",
     ...(token ? { authorization: `Bearer ${token}` } : {}),
   };
 }
@@ -169,7 +169,7 @@ export default {
   id: "openwork-models-voice-funnel",
   title: "Sign up, pay for OpenWork Models, and start managed Voice Mode",
   spec: "evals/onboarding-welcome-flows.md#flow-28--openwork-models-path-explains-payment-before-value",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL"],
   steps: [
     {
       name: "Start mock OpenWork Models voice broker",
@@ -226,8 +226,8 @@ export default {
     {
       name: "Record paid OpenWork Models subscription",
       run: async (ctx) => {
-        const secret = ctx.env.OPENWORK_EVAL_STRIPE_WEBHOOK_SECRET?.trim() || DEFAULT_STRIPE_WEBHOOK_SECRET;
-        const priceId = ctx.env.OPENWORK_EVAL_STRIPE_INFERENCE_PRICE_ID?.trim() || DEFAULT_STRIPE_PRICE_ID;
+        const secret = ctx.env.SPRINTNEX_EVAL_STRIPE_WEBHOOK_SECRET?.trim() || DEFAULT_STRIPE_WEBHOOK_SECRET;
+        const priceId = ctx.env.SPRINTNEX_EVAL_STRIPE_INFERENCE_PRICE_ID?.trim() || DEFAULT_STRIPE_PRICE_ID;
         const event = stripeSubscriptionEvent({ organizationId: ctx.den.organizationId, memberId: ctx.den.memberId, priceId });
         const payload = JSON.stringify(event);
         const response = await fetch(`${apiBase(ctx)}/v1/webhooks/stripe`, {
@@ -330,7 +330,7 @@ export default {
     {
       name: "Create workspace via UI",
       run: async (ctx) => {
-        const workspaceDir = ctx.env.OPENWORK_EVAL_WORKSPACE_DIR?.trim() || join(tmpdir(), `openwork-models-voice-${Date.now()}`);
+        const workspaceDir = ctx.env.SPRINTNEX_EVAL_WORKSPACE_DIR?.trim() || join(tmpdir(), `openwork-models-voice-${Date.now()}`);
         await mkdir(workspaceDir, { recursive: true });
         ctx.workspaceDir = workspaceDir;
 
@@ -441,7 +441,7 @@ export default {
         await ctx.clickText("Environment", { timeoutMs: 10_000 });
         await sleep(1_000);
 
-        for (const [key, value] of [["OPENWORK_API_KEY", MOCK_INFERENCE_KEY], ["OPENWORK_INFERENCE_BASE_URL", ctx.mockBroker.baseUrl]]) {
+        for (const [key, value] of [["SPRINTNEX_API_KEY", MOCK_INFERENCE_KEY], ["SPRINTNEX_INFERENCE_BASE_URL", ctx.mockBroker.baseUrl]]) {
           await ctx.clickText("Add variable", { timeoutMs: 10_000 });
           await ctx.waitFor(`Boolean(document.querySelector('input[placeholder="ANTHROPIC_API_KEY"]'))`, { timeoutMs: 10_000, label: "env key input" });
           await ctx.fill('input[placeholder="ANTHROPIC_API_KEY"]', key);
@@ -497,12 +497,12 @@ export default {
         ctx.recordEvidence({
           type: "assertion",
           status: "passed",
-          assertion: "Managed voice credentials (OPENWORK_API_KEY + OPENWORK_INFERENCE_BASE_URL) were saved through the Settings > Environment UI.",
-          actual: ["OPENWORK_API_KEY", "OPENWORK_INFERENCE_BASE_URL"],
+          assertion: "Managed voice credentials (SPRINTNEX_API_KEY + SPRINTNEX_INFERENCE_BASE_URL) were saved through the Settings > Environment UI.",
+          actual: ["SPRINTNEX_API_KEY", "SPRINTNEX_INFERENCE_BASE_URL"],
         });
         await ctx.screenshot("managed-voice-env-configured-via-ui", {
           claim: "Settings > Environment shows both managed voice credentials saved via the UI form.",
-          requireText: ["OPENWORK_API_KEY", "OPENWORK_INFERENCE_BASE_URL"],
+          requireText: ["SPRINTNEX_API_KEY", "SPRINTNEX_INFERENCE_BASE_URL"],
         });
       },
     },

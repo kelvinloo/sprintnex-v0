@@ -19,7 +19,7 @@ import {
   type OpenworkServerCapabilities,
   type OpenworkServerClient,
   type OpenworkWorkspaceInfo,
-} from "@/app/lib/openwork-server";
+} from "@/app/lib/sprintnex-server";
 import { resolveWorkspaceEndpoint } from "@/app/lib/workspace-endpoint";
 import { buildOpenworkEnvRuntimeKey } from "@/app/lib/openwork-env-runtime";
 import {
@@ -63,7 +63,7 @@ import { useOrgMcpConnections } from "@/react-app/domains/connections/use-org-mc
 import {
   createOpenworkServerStore,
   useOpenworkServerStoreSnapshot,
-} from "@/react-app/domains/connections/openwork-server-store";
+} from "@/react-app/domains/connections/sprintnex-server-store";
 import {
   createProviderAuthStore,
   useProviderAuthStoreSnapshot,
@@ -82,7 +82,7 @@ import { useSettingsExtensionController } from "@/react-app/domains/settings/set
 import { buildExtensionItems } from "@/react-app/domains/settings/extension-items";
 import {
   isOpenWorkExtensionEnabled,
-  OPENWORK_EXTENSION_STATE_CHANGED,
+  SPRINTNEX_EXTENSION_STATE_CHANGED,
   setOpenWorkExtensionEnabled,
 } from "@/react-app/domains/settings/extension-state";
 import { PreferencesView } from "@/react-app/domains/settings/pages/preferences-view";
@@ -201,7 +201,7 @@ import {
   type LocalProviderInstallInput,
 } from "@/react-app/domains/settings/openai-image-extension";
 
-const ROUTE_OPENWORK_CAPABILITIES: OpenworkServerCapabilities = {
+const ROUTE_SPRINTNEX_CAPABILITIES: OpenworkServerCapabilities = {
   skills: { read: true, write: true, source: "openwork" },
   plugins: { read: true, write: true },
   mcp: { read: true, write: true },
@@ -638,7 +638,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
     openworkServerClient: openworkClient,
     openworkServerStatus: openworkClient ? "connected" : "disconnected",
     openworkServerCapabilities: openworkClient
-      ? ROUTE_OPENWORK_CAPABILITIES
+      ? ROUTE_SPRINTNEX_CAPABILITIES
       : null,
     selectedWorkspaceDisplay,
     providerItems: providers,
@@ -814,7 +814,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
     openworkServerSnapshot.openworkServerStatus;
   useEffect(() => {
     if (openworkServerStatusForMcp !== "connected") return;
-    // The first MCP read races the openwork-server store's initial health
+    // The first MCP read races the sprintnex-server store's initial health
     // check (a fresh store always starts "disconnected"), so it falls back
     // to config files where server-runtime (config.remote) entries — notably
     // the cloud control MCP — don't exist. Without this re-read the built-in
@@ -1061,10 +1061,10 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
 
   useEffect(() => {
     const refresh = () => setExtensionStateVersion((value) => value + 1);
-    window.addEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
+    window.addEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
     window.addEventListener("storage", refresh);
     return () => {
-      window.removeEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
+      window.removeEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
       window.removeEventListener("storage", refresh);
     };
   }, []);
@@ -1325,7 +1325,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
         await refreshProviderListQueries(getReactQueryClient());
         try {
           window.dispatchEvent(
-            new CustomEvent("openwork-server-settings-changed"),
+            new CustomEvent("sprintnex-server-settings-changed"),
           );
         } catch {
           // ignore browser event dispatch failures
@@ -1601,7 +1601,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
     await refreshProviderListQueries(getReactQueryClient());
 
     try {
-      window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
+      window.dispatchEvent(new CustomEvent("sprintnex-server-settings-changed"));
     } catch {
       // ignore browser event dispatch failures
     }
@@ -1786,12 +1786,12 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
       void refreshRouteState();
     };
     window.addEventListener(
-      "openwork-server-settings-changed",
+      "sprintnex-server-settings-changed",
       handleSettingsChange,
     );
     return () => {
       window.removeEventListener(
-        "openwork-server-settings-changed",
+        "sprintnex-server-settings-changed",
         handleSettingsChange,
       );
     };
@@ -2157,7 +2157,7 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
     }
   }, [notFoundRouteError]);
   const routeOpenworkCapabilities: OpenworkServerCapabilities | null =
-    openworkClient ? ROUTE_OPENWORK_CAPABILITIES : null;
+    openworkClient ? ROUTE_SPRINTNEX_CAPABILITIES : null;
   const environmentRuntimeKey = buildOpenworkEnvRuntimeKey({
     baseUrl:
       openworkServerSnapshot.openworkServerBaseUrl ||

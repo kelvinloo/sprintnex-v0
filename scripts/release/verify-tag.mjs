@@ -39,8 +39,8 @@ const check = (label, actual) => {
 
 check("app", appVersion);
 check("desktop", desktopVersion);
-check("openwork-orchestrator", orchestratorVersion);
-check("openwork-server", serverVersion);
+check("sprintnex-orchestrator", orchestratorVersion);
+check("sprintnex-server", serverVersion);
 
 if (mismatches.length) {
   console.error(`Release tag ${tag} does not match package versions:`);
@@ -50,4 +50,4 @@ if (mismatches.length) {
   process.exit(1);
 }
 
-console.log(`Release tag ${tag} matches app/desktop/openwork-orchestrator versions.`);
+console.log(`Release tag ${tag} matches app/desktop/sprintnex-orchestrator versions.`);

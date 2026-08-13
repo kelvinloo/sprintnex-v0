@@ -63,18 +63,18 @@ normal single-origin setup, put the same den-web origin in both settings.
 
 Den resolves the standard signed Mac and Windows desktop artifacts in this order:
 
-1. `OPENWORK_INSTALLER_ARTIFACTS_DIR`, when set and the file exists.
-2. `OPENWORK_INSTALLER_CACHE_DIR/<tag>/<file>`, defaulting to the OS temp dir.
-3. The GitHub release asset for `OPENWORK_INSTALLER_RELEASE_REPO` and
-   `OPENWORK_INSTALLER_RELEASE_TAG`.
+1. `SPRINTNEX_INSTALLER_ARTIFACTS_DIR`, when set and the file exists.
+2. `SPRINTNEX_INSTALLER_CACHE_DIR/<tag>/<file>`, defaulting to the OS temp dir.
+3. The GitHub release asset for `SPRINTNEX_INSTALLER_RELEASE_REPO` and
+   `SPRINTNEX_INSTALLER_RELEASE_TAG`.
 4. If the artifact is unavailable, a verified direct normal desktop download.
    If that is also unavailable, the stable OpenWork download page.
 
 | Mode | Configure | Behavior |
 |---|---|---|
-| Internet-connected | Default. `OPENWORK_INSTALLER_RELEASE_TAG` resolves to `v<pinned app version>`; override it when needed. | Den downloads the normal public DMG/EXE on the first organization download, caches it, and creates the ZIP at request time. If Den cannot fetch it, the browser is redirected to the verified normal DMG/EXE without including the organization token. |
-| Fork/mirror | Set `OPENWORK_INSTALLER_RELEASE_REPO`, for example `your-org/openwork`. | Den downloads assets from your fork or mirror release instead of `different-ai/openwork`. |
-| Air-gapped | Mount a volume at `OPENWORK_INSTALLER_ARTIFACTS_DIR` containing the normal versioned assets, for example `openwork-mac-arm64-0.18.0.dmg`, `openwork-mac-x64-0.18.0.dmg`, and `openwork-win-x64-0.18.0.exe`, matching `OPENWORK_INSTALLER_RELEASE_TAG=v0.18.0`. | The mounted artifact directory takes precedence. Den adds `desktop-bootstrap.json` without modifying the signed installer bytes and requires zero egress. |
+| Internet-connected | Default. `SPRINTNEX_INSTALLER_RELEASE_TAG` resolves to `v<pinned app version>`; override it when needed. | Den downloads the normal public DMG/EXE on the first organization download, caches it, and creates the ZIP at request time. If Den cannot fetch it, the browser is redirected to the verified normal DMG/EXE without including the organization token. |
+| Fork/mirror | Set `SPRINTNEX_INSTALLER_RELEASE_REPO`, for example `your-org/openwork`. | Den downloads assets from your fork or mirror release instead of `different-ai/openwork`. |
+| Air-gapped | Mount a volume at `SPRINTNEX_INSTALLER_ARTIFACTS_DIR` containing the normal versioned assets, for example `openwork-mac-arm64-0.18.0.dmg`, `openwork-mac-x64-0.18.0.dmg`, and `openwork-win-x64-0.18.0.exe`, matching `SPRINTNEX_INSTALLER_RELEASE_TAG=v0.18.0`. | The mounted artifact directory takes precedence. Den adds `desktop-bootstrap.json` without modifying the signed installer bytes and requires zero egress. |
 
 ## Egress
 
@@ -98,7 +98,7 @@ a normally named OpenWork release artifact. A valid bundle is copied to the
 canonical per-user path before the runtime boots. A bundle never replaces a
 canonical or legacy config with a newer `writtenAt` value.
 
-`OPENWORK_BOOTSTRAP_BUNDLE_DIR` can point the desktop at one specific extracted
+`SPRINTNEX_BOOTSTRAP_BUNDLE_DIR` can point the desktop at one specific extracted
 bundle directory for managed rollouts and deterministic validation.
 
 ## Distribute configuration with MDM (no custom installer)
@@ -164,7 +164,7 @@ managed file is enough for a fully self-hosted desktop rollout.
 
 | Symptom | Fix |
 |---|---|
-| A download goes directly to the normal OpenWork installer instead of returning a ZIP | Den could not obtain the standard versioned asset. Internet-connected deployments should verify the release tag/repository; air-gapped deployments should mount the matching DMG/EXE files through `OPENWORK_INSTALLER_ARTIFACTS_DIR`. The direct download is an intentional fallback and contains no organization token. |
-| OpenWork does not import the setup file | Extract the ZIP so `desktop-bootstrap.json` remains beside the versioned DMG/EXE, then launch the installed app. Check whether a newer canonical bootstrap already exists. Managed deployments can set `OPENWORK_BOOTSTRAP_BUNDLE_DIR` explicitly. |
+| A download goes directly to the normal OpenWork installer instead of returning a ZIP | Den could not obtain the standard versioned asset. Internet-connected deployments should verify the release tag/repository; air-gapped deployments should mount the matching DMG/EXE files through `SPRINTNEX_INSTALLER_ARTIFACTS_DIR`. The direct download is an intentional fallback and contains no organization token. |
+| OpenWork does not import the setup file | Extract the ZIP so `desktop-bootstrap.json` remains beside the versioned DMG/EXE, then launch the installed app. Check whether a newer canonical bootstrap already exists. Managed deployments can set `SPRINTNEX_BOOTSTRAP_BUNDLE_DIR` explicitly. |
 | Install links point at the wrong host | Set `BETTER_AUTH_URL` to the externally reachable den-web origin, then restart `den-api`. For invitation acceptance links, also put that origin first in `DEN_BETTER_AUTH_TRUSTED_ORIGINS`. |
 | Re-uploaded assets under the same tag keep serving old bytes | Clear the installer cache directory or bump the tag. The cache key is `<cacheDir>/<tag>/<file>`. |

@@ -70,7 +70,7 @@ const sectionTitleClass = "text-[15px] font-medium tracking-[-0.2px] text-dls-te
 const panelCardClass =
   "rounded-[20px] border border-dls-border bg-dls-surface p-5 transition-all hover:border-dls-border hover:shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)]";
 
-const OPENWORK_DEFAULT_SKILL_NAMES = new Set([
+const SPRINTNEX_DEFAULT_SKILL_NAMES = new Set([
   "workspace-guide",
   "get-started",
   "skill-creator",
@@ -672,7 +672,7 @@ export function SkillsView(props: SkillsViewProps) {
     const normalizedName = skill.name.trim().toLowerCase();
     const normalizedPath = skill.path.replace(/\\/g, "/").toLowerCase();
     return normalizedPath.includes("/.opencode/skills/") &&
-      (OPENWORK_DEFAULT_SKILL_NAMES.has(normalizedName) || normalizedName.endsWith("-creator"));
+      (SPRINTNEX_DEFAULT_SKILL_NAMES.has(normalizedName) || normalizedName.endsWith("-creator"));
   };
 
   const handleSkillCardKeyDown = (

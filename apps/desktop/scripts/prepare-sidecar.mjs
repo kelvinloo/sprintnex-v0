@@ -29,15 +29,15 @@ const readArg = (name) => {
 };
 
 const hasFlag = (name) => process.argv.slice(2).includes(name);
-const forceBuild = hasFlag("--force") || process.env.OPENWORK_SIDECAR_FORCE_BUILD === "1";
-const sidecarOverride = process.env.OPENWORK_SIDECAR_DIR?.trim() || readArg("--outdir");
+const forceBuild = hasFlag("--force") || process.env.SPRINTNEX_SIDECAR_FORCE_BUILD === "1";
+const sidecarOverride = process.env.SPRINTNEX_SIDECAR_DIR?.trim() || readArg("--outdir");
 const sidecarDir = sidecarOverride ? resolve(sidecarOverride) : join(__dirname, "..", "resources", "sidecars");
 const constantsPath = resolve(__dirname, "..", "..", "..", "constants.json");
 
 const opencodeGithubRepo = (() => {
   const raw =
     process.env.OPENCODE_GITHUB_REPO?.trim() ||
-    process.env.OPENWORK_OPENCODE_GITHUB_REPO?.trim() ||
+    process.env.SPRINTNEX_OPENCODE_GITHUB_REPO?.trim() ||
     "anomalyco/opencode";
   const normalized = raw
     .replace(/^https:\/\/github\.com\//i, "")
@@ -118,8 +118,8 @@ const opencodeTargetPath = opencodeTargetName ? join(sidecarDir, opencodeTargetN
 const opencodeCandidatePath = opencodeTargetPath ?? opencodePath;
 let existingOpencodeVersion = null;
 
-// openwork-server paths
-const openworkServerBaseName = "openwork-server";
+// sprintnex-server paths
+const openworkServerBaseName = "sprintnex-server";
 const openworkServerName = isWindowsTarget ? `${openworkServerBaseName}.exe` : openworkServerBaseName;
 const openworkServerPath = join(sidecarDir, openworkServerName);
 const openworkServerBuildName = bunTarget
@@ -143,7 +143,7 @@ const resolveBuildScript = (dir) => {
 };
 
 // orchestrator paths
-const orchestratorBaseName = "openwork-orchestrator";
+const orchestratorBaseName = "sprintnex-orchestrator";
 const orchestratorName =
   isWindowsTarget ? `${orchestratorBaseName}.exe` : orchestratorBaseName;
 const orchestratorPath = join(sidecarDir, orchestratorName);
@@ -274,7 +274,7 @@ const parseChecksum = (content, assetName) => {
   return null;
 };
 
-// openwork-server is no longer compiled as a sidecar binary — it runs
+// sprintnex-server is no longer compiled as a sidecar binary — it runs
 // in-process inside Electron via a direct import of the server library.
 const didBuildOpenworkServer = false;
 
@@ -486,7 +486,7 @@ if (existsSync(orchestratorBuildPath)) {
 adHocSignDarwinSidecars([
   opencodePath,
   opencodeTargetPath,
-  // openwork-server runs in-process — no binary to sign.
+  // sprintnex-server runs in-process — no binary to sign.
   orchestratorBuildPath,
   orchestratorPath,
   orchestratorTargetPath,
@@ -515,11 +515,11 @@ const versions = {
     version: normalizedOpencodeVersion,
     sha256: opencodeCandidatePath && existsSync(opencodeCandidatePath) ? sha256File(opencodeCandidatePath) : null,
   },
-  "openwork-server": {
+  "sprintnex-server": {
     version: openworkServerVersion,
     sha256: "in-process",
   },
-  "openwork-orchestrator": {
+  "sprintnex-orchestrator": {
     version: orchestratorVersion,
     sha256: existsSync(orchestratorPath) ? sha256File(orchestratorPath) : null,
   },

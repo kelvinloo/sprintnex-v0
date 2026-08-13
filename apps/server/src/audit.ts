@@ -12,9 +12,9 @@ function expandHome(value: string): string {
 }
 
 function resolveOpenworkDataDir(): string {
-  const override = process.env.OPENWORK_DATA_DIR?.trim();
+  const override = process.env.SPRINTNEX_DATA_DIR?.trim();
   if (override) return expandHome(override);
-  return join(homedir(), ".openwork", "openwork-server");
+  return join(homedir(), ".openwork", "sprintnex-server");
 }
 
 export function auditLogPath(workspaceId: string): string {

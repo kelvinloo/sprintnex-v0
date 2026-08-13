@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # ── Config ──────────────────────────────────────────────────────────────────
-OPENWORK_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SPRINTNEX_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 # Detect whether we're inside a factory layout (../../.. has _repos/)
-FACTORY_CANDIDATE="$(cd "$OPENWORK_ROOT/../../.." 2>/dev/null && pwd)"
+FACTORY_CANDIDATE="$(cd "$SPRINTNEX_ROOT/../../.." 2>/dev/null && pwd)"
 if [ -d "$FACTORY_CANDIDATE/_repos" ]; then
   FACTORY_ROOT="$FACTORY_CANDIDATE"
 else
@@ -17,7 +17,7 @@ SIBLING_REPOS=()
 if [ -n "$FACTORY_ROOT" ]; then
   for d in "$FACTORY_ROOT"/_repos/*/; do
     [ -d "$d" ] || continue
-    [ "$(cd "$d" && pwd)" = "$OPENWORK_ROOT" ] && continue
+    [ "$(cd "$d" && pwd)" = "$SPRINTNEX_ROOT" ] && continue
     SIBLING_REPOS+=("$d")
   done
 fi
@@ -99,18 +99,18 @@ collect_infra_files() {
   for glob_pattern in "${INFRA_GLOBS[@]}"; do
     # Use find-based expansion to handle globs
     local matched
-    matched=$(find "$OPENWORK_ROOT" -path "$OPENWORK_ROOT/$glob_pattern" 2>/dev/null || true)
+    matched=$(find "$SPRINTNEX_ROOT" -path "$SPRINTNEX_ROOT/$glob_pattern" 2>/dev/null || true)
     if [ -n "$matched" ]; then
       files="${files}${matched}"$'\n'
     fi
   done
   # Also add all package.json files (for script references)
   local pkg_jsons
-  pkg_jsons=$(find "$OPENWORK_ROOT" -name package.json -not -path '*/node_modules/*' -not -path '*/.git/*')
+  pkg_jsons=$(find "$SPRINTNEX_ROOT" -name package.json -not -path '*/node_modules/*' -not -path '*/.git/*')
   files="${files}${pkg_jsons}"$'\n'
   # And all tsconfig*.json files (for path aliases / includes)
   local tsconfigs
-  tsconfigs=$(find "$OPENWORK_ROOT" -name 'tsconfig*.json' -not -path '*/node_modules/*' -not -path '*/.git/*')
+  tsconfigs=$(find "$SPRINTNEX_ROOT" -name 'tsconfig*.json' -not -path '*/node_modules/*' -not -path '*/.git/*')
   files="${files}${tsconfigs}"$'\n'
   echo "$files" | sed '/^$/d' | sort -u
 }
@@ -167,8 +167,8 @@ format_refs() {
     [ $count -gt 3 ] && continue
 
     local short="$ref"
-    if [[ "$ref" == "$OPENWORK_ROOT/"* ]]; then
-      short="${ref#"$OPENWORK_ROOT/"}"
+    if [[ "$ref" == "$SPRINTNEX_ROOT/"* ]]; then
+      short="${ref#"$SPRINTNEX_ROOT/"}"
     elif [[ "$ref" == *"/_repos/"* ]]; then
       short=$(echo "$ref" | sed "s|.*/_repos/||")
     elif [[ "$ref" == "$FACTORY_ROOT/"* ]]; then
@@ -188,7 +188,7 @@ format_refs() {
 }
 
 # ── Step 1: Run knip ───────────────────────────────────────────────────────
-cd "$OPENWORK_ROOT"
+cd "$SPRINTNEX_ROOT"
 echo -e "${BOLD}Running knip to detect unused files...${RESET}"
 KNIP_OUTPUT=$(DATABASE_URL=mysql://fake:fake@localhost/fake npx knip --include files --no-progress --no-config-hints 2>&1 || true)
 

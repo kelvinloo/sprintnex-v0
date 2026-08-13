@@ -5,8 +5,8 @@
  *
  * Local runbook:
  *   1. pnpm evals --stack-down
- *   2. OPENWORK_EVAL_DEN_WEB_URL=http://127.0.0.1:3005 OPENWORK_EVAL_WEB_CDP_ADMIN=http://127.0.0.1:9855 pnpm fraimz --flow invite-adoption-no-duplicates --stack den
- *      (the stack exports OPENWORK_EVAL_DEN_API_URL and OPENWORK_EVAL_DEN_TOKEN)
+ *   2. SPRINTNEX_EVAL_DEN_WEB_URL=http://127.0.0.1:3005 SPRINTNEX_EVAL_WEB_CDP_ADMIN=http://127.0.0.1:9855 pnpm fraimz --flow invite-adoption-no-duplicates --stack den
+ *      (the stack exports SPRINTNEX_EVAL_DEN_API_URL and SPRINTNEX_EVAL_DEN_TOKEN)
  *   3. In another shell, run den-web against the stack API:
  *      DEN_WEB_PORT=3005 DEN_API_BASE=http://127.0.0.1:8790 DEN_AUTH_ORIGIN=http://127.0.0.1:3005 DEN_AUTH_FALLBACK_BASE=http://127.0.0.1:8790 pnpm --filter @openwork-ee/den-web dev:local
  *   4. In another shell, run Chrome for screenshots:
@@ -21,14 +21,14 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 const FLOW_ID = "invite-adoption-no-duplicates";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 
-const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
 const DEN_WEB_URL = denWebUrl();
-const ADMIN_CDP_URL = (process.env.OPENWORK_EVAL_WEB_CDP_ADMIN ?? "").trim().replace(/\/+$/, "");
+const ADMIN_CDP_URL = (process.env.SPRINTNEX_EVAL_WEB_CDP_ADMIN ?? "").trim().replace(/\/+$/, "");
 const MYSQL_CONTAINER = "openwork-web-local-mysql";
 const MYSQL_ARGS = ["exec", MYSQL_CONTAINER, "mysql", "-uroot", "-ppassword", "openwork_den", "-N", "-e"];
-const ADMIN_TOKEN = (process.env.OPENWORK_EVAL_DEN_TOKEN ?? "").trim();
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const ADMIN_TOKEN = (process.env.SPRINTNEX_EVAL_DEN_TOKEN ?? "").trim();
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const TYPE_ID_ALPHABET = "0123456789abcdefghjkmnpqrstvwxyz";
 const TYPE_ID_PREFIXES = {
   member: "om",
@@ -533,7 +533,7 @@ export default {
   title: "Pending invitations are adopted without duplicate organization members",
   kind: "internal",
   requiresApp: false,
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_DEN_WEB_URL", "OPENWORK_EVAL_WEB_CDP_ADMIN"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_DEN_WEB_URL", "SPRINTNEX_EVAL_WEB_CDP_ADMIN"],
   steps: [
     {
       name: "Frame 1 — The admin invites Rashmi as an admin",

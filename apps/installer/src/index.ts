@@ -6,9 +6,9 @@ import { startInstallerServer } from "./server"
 
 const rawArgs = Bun.argv.slice(2)
 const args = new Set(rawArgs)
-const headless = args.has("--headless") || process.env.OPENWORK_INSTALLER_HEADLESS === "1"
-const dryRun = args.has("--dry-run") || process.env.OPENWORK_INSTALLER_DRY_RUN === "1"
-const smokeExitMs = Number.parseInt(process.env.OPENWORK_INSTALLER_SMOKE_EXIT_MS ?? "", 10)
+const headless = args.has("--headless") || process.env.SPRINTNEX_INSTALLER_HEADLESS === "1"
+const dryRun = args.has("--dry-run") || process.env.SPRINTNEX_INSTALLER_DRY_RUN === "1"
+const smokeExitMs = Number.parseInt(process.env.SPRINTNEX_INSTALLER_SMOKE_EXIT_MS ?? "", 10)
 
 type ReadyServer = {
   url: string
@@ -224,7 +224,7 @@ function openInBrowser(url: string) {
   Bun.spawn(command, { stdio: ["ignore", "ignore", "ignore"] })
 }
 
-if (process.env.OPENWORK_INSTALLER_UI === "manual") {
+if (process.env.SPRINTNEX_INSTALLER_UI === "manual") {
   // Manual UI mode: serve the installer UI without opening any window or
   // browser (headless CI, remote debugging, UI evals). The URL is printed so
   // the operator can attach their own browser.

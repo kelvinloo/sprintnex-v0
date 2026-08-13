@@ -5,7 +5,7 @@
 
 import type { Session } from "@opencode-ai/sdk/v2/client";
 
-import type { OpenworkWorkspaceInfo } from "@/app/lib/openwork-server";
+import type { OpenworkWorkspaceInfo } from "@/app/lib/sprintnex-server";
 import type { WorkspaceInfo } from "@/app/lib/desktop-types";
 import type { WorkspaceSessionGroup } from "@/app/types";
 import {
@@ -21,7 +21,7 @@ export type RouteWorkspace = OpenworkWorkspaceInfo & {
 
 /**
  * Sessions as the routes handle them: SDK sessions from
- * openwork-server's listSessions, optionally enriched with run-status
+ * sprintnex-server's listSessions, optionally enriched with run-status
  * fields that the sidebar probes defensively via getSessionStatus.
  */
 export type RouteSession = Session & {

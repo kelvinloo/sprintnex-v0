@@ -48,7 +48,7 @@ function installMenuOverlayDismissListeners() {
   }
 }
 
-contextBridge.exposeInMainWorld("__OPENWORK_ELECTRON__", {
+contextBridge.exposeInMainWorld("__SPRINTNEX_ELECTRON__", {
   invokeDesktop(command, ...args) {
     return ipcRenderer.invoke("openwork:desktop", command, ...args);
   },
@@ -176,7 +176,7 @@ contextBridge.exposeInMainWorld("__OPENWORK_ELECTRON__", {
     // Mirror the main-process workspace-recovery flag so the renderer's
     // first-run detection (which reads localStorage, not the desktop state
     // file) stays consistent when recovery is deliberately disabled.
-    disableWorkspaceRecovery: process.env.OPENWORK_DESKTOP_DISABLE_WORKSPACE_RECOVERY === "1",
+    disableWorkspaceRecovery: process.env.SPRINTNEX_DESKTOP_DISABLE_WORKSPACE_RECOVERY === "1",
   },
 });
 

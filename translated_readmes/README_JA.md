@@ -20,7 +20,7 @@ OpenWorkは、エージェントワークフローを再現可能なプロダク
 
 ## 代替UI
 - **OpenWork Orchestrator（CLIホスト）**: デスクトップUIなしでOpenCode + OpenWorkサーバーを実行します。
-  - インストール: `npm install -g openwork-orchestrator`
+  - インストール: `npm install -g sprintnex-orchestrator`
   - 実行: `openwork start --workspace /path/to/workspace --approval auto`
   - ドキュメント: [apps/orchestrator/README.md](../apps/orchestrator/README.md)
 
@@ -112,7 +112,7 @@ OpenWorkは現在 `apps/app`（UI）と `apps/desktop`（デスクトップシ�
 pnpm dev
 ```
 
-`pnpm dev` は自動的に `OPENWORK_DEV_MODE=1` を有効にするため、デスクトップ開発では個人のグローバル設定/認証/データの代わりに分離されたOpenCode状態を使用します。
+`pnpm dev` は自動的に `SPRINTNEX_DEV_MODE=1` を有効にするため、デスクトップ開発では個人のグローバル設定/認証/データの代わりに分離されたOpenCode状態を使用します。
 
 ### 実行（Web UIのみ）
 
@@ -132,7 +132,7 @@ curl -fsSL https://opencode.ai/install | bash -s -- --version "$(node -e "const 
 ## アーキテクチャ（概要）
 
 - **ホストモード**では、OpenWorkはローカルホストスタックを実行し、UIをそれに接続します。
-  - デフォルトランタイム: `openwork`（`openwork-orchestrator` からインストール）。`opencode` と `openwork-server` をオーケストレーションします。
+  - デフォルトランタイム: `openwork`（`sprintnex-orchestrator` からインストール）。`opencode` と `sprintnex-server` をオーケストレーションします。
   - フォールバックランタイム: `direct`。デスクトップアプリが直接 `opencode serve --hostname 127.0.0.1 --port <free-port>` を起動します。
 
 プロジェクトフォルダを選択すると、OpenWorkはそのフォルダを使用してローカルでホストスタックを実行し、デスクトップUIを接続します。

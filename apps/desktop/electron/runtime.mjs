@@ -12,9 +12,9 @@ import { pathToFileURL } from "node:url";
 const __runtimeDir = path.dirname(fileURLToPath(import.meta.url));
 
 const DIRECT_RUNTIME = "direct";
-const ORCHESTRATOR_RUNTIME = "openwork-orchestrator";
-const OPENWORK_SERVER_PORT_RANGE_START = 48_000;
-const OPENWORK_SERVER_PORT_RANGE_END = 51_000;
+const ORCHESTRATOR_RUNTIME = "sprintnex-orchestrator";
+const SPRINTNEX_SERVER_PORT_RANGE_START = 48_000;
+const SPRINTNEX_SERVER_PORT_RANGE_END = 51_000;
 
 function truncateOutput(value, limit = 8000) {
   const text = String(value ?? "");
@@ -49,7 +49,7 @@ export function prioritizeWorkspacePaths(preferredPath, workspacePaths = []) {
 }
 
 export function resolveOpenworkServerConfigPath(env = process.env) {
-  const override = String(env.OPENWORK_SERVER_CONFIG ?? "").trim();
+  const override = String(env.SPRINTNEX_SERVER_CONFIG ?? "").trim();
   if (override) return path.resolve(override);
   if (process.platform === "win32") {
     const appData = String(env.APPDATA ?? "").trim();
@@ -78,8 +78,8 @@ export function commandMatchesPackagedSidecar(command, sidecarDirs = []) {
   if (!sidecarDirs.some((dir) => String(dir ?? "").trim() && value.includes(dir))) {
     return false;
   }
-  return value.includes("openwork-orchestrator") ||
-    value.includes("openwork-server") ||
+  return value.includes("sprintnex-orchestrator") ||
+    value.includes("sprintnex-server") ||
     /(?:^|[/\\])opencode[^/\\\s]*\s+serve\b/.test(value);
 }
 
@@ -459,9 +459,9 @@ async function fetchJson(url, options = {}, timeoutMs = 3000) {
 
 // Resolves ~/.config/openwork/env.json (or %APPDATA%\openwork\env.json on
 // Windows) — must agree byte-for-byte with apps/server/src/env-file.ts and
-// apps/orchestrator/src/cli.ts. Honor OPENWORK_ENV_STORE override.
+// apps/orchestrator/src/cli.ts. Honor SPRINTNEX_ENV_STORE override.
 function resolveUserEnvFilePath() {
-  const override = String(process.env.OPENWORK_ENV_STORE ?? "").trim();
+  const override = String(process.env.SPRINTNEX_ENV_STORE ?? "").trim();
   if (override) return path.resolve(override);
   if (process.platform === "win32") {
     const appData = String(process.env.APPDATA ?? "").trim();
@@ -472,10 +472,10 @@ function resolveUserEnvFilePath() {
 }
 
 const USER_ENV_KEY_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
-const USER_ENV_RESERVED_PREFIXES = ["OPENWORK_", "OPENCODE_"];
+const USER_ENV_RESERVED_PREFIXES = ["SPRINTNEX_", "OPENCODE_"];
 
 // Synchronous, best-effort; absent or malformed returns {}. Reserved prefixes
-// are stripped so a tampered file can never shadow OPENWORK_* / OPENCODE_*.
+// are stripped so a tampered file can never shadow SPRINTNEX_* / OPENCODE_*.
 function loadUserEnvFile() {
   try {
     const raw = readFileSync(resolveUserEnvFilePath(), "utf8");
@@ -596,11 +596,11 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   }
 
   function openworkServerTokenStorePath() {
-    return path.join(userDataDir, "openwork-server-tokens.json");
+    return path.join(userDataDir, "sprintnex-server-tokens.json");
   }
 
   function openworkServerStatePath() {
-    return path.join(userDataDir, "openwork-server-state.json");
+    return path.join(userDataDir, "sprintnex-server-state.json");
   }
 
   function managedOpencodeWorkdir() {
@@ -608,17 +608,17 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   }
 
   function orchestratorDataDir() {
-    const envDir = process.env.OPENWORK_DATA_DIR?.trim();
+    const envDir = process.env.SPRINTNEX_DATA_DIR?.trim();
     if (envDir) return envDir;
-    return path.join(app.getPath("home"), ".openwork", "openwork-orchestrator");
+    return path.join(app.getPath("home"), ".openwork", "sprintnex-orchestrator");
   }
 
   function orchestratorStatePath(dataDir) {
-    return path.join(dataDir, "openwork-orchestrator-state.json");
+    return path.join(dataDir, "sprintnex-orchestrator-state.json");
   }
 
   function orchestratorAuthPath(dataDir) {
-    return path.join(dataDir, "openwork-orchestrator-auth.json");
+    return path.join(dataDir, "sprintnex-orchestrator-auth.json");
   }
 
   async function readOrchestratorStateFile(dataDir) {
@@ -749,7 +749,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
   }
 
   async function ensureDevModePaths() {
-    const root = path.join(userDataDir, "openwork-dev-data");
+    const root = path.join(userDataDir, "sprintnex-dev-data");
     const paths = {
       homeDir: path.join(root, "home"),
       xdgConfigHome: path.join(root, "xdg", "config"),
@@ -789,9 +789,9 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     if (pathEnv) {
       env[pathKey] = pathEnv;
     }
-    if (process.env.OPENWORK_DEV_MODE === "1") {
+    if (process.env.SPRINTNEX_DEV_MODE === "1") {
       const devPaths = await ensureDevModePaths();
-      env.OPENWORK_DEV_MODE = "1";
+      env.SPRINTNEX_DEV_MODE = "1";
       env.HOME = devPaths.homeDir;
       env.USERPROFILE = devPaths.homeDir;
       env.XDG_CONFIG_HOME = devPaths.xdgConfigHome;
@@ -855,7 +855,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const candidates = [];
     const seen = new Set();
 
-    for (const key of ["OPENWORK_DOCKER_BIN", "OPENWRK_DOCKER_BIN", "DOCKER_BIN"]) {
+    for (const key of ["SPRINTNEX_DOCKER_BIN", "OPENWRK_DOCKER_BIN", "DOCKER_BIN"]) {
       const value = process.env[key]?.trim();
       if (value && !seen.has(value)) {
         seen.add(value);
@@ -908,7 +908,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     }
 
     throw new Error(
-      `Failed to run docker: ${errors.join("; ")} (Set OPENWORK_DOCKER_BIN to your docker binary if needed)`,
+      `Failed to run docker: ${errors.join("; ")} (Set SPRINTNEX_DOCKER_BIN to your docker binary if needed)`,
     );
   }
 
@@ -931,7 +931,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const sanitized = String(runId ?? "")
       .replace(/[^a-zA-Z0-9_.-]+/g, "-")
       .slice(0, 24);
-    return `openwork-orchestrator-${sanitized}`;
+    return `sprintnex-orchestrator-${sanitized}`;
   }
 
   async function listOpenworkManagedContainers() {
@@ -943,7 +943,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     return result.stdout
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .filter((name) => name && (name.startsWith("openwork-orchestrator-") || name.startsWith("openwork-dev-") || name.startsWith("openwrk-")))
+      .filter((name) => name && (name.startsWith("sprintnex-orchestrator-") || name.startsWith("openwork-dev-") || name.startsWith("openwrk-")))
       .sort();
   }
 
@@ -1193,7 +1193,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
       path.resolve(__runtimeDir, "..", "server", "dist", "embedded.js"),
       ...(process.resourcesPath ? [path.resolve(process.resourcesPath, "server", "dist", "embedded.js")] : []),
     ];
-    const candidates = process.env.OPENWORK_DEV_MODE === "1"
+    const candidates = process.env.SPRINTNEX_DEV_MODE === "1"
       ? [devPath, ...packagedPaths]
       : [...packagedPaths, devPath];
     const embeddedPath = candidates.find((candidate) => existsSync(candidate));
@@ -1303,9 +1303,9 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const opencodePort = await findFreePort("127.0.0.1");
     const [username, password] = generateManagedCredentials();
 
-    const orchestratorProgram = resolveBinary("openwork-orchestrator") ?? resolveBinary("openwork");
+    const orchestratorProgram = resolveBinary("sprintnex-orchestrator") ?? resolveBinary("openwork");
     if (!orchestratorProgram) {
-      throw new Error("Failed to locate openwork-orchestrator.");
+      throw new Error("Failed to locate sprintnex-orchestrator.");
     }
 
     const opencodeBinary = resolveOpencodeBinary(options.opencodeBinPath);
@@ -1314,9 +1314,9 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     }
 
     const env = await buildChildEnv({
-      OPENWORK_INTERNAL_ALLOW_OPENCODE_CREDENTIALS: "1",
-      OPENWORK_OPENCODE_USERNAME: username,
-      OPENWORK_OPENCODE_PASSWORD: password,
+      SPRINTNEX_INTERNAL_ALLOW_OPENCODE_CREDENTIALS: "1",
+      SPRINTNEX_OPENCODE_USERNAME: username,
+      SPRINTNEX_OPENCODE_PASSWORD: password,
       ...(options.opencodeEnableExa !== false ? { OPENCODE_ENABLE_EXA: "1" } : {}),
     });
 
@@ -1781,8 +1781,8 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     if (!name) {
       throw new Error("containerName is required");
     }
-    if (!name.startsWith("openwork-orchestrator-")) {
-      throw new Error("Refusing to stop container: expected name starting with 'openwork-orchestrator-'");
+    if (!name.startsWith("sprintnex-orchestrator-")) {
+      throw new Error("Refusing to stop container: expected name starting with 'sprintnex-orchestrator-'");
     }
     if (!/^[A-Za-z0-9_.-]+$/.test(name)) {
       throw new Error("containerName contains invalid characters");
@@ -1837,7 +1837,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     const token = String(options.openworkToken ?? randomUUID()).trim();
     const hostToken = String(options.openworkHostToken ?? randomUUID()).trim();
     const openworkUrl = `http://127.0.0.1:${port}`;
-    const program = resolveBinary("openwork-orchestrator") ?? resolveBinary("openwork");
+    const program = resolveBinary("sprintnex-orchestrator") ?? resolveBinary("openwork");
     if (!program) {
       throw new Error("Failed to locate openwork orchestrator.");
     }
@@ -1858,7 +1858,7 @@ export function createRuntimeManager({ app, desktopRoot, listLocalWorkspacePaths
     ];
 
     const child = spawn(program, args, {
-      env: { ...(await buildChildEnv()), OPENWORK_TOKEN: token, OPENWORK_HOST_TOKEN: hostToken },
+      env: { ...(await buildChildEnv()), SPRINTNEX_TOKEN: token, SPRINTNEX_HOST_TOKEN: hostToken },
       detached: true,
       stdio: "ignore",
       windowsHide: true,

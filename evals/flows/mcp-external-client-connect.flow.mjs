@@ -475,7 +475,7 @@ export default {
   title: "A URL-only MCP client connects to the API origin end to end",
   kind: "user-facing",
   preserveTheme: true,
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "Frame 1",

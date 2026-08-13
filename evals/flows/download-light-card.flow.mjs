@@ -18,7 +18,7 @@ const INSTALLER_LABELS = [
 ];
 
 function routeUrl(ctx, path) {
-  return new URL(path, ctx.env.OPENWORK_EVAL_LANDING_URL).toString();
+  return new URL(path, ctx.env.SPRINTNEX_EVAL_LANDING_URL).toString();
 }
 
 async function navigateToDownload(ctx) {
@@ -45,7 +45,7 @@ export default {
   kind: "user-facing",
   spec: "evals/README.md",
   preserveTheme: true,
-  requiredEnv: ["OPENWORK_EVAL_LANDING_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_LANDING_URL"],
   steps: [
     {
       name: "/download renders the light-mode card",

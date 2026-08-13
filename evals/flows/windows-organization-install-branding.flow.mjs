@@ -12,7 +12,7 @@ const START_MENU = "C:\\Users\\Administrator\\AppData\\Roaming\\Microsoft\\Windo
 const CONFIG = "C:\\Users\\Administrator\\AppData\\Local\\openwork\\desktop-bootstrap.json";
 
 function sandboxId(ctx) {
-  return (ctx.env.OPENWORK_EVAL_DAYTONA_SANDBOX_ID || ctx.env.OPENWORK_EVAL_DAYTONA_SANDBOX).trim();
+  return (ctx.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX_ID || ctx.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX).trim();
 }
 
 async function windowsExec(ctx, label, command, timeout = 120) {
@@ -56,7 +56,7 @@ export default {
   title: "Organization installs converge Windows Search, Start Menu, and shortcuts without losing server configuration",
   kind: "user-facing",
   requiresApp: false,
-  requiredEnv: ["DAYTONA_API_KEY", "OPENWORK_EVAL_DAYTONA_SANDBOX"],
+  requiredEnv: ["DAYTONA_API_KEY", "SPRINTNEX_EVAL_DAYTONA_SANDBOX"],
   steps: [
     {
       name: "Organization bundle",

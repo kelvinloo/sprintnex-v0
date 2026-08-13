@@ -39,12 +39,12 @@ export default {
               label: "control API",
             });
             await ctx.eval(`(() => localStorage.removeItem("openwork.den.settings"))()`);
-            await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", {
+            await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", {
               timeoutMs: 30_000,
               label: "desktop bridge",
             });
             const written = await ctx.eval(`(async () => {
-              const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
+              const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
               if (!bridge) return { ok: false, reason: "desktop bridge unavailable" };
               await bridge("setDesktopBootstrapConfig", ${JSON.stringify(BOOTSTRAP)});
               return { ok: true };

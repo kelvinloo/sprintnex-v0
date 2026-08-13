@@ -424,7 +424,7 @@ Azure MySQL URL:
 
 ```bash
 helm template openwork-ee oci://ghcr.io/different-ai/charts/openwork-ee \
-  --version REPLACE_OPENWORK_VERSION \
+  --version REPLACE_SPRINTNEX_VERSION \
   --namespace openwork-ee \
   -f values.azure.yaml > /tmp/openwork-rendered.yaml
 
@@ -465,7 +465,7 @@ Published chart releases live in GHCR:
 
 ```bash
 helm upgrade --install openwork-ee oci://ghcr.io/different-ai/charts/openwork-ee \
-  --version REPLACE_OPENWORK_VERSION \
+  --version REPLACE_SPRINTNEX_VERSION \
   --namespace openwork-ee \
   --create-namespace \
   -f values.azure.yaml
@@ -519,7 +519,7 @@ Then run Helm and inspect the normal Job logs:
 
 ```bash
 helm upgrade --install openwork-ee oci://ghcr.io/different-ai/charts/openwork-ee \
-  --version REPLACE_OPENWORK_VERSION \
+  --version REPLACE_SPRINTNEX_VERSION \
   --namespace openwork-ee \
   --create-namespace \
   -f values.azure.yaml \

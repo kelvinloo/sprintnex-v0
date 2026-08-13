@@ -43,8 +43,8 @@ sandboxes when validating owner and member UI simultaneously.
   daytona exec <electron-sandbox> -- 'bash -lc "kill <electron/opencode-pids> 2>/dev/null || true"'
   daytona exec <electron-sandbox> -- \
     "bash -lc 'cd /workspace && \
-      OPENWORK_DEN_BASE_URL=DEN_WEB_URL \
-      OPENWORK_DEN_API_BASE_URL=DEN_API_URL \
+      SPRINTNEX_DEN_BASE_URL=DEN_WEB_URL \
+      SPRINTNEX_DEN_API_BASE_URL=DEN_API_URL \
       DAYTONA_SECRETS_ENV=/tmp/no-daytona-secrets \
       bash /opt/openwork-daytona/start-daytona-electron.sh --detach'"
   ```
@@ -61,7 +61,7 @@ sandboxes when validating owner and member UI simultaneously.
 
 ## Verified run: 2026-06-02
 
-- Server sandbox: `openwork-server-20260602-154721`
+- Server sandbox: `sprintnex-server-20260602-154721`
 - Electron sandbox: `openwork-test-20260602-155000`
 - Org: `Acme Robotics`, `org_01kt58ejd1extvd0p7nqagxaky`
 - Member email: `eval-member-1780444561@acme.test`

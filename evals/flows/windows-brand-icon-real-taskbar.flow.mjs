@@ -31,21 +31,21 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 const vo = await loadVoiceoverParagraphs("windows-brand-icon-real-taskbar");
 
 function sandboxId(ctx) {
-  return (ctx.env.OPENWORK_EVAL_DAYTONA_SANDBOX_ID || ctx.env.OPENWORK_EVAL_DAYTONA_SANDBOX).trim();
+  return (ctx.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX_ID || ctx.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX).trim();
 }
 
 function testIconUrl(ctx) {
-  return ctx.env.OPENWORK_EVAL_BRAND_ICON_URL.trim();
+  return ctx.env.SPRINTNEX_EVAL_BRAND_ICON_URL.trim();
 }
 
 async function getBrandIconState(ctx) {
-  return ctx.eval("window.__OPENWORK_ELECTRON__?.brandIcon?.getState?.()", { awaitPromise: true });
+  return ctx.eval("window.__SPRINTNEX_ELECTRON__?.brandIcon?.getState?.()", { awaitPromise: true });
 }
 
 async function closeAdminPanel(ctx) {
   await ctx.eval(`(async () => {
-    await window.__OPENWORK_ELECTRON__?.browser?.closeAllTabs?.();
-    await window.__OPENWORK_ELECTRON__?.browser?.hide?.();
+    await window.__SPRINTNEX_ELECTRON__?.browser?.closeAllTabs?.();
+    await window.__SPRINTNEX_ELECTRON__?.browser?.hide?.();
     return true;
   })()`, { awaitPromise: true });
   await ensureWorkspaceReady(ctx);
@@ -132,7 +132,7 @@ async function assertOpenWorkWindow(ctx) {
 }
 
 async function assertWindowsRuntime(ctx) {
-  const info = await ctx.eval("window.__OPENWORK_ELECTRON__?.system?.getArchitectureInfo?.()", { awaitPromise: true });
+  const info = await ctx.eval("window.__SPRINTNEX_ELECTRON__?.system?.getArchitectureInfo?.()", { awaitPromise: true });
   ctx.assert(info?.platform === "windows", `Expected a Windows Electron build, got ${JSON.stringify(info)}`);
   ctx.recordEvidence({
     type: "assertion",
@@ -158,11 +158,11 @@ export default {
   preserveTheme: true,
   requiredEnv: [
     "DAYTONA_API_KEY",
-    "OPENWORK_EVAL_BRAND_ICON_URL",
-    "OPENWORK_EVAL_DAYTONA_SANDBOX",
-    "OPENWORK_EVAL_DEN_API_URL",
-    "OPENWORK_EVAL_DEN_TOKEN",
-    "OPENWORK_EVAL_DEN_WEB_URL",
+    "SPRINTNEX_EVAL_BRAND_ICON_URL",
+    "SPRINTNEX_EVAL_DAYTONA_SANDBOX",
+    "SPRINTNEX_EVAL_DEN_API_URL",
+    "SPRINTNEX_EVAL_DEN_TOKEN",
+    "SPRINTNEX_EVAL_DEN_WEB_URL",
   ],
   steps: [
     {
@@ -290,7 +290,7 @@ export default {
               } else {
                 // Release packages intentionally omit the dev-only control
                 // action. Exercise the production relaunch bridge instead.
-                await ctx.eval("window.__OPENWORK_ELECTRON__.shell.relaunch()", { awaitPromise: true });
+                await ctx.eval("window.__SPRINTNEX_ELECTRON__.shell.relaunch()", { awaitPromise: true });
               }
             } catch (error) {
               ctx.log(`Relaunch ended during the expected process shutdown: ${error instanceof Error ? error.message : String(error)}`);

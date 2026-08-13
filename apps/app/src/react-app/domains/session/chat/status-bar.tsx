@@ -16,7 +16,7 @@ import {
   type OpenworkControlAction,
 } from "../../../shell/control/control-provider";
 import { useShellConfig } from "../../../shell/shell-config";
-import type { OpenworkServerStatus } from "../../../../app/lib/openwork-server";
+import type { OpenworkServerStatus } from "../../../../app/lib/sprintnex-server";
 
 const DOCS_URL = "https://openworklabs.com/docs";
 const STATUS_BAR_BOOT_STARTED_AT = Date.now();

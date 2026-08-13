@@ -11,7 +11,7 @@ import type { ServerConfig } from "./types.js";
 import { ensureDir } from "./utils.js";
 
 const CONNECT_STATE_FILE = "connect-state.json";
-const OPENWORK_CLOUD_MCP_NAME = "openwork-cloud";
+const SPRINTNEX_CLOUD_MCP_NAME = "openwork-cloud";
 
 type PersistedConnectState = {
   connectEnabled: boolean;
@@ -73,7 +73,7 @@ export async function getConnectSnapshot(config: ServerConfig): Promise<ConnectS
 
   for (const workspace of config.workspaces) {
     const runtimeConfig = await readRuntimeOpencodeConfig(config, workspace.id);
-    if (Object.hasOwn(runtimeMcpMap(runtimeConfig), OPENWORK_CLOUD_MCP_NAME)) {
+    if (Object.hasOwn(runtimeMcpMap(runtimeConfig), SPRINTNEX_CLOUD_MCP_NAME)) {
       cloudMcpPresent = true;
       break;
     }

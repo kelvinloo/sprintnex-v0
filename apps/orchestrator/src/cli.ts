@@ -109,21 +109,21 @@ type OpencodeHotReload = {
 
 const FALLBACK_VERSION = "0.1.0";
 
-declare const __OPENWORK_ORCHESTRATOR_VERSION__: string | undefined;
-declare const __OPENWORK_PINNED_OPENCODE_VERSION__: string | undefined;
-const DEFAULT_OPENWORK_PORT = 8787;
+declare const __SPRINTNEX_ORCHESTRATOR_VERSION__: string | undefined;
+declare const __SPRINTNEX_PINNED_OPENCODE_VERSION__: string | undefined;
+const DEFAULT_SPRINTNEX_PORT = 8787;
 const DEFAULT_APPROVAL_TIMEOUT = 30000;
 const MANAGED_OPENCODE_CREDENTIAL_LENGTH = 512;
 const INTERNAL_OPENCODE_CREDENTIALS_ENV =
-  "OPENWORK_INTERNAL_ALLOW_OPENCODE_CREDENTIALS";
+  "SPRINTNEX_INTERNAL_ALLOW_OPENCODE_CREDENTIALS";
 const DEFAULT_OPENCODE_HOT_RELOAD_DEBOUNCE_MS = 700;
 const DEFAULT_OPENCODE_HOT_RELOAD_COOLDOWN_MS = 1500;
 const DEFAULT_ACTIVITY_WINDOW_MS = 5 * 60_000;
 const DEFAULT_ACTIVITY_HEARTBEAT_INTERVAL_MS = 5 * 60_000;
 
 const SANDBOX_INTERNAL_OPENCODE_PORT = 4096;
-const SANDBOX_INTERNAL_OPENWORK_PORT = DEFAULT_OPENWORK_PORT;
-const OPENWORK_DEV_DATA_DIR = "openwork-dev-data";
+const SANDBOX_INTERNAL_SPRINTNEX_PORT = DEFAULT_SPRINTNEX_PORT;
+const SPRINTNEX_DEV_DATA_DIR = "sprintnex-dev-data";
 
 const SANDBOX_OPENCODE_GLOBAL_CONFIG_CONTAINER_PATH =
   "/persist/.config/opencode";
@@ -148,7 +148,7 @@ type VersionInfo = {
   sha256: string;
 };
 
-type SidecarName = "openwork-server" | "opencode";
+type SidecarName = "sprintnex-server" | "opencode";
 
 type SidecarTarget =
   | "darwin-arm64"
@@ -205,7 +205,7 @@ type BinaryDiagnostics = {
   actualVersion?: string;
 };
 
-type RuntimeServiceName = "openwork-server" | "opencode";
+type RuntimeServiceName = "sprintnex-server" | "opencode";
 
 type RuntimeServiceSnapshot = {
   name: RuntimeServiceName;
@@ -594,7 +594,7 @@ let cachedSandboxAllowlist: SandboxMountAllowlist | null | undefined;
 let cachedSandboxAllowlistError: string | null = null;
 
 function resolveSandboxAllowlistPath(): string {
-  const override = process.env.OPENWORK_SANDBOX_MOUNT_ALLOWLIST?.trim();
+  const override = process.env.SPRINTNEX_SANDBOX_MOUNT_ALLOWLIST?.trim();
   if (override) return resolve(override);
   return join(homedir(), ".config", "openwork", "sandbox-mount-allowlist.json");
 }
@@ -618,7 +618,7 @@ async function isDir(input: string): Promise<boolean> {
 async function resolveHostOpencodeGlobalConfigDir(): Promise<string | null> {
   const enabled =
     (
-      process.env.OPENWORK_SANDBOX_MOUNT_OPENCODE_CONFIG ??
+      process.env.SPRINTNEX_SANDBOX_MOUNT_OPENCODE_CONFIG ??
       (internalDevModeFromEnv() ? "0" : "1")
     ).trim() !== "0";
   if (!enabled) return null;
@@ -663,7 +663,7 @@ async function resolveHostOpencodeGlobalConfigDir(): Promise<string | null> {
 async function resolveHostOpencodeGlobalDataDir(): Promise<string | null> {
   const enabled =
     (
-      process.env.OPENWORK_SANDBOX_MOUNT_OPENCODE_CONFIG ??
+      process.env.SPRINTNEX_SANDBOX_MOUNT_OPENCODE_CONFIG ??
       (internalDevModeFromEnv() ? "0" : "1")
     ).trim() !== "0";
   if (!enabled) return null;
@@ -918,10 +918,10 @@ async function fileExists(path: string): Promise<boolean> {
 
 async function resolveCliVersion(): Promise<string> {
   if (
-    typeof __OPENWORK_ORCHESTRATOR_VERSION__ === "string" &&
-    __OPENWORK_ORCHESTRATOR_VERSION__.trim()
+    typeof __SPRINTNEX_ORCHESTRATOR_VERSION__ === "string" &&
+    __SPRINTNEX_ORCHESTRATOR_VERSION__.trim()
   ) {
-    return __OPENWORK_ORCHESTRATOR_VERSION__.trim();
+    return __SPRINTNEX_ORCHESTRATOR_VERSION__.trim();
   }
   const candidates = [
     join(dirname(process.execPath), "..", "package.json"),
@@ -945,10 +945,10 @@ async function resolveCliVersion(): Promise<string> {
 
 async function readPinnedOpencodeVersion(): Promise<string | undefined> {
   if (
-    typeof __OPENWORK_PINNED_OPENCODE_VERSION__ === "string" &&
-    __OPENWORK_PINNED_OPENCODE_VERSION__.trim()
+    typeof __SPRINTNEX_PINNED_OPENCODE_VERSION__ === "string" &&
+    __SPRINTNEX_PINNED_OPENCODE_VERSION__.trim()
   ) {
-    return __OPENWORK_PINNED_OPENCODE_VERSION__.trim();
+    return __SPRINTNEX_PINNED_OPENCODE_VERSION__.trim();
   }
 
   const candidates = [
@@ -1024,7 +1024,7 @@ async function resolveDockerCandidates(): Promise<string[]> {
   };
 
   for (const key of [
-    "OPENWORK_DOCKER_BIN",
+    "SPRINTNEX_DOCKER_BIN",
     "OPENWRK_DOCKER_BIN",
     "DOCKER_BIN",
   ]) {
@@ -1217,12 +1217,12 @@ function resolveManagedOpencodeCredentials(args: ParsedArgs): {
   const requestedUsername =
     typeof explicitUsernameFlag === "string"
       ? explicitUsernameFlag
-      : process.env.OPENWORK_OPENCODE_USERNAME ??
+      : process.env.SPRINTNEX_OPENCODE_USERNAME ??
         process.env.OPENCODE_SERVER_USERNAME;
   const requestedPassword =
     typeof explicitPasswordFlag === "string"
       ? explicitPasswordFlag
-      : process.env.OPENWORK_OPENCODE_PASSWORD ??
+      : process.env.SPRINTNEX_OPENCODE_PASSWORD ??
         process.env.OPENCODE_SERVER_PASSWORD;
   const allowInjectedCredentials =
     (process.env[INTERNAL_OPENCODE_CREDENTIALS_ENV] ?? "").trim() === "1";
@@ -1267,7 +1267,7 @@ function assertManagedOpencodeAuth(args: ParsedArgs) {
     args.flags,
     "opencode-auth",
     true,
-    "OPENWORK_OPENCODE_AUTH",
+    "SPRINTNEX_OPENCODE_AUTH",
   );
   if (!authEnabled) {
     throw new Error(
@@ -1303,9 +1303,9 @@ function resolveOpencodeLogLevel(requested?: string): string | undefined {
 
 function resolveOpenworkRemoteAccess(args: ParsedArgs): boolean {
   const explicitHost =
-    readFlag(args.flags, "openwork-host") ?? process.env.OPENWORK_HOST;
+    readFlag(args.flags, "openwork-host") ?? process.env.SPRINTNEX_HOST;
   const remoteAccessRequested =
-    readBool(args.flags, "remote-access", false, "OPENWORK_REMOTE_ACCESS") ||
+    readBool(args.flags, "remote-access", false, "SPRINTNEX_REMOTE_ACCESS") ||
     explicitHost?.trim() === "0.0.0.0";
 
   if (explicitHost) {
@@ -1454,7 +1454,7 @@ async function postWorkerActivityHeartbeat(input: {
       lastActivityAt: payload.lastActivityAt,
       openSessionCount: payload.openSessionCount,
     },
-    "openwork-orchestrator",
+    "sprintnex-orchestrator",
   );
 }
 
@@ -1503,7 +1503,7 @@ function prefixStream(
 
 function shouldUseBun(bin: string): boolean {
   if (!bin.endsWith(`${join("dist", "cli.js")}`)) return false;
-  if (bin.includes("openwork-server")) return true;
+  if (bin.includes("sprintnex-server")) return true;
   return bin.includes(`${join("packages", "server")}`);
 }
 
@@ -1526,8 +1526,8 @@ function resolveBinCommand(bin: string): {
 async function readVersionManifest(): Promise<VersionManifest | null> {
   const binDir = dirname(process.execPath);
   const moduleDir = dirname(fileURLToPath(import.meta.url));
-  const envManifestPath = process.env.OPENWORK_VERSION_MANIFEST?.trim();
-  const envSidecarDir = process.env.OPENWORK_BUNDLED_SIDECAR_DIR?.trim();
+  const envManifestPath = process.env.SPRINTNEX_VERSION_MANIFEST?.trim();
+  const envSidecarDir = process.env.SPRINTNEX_BUNDLED_SIDECAR_DIR?.trim();
   const candidates = [
     ...(envManifestPath
       ? [
@@ -1603,7 +1603,7 @@ function resolveExtraPathEntries(): string[] {
 
   const entries: string[] = [];
   const sidecarOverride =
-    process.env.OPENWRK_SIDECAR_DIR ?? process.env.OPENWORK_SIDECAR_DIR;
+    process.env.OPENWRK_SIDECAR_DIR ?? process.env.SPRINTNEX_SIDECAR_DIR;
   const sidecarCandidates = [
     sidecarOverride,
     dirname(process.execPath),
@@ -1672,9 +1672,9 @@ function resolveExtraPathEntries(): string[] {
 
 // Resolves ~/.config/openwork/env.json (or %APPDATA%\openwork\env.json on
 // Windows) — must agree byte-for-byte with apps/server/src/env-file.ts and
-// apps/desktop/electron/runtime.mjs. Honor OPENWORK_ENV_STORE override.
+// apps/desktop/electron/runtime.mjs. Honor SPRINTNEX_ENV_STORE override.
 function resolveUserEnvFilePath(): string {
-  const override = (process.env.OPENWORK_ENV_STORE ?? "").trim();
+  const override = (process.env.SPRINTNEX_ENV_STORE ?? "").trim();
   if (override) return resolve(override);
   if (platform() === "win32") {
     const appData = (process.env.APPDATA ?? "").trim();
@@ -1684,7 +1684,7 @@ function resolveUserEnvFilePath(): string {
   return join(homedir(), ".config", "openwork", "env.json");
 }
 
-const USER_ENV_RESERVED_PREFIXES = ["OPENWORK_", "OPENCODE_"] as const;
+const USER_ENV_RESERVED_PREFIXES = ["SPRINTNEX_", "OPENCODE_"] as const;
 
 // Synchronous, best-effort, never throws. Absent or malformed files return {}.
 // Reads on every spawn so UI edits are picked up on the next child start.
@@ -1713,7 +1713,7 @@ function buildSpawnEnv(env?: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   // User env is layered first so existing process.env / caller overrides
   // always win. This is what makes Linux GUI launches work: the shell env
   // is empty for ANTHROPIC_API_KEY, the user file supplies it, but anything
-  // the shell or spawn-site already set (OPENWORK_TOKEN, etc.) is untouched.
+  // the shell or spawn-site already set (SPRINTNEX_TOKEN, etc.) is untouched.
   const merged: NodeJS.ProcessEnv = { ...loadUserEnvFile() };
   for (const [key, value] of Object.entries(base)) {
     if (value !== undefined) merged[key] = value;
@@ -1851,12 +1851,12 @@ function addEnvPassThroughArgs(args: string[], names: string[]) {
 }
 
 const SANDBOX_INTERNAL_ENV_NAMES = [
-  "OPENWORK_TOKEN",
-  "OPENWORK_HOST_TOKEN",
+  "SPRINTNEX_TOKEN",
+  "SPRINTNEX_HOST_TOKEN",
   "OPENCODE_SERVER_USERNAME",
   "OPENCODE_SERVER_PASSWORD",
-  "OPENWORK_OPENCODE_USERNAME",
-  "OPENWORK_OPENCODE_PASSWORD",
+  "SPRINTNEX_OPENCODE_USERNAME",
+  "SPRINTNEX_OPENCODE_PASSWORD",
 ] as const;
 
 function sandboxEnvPassThroughNames(userEnv: Record<string, string>): string[] {
@@ -1867,7 +1867,7 @@ function sandboxEnvPassThroughNames(userEnv: Record<string, string>): string[] {
 
 function resolveSidecarDir(flags: Map<string, string | boolean>): string {
   const override =
-    readFlag(flags, "sidecar-dir") ?? process.env.OPENWORK_SIDECAR_DIR;
+    readFlag(flags, "sidecar-dir") ?? process.env.SPRINTNEX_SIDECAR_DIR;
   if (override && override.trim()) return resolve(override.trim());
   return join(resolveRouterDataDir(flags), "sidecars");
 }
@@ -1878,9 +1878,9 @@ function resolveSidecarBaseUrl(
 ): string {
   const override =
     readFlag(flags, "sidecar-base-url") ??
-    process.env.OPENWORK_SIDECAR_BASE_URL;
+    process.env.SPRINTNEX_SIDECAR_BASE_URL;
   if (override && override.trim()) return override.trim();
-  return `https://github.com/different-ai/openwork/releases/download/openwork-orchestrator-v${cliVersion}`;
+  return `https://github.com/different-ai/openwork/releases/download/sprintnex-orchestrator-v${cliVersion}`;
 }
 
 function resolveSidecarManifestUrl(
@@ -1889,9 +1889,9 @@ function resolveSidecarManifestUrl(
 ): string {
   const override =
     readFlag(flags, "sidecar-manifest") ??
-    process.env.OPENWORK_SIDECAR_MANIFEST_URL;
+    process.env.SPRINTNEX_SIDECAR_MANIFEST_URL;
   if (override && override.trim()) return override.trim();
-  return `${baseUrl.replace(/\/$/, "")}/openwork-orchestrator-sidecars.json`;
+  return `${baseUrl.replace(/\/$/, "")}/sprintnex-orchestrator-sidecars.json`;
 }
 
 function resolveSidecarConfig(
@@ -2081,7 +2081,7 @@ async function resolveOpencodeDownload(
   if (!sidecar.target) return null;
 
   const assetOverride =
-    process.env.OPENWORK_OPENCODE_ASSET ?? process.env.OPENCODE_ASSET;
+    process.env.SPRINTNEX_OPENCODE_ASSET ?? process.env.OPENCODE_ASSET;
   const asset = assetOverride?.trim() || resolveOpencodeAsset(sidecar.target);
   if (!asset) return null;
 
@@ -2114,10 +2114,10 @@ async function resolveOpencodeDownload(
   const stamp = Date.now();
   const archivePath = join(
     tmpdir(),
-    `openwork-orchestrator-opencode-${stamp}-${asset}`,
+    `sprintnex-orchestrator-opencode-${stamp}-${asset}`,
   );
   const extractDir = await mkdtemp(
-    join(tmpdir(), "openwork-orchestrator-opencode-"),
+    join(tmpdir(), "sprintnex-orchestrator-opencode-"),
   );
 
   try {
@@ -2229,7 +2229,7 @@ async function resolveExpectedVersion(
 
   try {
     const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-    if (name === "openwork-server") {
+    if (name === "sprintnex-server") {
       const localPath = join(root, "..", "server", "package.json");
       const localVersion = await readPackageVersion(localPath);
       if (localVersion) return localVersion;
@@ -2243,9 +2243,9 @@ async function resolveExpectedVersion(
   }
 
   const require = createRequire(import.meta.url);
-  if (name === "openwork-server") {
+  if (name === "sprintnex-server") {
     try {
-      const pkgPath = require.resolve("openwork-server/package.json");
+      const pkgPath = require.resolve("sprintnex-server/package.json");
       const version = await readPackageVersion(pkgPath);
       if (version) return version;
     } catch {
@@ -2433,7 +2433,7 @@ async function resolveOpenworkServerBin(options: {
   source: BinarySourcePreference;
 }): Promise<ResolvedBinary> {
   if (options.explicit && !options.allowExternal) {
-    throw new Error("openwork-server-bin requires --allow-external");
+    throw new Error("sprintnex-server-bin requires --allow-external");
   }
   if (
     options.explicit &&
@@ -2441,17 +2441,17 @@ async function resolveOpenworkServerBin(options: {
     options.source !== "external"
   ) {
     throw new Error(
-      "openwork-server-bin requires --sidecar-source external or auto",
+      "sprintnex-server-bin requires --sidecar-source external or auto",
     );
   }
 
   const expectedVersion = await resolveExpectedVersion(
     options.manifest,
-    "openwork-server",
+    "sprintnex-server",
   );
   const resolveExternal = async (): Promise<ResolvedBinary> => {
     if (!options.allowExternal) {
-      throw new Error("External openwork-server requires --allow-external");
+      throw new Error("External sprintnex-server requires --allow-external");
     }
     if (options.explicit) {
       const resolved = resolveBinPath(options.explicit);
@@ -2459,16 +2459,16 @@ async function resolveOpenworkServerBin(options: {
         (resolved.includes("/") || resolved.startsWith(".")) &&
         !(await fileExists(resolved))
       ) {
-        throw new Error(`openwork-server-bin not found: ${resolved}`);
+        throw new Error(`sprintnex-server-bin not found: ${resolved}`);
       }
       return { bin: resolved, source: "external", expectedVersion };
     }
 
     const require = createRequire(import.meta.url);
     try {
-      const pkgPath = require.resolve("openwork-server/package.json");
+      const pkgPath = require.resolve("sprintnex-server/package.json");
       const pkgDir = dirname(pkgPath);
-      const binaryPath = join(pkgDir, "dist", "bin", "openwork-server");
+      const binaryPath = join(pkgDir, "dist", "bin", "sprintnex-server");
       if (await isExecutable(binaryPath)) {
         return { bin: binaryPath, source: "external", expectedVersion };
       }
@@ -2480,17 +2480,17 @@ async function resolveOpenworkServerBin(options: {
       // ignore
     }
 
-    return { bin: "openwork-server", source: "external", expectedVersion };
+    return { bin: "sprintnex-server", source: "external", expectedVersion };
   };
 
   if (options.source === "bundled") {
     const bundled = await resolveBundledBinary(
       options.manifest,
-      "openwork-server",
+      "sprintnex-server",
     );
     if (!bundled) {
       throw new Error(
-        "Bundled openwork-server binary missing. Build with pnpm --filter openwork-orchestrator build:bin:bundled.",
+        "Bundled sprintnex-server binary missing. Build with pnpm --filter sprintnex-orchestrator build:bin:bundled.",
       );
     }
     return { bin: bundled, source: "bundled", expectedVersion };
@@ -2498,12 +2498,12 @@ async function resolveOpenworkServerBin(options: {
 
   if (options.source === "downloaded") {
     const downloaded = await downloadSidecarBinary({
-      name: "openwork-server",
+      name: "sprintnex-server",
       sidecar: options.sidecar,
     });
     if (!downloaded) {
       throw new Error(
-        "openwork-server download failed. Check sidecar manifest or base URL.",
+        "sprintnex-server download failed. Check sidecar manifest or base URL.",
       );
     }
     return downloaded;
@@ -2515,7 +2515,7 @@ async function resolveOpenworkServerBin(options: {
 
   const bundled = await resolveBundledBinary(
     options.manifest,
-    "openwork-server",
+    "sprintnex-server",
   );
   if (bundled && !(options.allowExternal && options.explicit)) {
     return { bin: bundled, source: "bundled", expectedVersion };
@@ -2526,14 +2526,14 @@ async function resolveOpenworkServerBin(options: {
   }
 
   const downloaded = await downloadSidecarBinary({
-    name: "openwork-server",
+    name: "sprintnex-server",
     sidecar: options.sidecar,
   });
   if (downloaded) return downloaded;
 
   if (!options.allowExternal) {
     throw new Error(
-      "Bundled openwork-server binary missing and download failed. Use --allow-external or --sidecar-source external.",
+      "Bundled sprintnex-server binary missing and download failed. Use --allow-external or --sidecar-source external.",
     );
   }
 
@@ -2583,7 +2583,7 @@ async function resolveOpencodeBin(options: {
     const bundled = await resolveBundledBinary(options.manifest, "opencode");
     if (!bundled) {
       throw new Error(
-        "Bundled opencode binary missing. Build with pnpm --filter openwork-orchestrator build:bin:bundled.",
+        "Bundled opencode binary missing. Build with pnpm --filter sprintnex-orchestrator build:bin:bundled.",
       );
     }
     return { bin: bundled, source: "bundled", expectedVersion };
@@ -2646,19 +2646,19 @@ async function resolveOpencodeBin(options: {
 }
 
 function resolveRouterDataDir(flags: Map<string, string | boolean>): string {
-  const override = readFlag(flags, "data-dir") ?? process.env.OPENWORK_DATA_DIR;
+  const override = readFlag(flags, "data-dir") ?? process.env.SPRINTNEX_DATA_DIR;
   if (override && override.trim()) {
     return resolve(override.trim());
   }
-  return join(homedir(), ".openwork", "openwork-orchestrator");
+  return join(homedir(), ".openwork", "sprintnex-orchestrator");
 }
 
 function resolveInternalDevMode(flags: Map<string, string | boolean>): boolean {
-  return readBool(flags, "internal-dev-mode", false, "OPENWORK_DEV_MODE");
+  return readBool(flags, "internal-dev-mode", false, "SPRINTNEX_DEV_MODE");
 }
 
 function internalDevModeFromEnv(): boolean {
-  const value = process.env.OPENWORK_DEV_MODE?.trim().toLowerCase();
+  const value = process.env.SPRINTNEX_DEV_MODE?.trim().toLowerCase();
   return value === "1" || value === "true" || value === "yes" || value === "on";
 }
 
@@ -2676,7 +2676,7 @@ function resolveOpencodeStateLayout(options: {
     };
   }
 
-  const rootDir = join(options.dataDir, OPENWORK_DEV_DATA_DIR);
+  const rootDir = join(options.dataDir, SPRINTNEX_DEV_DATA_DIR);
   const homeDir = join(rootDir, "home");
   const xdgConfigHome = join(rootDir, "xdg", "config");
   const xdgDataHome = join(rootDir, "xdg", "data");
@@ -2689,11 +2689,11 @@ function resolveOpencodeStateLayout(options: {
     rootDir,
     configDir,
     importConfigDir:
-      process.env.OPENWORK_DEV_OPENCODE_IMPORT_CONFIG_DIR?.trim() || undefined,
+      process.env.SPRINTNEX_DEV_OPENCODE_IMPORT_CONFIG_DIR?.trim() || undefined,
     importDataDir:
-      process.env.OPENWORK_DEV_OPENCODE_IMPORT_DATA_DIR?.trim() || undefined,
+      process.env.SPRINTNEX_DEV_OPENCODE_IMPORT_DATA_DIR?.trim() || undefined,
     env: {
-      OPENWORK_DEV_MODE: "1",
+      SPRINTNEX_DEV_MODE: "1",
       OPENCODE_TEST_HOME: homeDir,
       HOME: homeDir,
       XDG_CONFIG_HOME: xdgConfigHome,
@@ -2760,7 +2760,7 @@ async function ensureOpencodeStateLayout(
 }
 
 function routerStatePath(dataDir: string): string {
-  return join(dataDir, "openwork-orchestrator-state.json");
+  return join(dataDir, "sprintnex-orchestrator-state.json");
 }
 
 function nowMs(): number {
@@ -2903,7 +2903,7 @@ async function waitForOpencodeHealthy(
 }
 
 /**
- * In sandbox mode the released openwork-server binary may not have our latest
+ * In sandbox mode the released sprintnex-server binary may not have our latest
  * token/proxy changes.  Instead of relying on the OpenCode SDK client (which
  * sends Bearer auth that the proxy may not understand yet), we do a simple
  * HTTP fetch through the proxy path.  The server's /opencode/* proxy already
@@ -2914,7 +2914,7 @@ async function waitForOpencodeHealthy(
  * We try multiple path patterns because:
  * - `/opencode/health` — most common OpenCode health endpoint proxied by the
  *   server's catch-all /opencode/* route.
- * - `/health` on the openwork-server itself — already verified by the caller,
+ * - `/health` on the sprintnex-server itself — already verified by the caller,
  *   but serves as a fallback signal.
  */
 async function waitForHealthyViaProxy(
@@ -2993,10 +2993,10 @@ function printHelp(): void {
     "  --opencode-hot-reload-cooldown-ms <ms>  Minimum interval between hot reloads (default: 1500)",
     "  --opencode-username <u>   Internal-only override for managed OpenCode auth username",
     "  --opencode-password <p>   Internal-only override for managed OpenCode auth password",
-    "  --openwork-host <host>    Bind host for openwork-server (default: 127.0.0.1)",
-    "  --openwork-port <port>    Port for openwork-server (default: 8787)",
+    "  --openwork-host <host>    Bind host for sprintnex-server (default: 127.0.0.1)",
+    "  --openwork-port <port>    Port for sprintnex-server (default: 8787)",
     "  --remote-access           Expose OpenWork on 0.0.0.0 for remote sharing",
-    "  --openwork-token <token>  Client token for openwork-server",
+    "  --openwork-token <token>  Client token for sprintnex-server",
     "  --openwork-host-token <t> Host token for approvals",
     "  --workspace-id <id>       Workspace id for file session commands",
     "  --session-id <id>         File session id for file session commands",
@@ -3017,7 +3017,7 @@ function printHelp(): void {
     "  --read-only               Start OpenWork server in read-only mode",
     "  --cors <origins>          Comma-separated CORS origins or *",
     "  --connect-host <host>     Override LAN host used for pairing URLs",
-    "  --openwork-server-bin <p> Path to openwork-server binary (requires --allow-external)",
+    "  --sprintnex-server-bin <p> Path to sprintnex-server binary (requires --allow-external)",
     "  --allow-external          Allow external sidecar binaries (dev only, required for custom bins)",
     "  --sidecar-dir <path>      Cache directory for downloaded sidecars",
     "  --sidecar-base-url <url>  Base URL for sidecar downloads",
@@ -3106,10 +3106,10 @@ async function startOpencode(options: {
     env: {
       ...process.env,
       ...(options.stateLayout?.env ?? {}),
-      OPENCODE_CLIENT: "openwork-orchestrator",
+      OPENCODE_CLIENT: "sprintnex-orchestrator",
       OPENWORK: "1",
-      OPENWORK_RUN_ID: options.runId,
-      OPENWORK_LOG_FORMAT: options.logFormat,
+      SPRINTNEX_RUN_ID: options.runId,
+      SPRINTNEX_LOG_FORMAT: options.logFormat,
       OTEL_RESOURCE_ATTRIBUTES: mergeResourceAttributes(
         {
           "service.name": "opencode",
@@ -3211,34 +3211,34 @@ async function startOpenworkServer(options: {
       stdio: ["ignore", "pipe", "pipe"],
       env: {
         ...process.env,
-        OPENWORK_TOKEN: options.token,
-        OPENWORK_HOST_TOKEN: options.hostToken,
-        OPENWORK_RUN_ID: options.runId,
-        OPENWORK_LOG_FORMAT: options.logFormat,
+        SPRINTNEX_TOKEN: options.token,
+        SPRINTNEX_HOST_TOKEN: options.hostToken,
+        SPRINTNEX_RUN_ID: options.runId,
+        SPRINTNEX_LOG_FORMAT: options.logFormat,
         OTEL_RESOURCE_ATTRIBUTES: mergeResourceAttributes(
           {
-            "service.name": "openwork-server",
+            "service.name": "sprintnex-server",
             "service.instance.id": options.runId,
           },
           process.env.OTEL_RESOURCE_ATTRIBUTES,
         ),
         ...(options.opencodeBaseUrl
-          ? { OPENWORK_OPENCODE_BASE_URL: options.opencodeBaseUrl }
+          ? { SPRINTNEX_OPENCODE_BASE_URL: options.opencodeBaseUrl }
           : {}),
         ...(options.opencodeDirectory
-          ? { OPENWORK_OPENCODE_DIRECTORY: options.opencodeDirectory }
+          ? { SPRINTNEX_OPENCODE_DIRECTORY: options.opencodeDirectory }
           : {}),
         ...(options.opencodeUsername
-          ? { OPENWORK_OPENCODE_USERNAME: options.opencodeUsername }
+          ? { SPRINTNEX_OPENCODE_USERNAME: options.opencodeUsername }
           : {}),
         ...(options.opencodePassword
-          ? { OPENWORK_OPENCODE_PASSWORD: options.opencodePassword }
+          ? { SPRINTNEX_OPENCODE_PASSWORD: options.opencodePassword }
           : {}),
         ...(options.controlBaseUrl
-          ? { OPENWORK_CONTROL_BASE_URL: options.controlBaseUrl }
+          ? { SPRINTNEX_CONTROL_BASE_URL: options.controlBaseUrl }
           : {}),
         ...(options.controlToken
-          ? { OPENWORK_CONTROL_TOKEN: options.controlToken }
+          ? { SPRINTNEX_CONTROL_TOKEN: options.controlToken }
           : {}),
       },
     },
@@ -3246,14 +3246,14 @@ async function startOpenworkServer(options: {
 
   prefixStream(
     child.stdout,
-    "openwork-server",
+    "sprintnex-server",
     "stdout",
     options.logger,
     child.pid ?? undefined,
   );
   prefixStream(
     child.stderr,
-    "openwork-server",
+    "sprintnex-server",
     "stderr",
     options.logger,
     child.pid ?? undefined,
@@ -3364,7 +3364,7 @@ async function stageSandboxRuntime(options: {
 }> {
   const baseDir = join(
     options.persistDir,
-    "openwork-orchestrator-sandbox",
+    "sprintnex-orchestrator-sandbox",
     options.containerName,
   );
   await mkdir(baseDir, { recursive: true });
@@ -3374,13 +3374,13 @@ async function stageSandboxRuntime(options: {
   const entrypointHostPath = join(baseDir, "entrypoint.sh");
 
   const stagedOpencode = join(sidecarsDir, "opencode");
-  const stagedOpenwork = join(sidecarsDir, "openwork-server");
+  const stagedOpenwork = join(sidecarsDir, "sprintnex-server");
   await copyFile(options.sidecars.opencode, stagedOpencode);
   await copyFile(options.sidecars.openworkServer, stagedOpenwork);
   await ensureExecutable(stagedOpencode);
   await ensureExecutable(stagedOpenwork);
 
-  const rootInContainer = `/persist/openwork-orchestrator-sandbox/${options.containerName}`;
+  const rootInContainer = `/persist/sprintnex-orchestrator-sandbox/${options.containerName}`;
   const cleanup = async () => {
     if (options.detach) return;
     try {
@@ -3420,7 +3420,7 @@ async function writeSandboxEntrypoint(options: {
   logFormat: LogFormat;
 }): Promise<void> {
   const opencodeBin = `${options.rootInContainer}/sidecars/opencode`;
-  const openworkBin = `${options.rootInContainer}/sidecars/openwork-server`;
+  const openworkBin = `${options.rootInContainer}/sidecars/sprintnex-server`;
   const workspaceDir = "/workspace";
   const opencodeConfigDir = options.opencodeConfigDirInContainer;
   const hostOpencodeConfigDir = SANDBOX_OPENCODE_GLOBAL_CONFIG_CONTAINER_PATH;
@@ -3440,8 +3440,8 @@ async function writeSandboxEntrypoint(options: {
     : "";
 
   const requiredSecretEnv = [
-    ': "${OPENWORK_TOKEN:?OPENWORK_TOKEN is required}"',
-    ': "${OPENWORK_HOST_TOKEN:?OPENWORK_HOST_TOKEN is required}"',
+    ': "${SPRINTNEX_TOKEN:?SPRINTNEX_TOKEN is required}"',
+    ': "${SPRINTNEX_HOST_TOKEN:?SPRINTNEX_HOST_TOKEN is required}"',
     options.opencode.username
       ? ': "${OPENCODE_SERVER_USERNAME:?OPENCODE_SERVER_USERNAME is required}"'
       : "",
@@ -3449,17 +3449,17 @@ async function writeSandboxEntrypoint(options: {
       ? ': "${OPENCODE_SERVER_PASSWORD:?OPENCODE_SERVER_PASSWORD is required}"'
       : "",
     options.openwork.opencodeUsername
-      ? ': "${OPENWORK_OPENCODE_USERNAME:?OPENWORK_OPENCODE_USERNAME is required}"'
+      ? ': "${SPRINTNEX_OPENCODE_USERNAME:?SPRINTNEX_OPENCODE_USERNAME is required}"'
       : "",
     options.openwork.opencodePassword
-      ? ': "${OPENWORK_OPENCODE_PASSWORD:?OPENWORK_OPENCODE_PASSWORD is required}"'
+      ? ': "${SPRINTNEX_OPENCODE_PASSWORD:?SPRINTNEX_OPENCODE_PASSWORD is required}"'
       : "",
   ]
     .filter(Boolean)
     .join("\n");
 
-  const openworkDevMode = (process.env.OPENWORK_DEV_MODE ?? "").trim() === "1";
-  const sandboxHomeDir = openworkDevMode ? "/persist/openwork-dev-data/home" : "/persist";
+  const openworkDevMode = (process.env.SPRINTNEX_DEV_MODE ?? "").trim() === "1";
+  const sandboxHomeDir = openworkDevMode ? "/persist/sprintnex-dev-data/home" : "/persist";
 
   const script = [
     "set -eu",
@@ -3481,16 +3481,16 @@ async function writeSandboxEntrypoint(options: {
     'mkdir -p "$XDG_DATA_HOME/opencode"',
     `if [ -d ${shQuote(hostOpencodeDataDir)} ]; then cp ${shQuote(`${hostOpencodeDataDir}/auth.json`)} \"$XDG_DATA_HOME/opencode/auth.json\" 2>/dev/null || true; cp ${shQuote(`${hostOpencodeDataDir}/mcp-auth.json`)} \"$XDG_DATA_HOME/opencode/mcp-auth.json\" 2>/dev/null || true; fi`,
     `export OPENCODE_URL=${shQuote(`http://127.0.0.1:${SANDBOX_INTERNAL_OPENCODE_PORT}`)}`,
-    `export OPENCODE_CLIENT=openwork-orchestrator`,
+    `export OPENCODE_CLIENT=sprintnex-orchestrator`,
     `export OPENCODE_HOT_RELOAD=${shQuote(options.opencode.hotReload.enabled ? "1" : "0")}`,
     `export OPENCODE_HOT_RELOAD_DEBOUNCE_MS=${shQuote(String(options.opencode.hotReload.debounceMs))}`,
     `export OPENCODE_HOT_RELOAD_COOLDOWN_MS=${shQuote(String(options.opencode.hotReload.cooldownMs))}`,
     `export OPENWORK=1`,
-    `export OPENWORK_DEV_MODE=${shQuote(openworkDevMode ? "1" : "0")}`,
-    `export OPENWORK_RUN_ID=${shQuote(options.runId)}`,
-    `export OPENWORK_LOG_FORMAT=${shQuote(options.logFormat)}`,
-    `export OPENWORK_SANDBOX_ENABLED=1`,
-    `export OPENWORK_SANDBOX_BACKEND=${shQuote(options.backend)}`,
+    `export SPRINTNEX_DEV_MODE=${shQuote(openworkDevMode ? "1" : "0")}`,
+    `export SPRINTNEX_RUN_ID=${shQuote(options.runId)}`,
+    `export SPRINTNEX_LOG_FORMAT=${shQuote(options.logFormat)}`,
+    `export SPRINTNEX_SANDBOX_ENABLED=1`,
+    `export SPRINTNEX_SANDBOX_BACKEND=${shQuote(options.backend)}`,
     requiredSecretEnv,
     'opencode_pid=""',
     "cleanup() {",
@@ -3499,7 +3499,7 @@ async function writeSandboxEntrypoint(options: {
     "trap cleanup INT TERM",
     `${shQuote(opencodeBin)} serve --hostname 127.0.0.1 --port ${shQuote(String(SANDBOX_INTERNAL_OPENCODE_PORT))}${opencodeLogLevelArg ? ` ${opencodeLogLevelArg}` : ""} ${opencodeCors} &`,
     "opencode_pid=$!",
-    `exec ${shQuote(openworkBin)} --host 0.0.0.0 --port ${shQuote(String(SANDBOX_INTERNAL_OPENWORK_PORT))}` +
+    `exec ${shQuote(openworkBin)} --host 0.0.0.0 --port ${shQuote(String(SANDBOX_INTERNAL_SPRINTNEX_PORT))}` +
       ` --workspace ${shQuote(workspaceDir)}` +
       ` --approval ${shQuote(options.openwork.approvalMode)}` +
       ` --approval-timeout ${shQuote(String(options.openwork.approvalTimeoutMs))}` +
@@ -3585,7 +3585,7 @@ async function startDockerSandbox(options: {
     "--name",
     options.containerName,
     "-p",
-    `127.0.0.1:${options.ports.openwork}:${SANDBOX_INTERNAL_OPENWORK_PORT}`,
+    `127.0.0.1:${options.ports.openwork}:${SANDBOX_INTERNAL_SPRINTNEX_PORT}`,
     "-v",
     `${options.workspace}:/workspace`,
     "-v",
@@ -3655,8 +3655,8 @@ async function startDockerSandbox(options: {
     env: {
       ...userEnv,
       ...process.env,
-      OPENWORK_TOKEN: options.openwork.token,
-      OPENWORK_HOST_TOKEN: options.openwork.hostToken,
+      SPRINTNEX_TOKEN: options.openwork.token,
+      SPRINTNEX_HOST_TOKEN: options.openwork.hostToken,
       ...(options.opencode.username
         ? { OPENCODE_SERVER_USERNAME: options.opencode.username }
         : {}),
@@ -3664,10 +3664,10 @@ async function startDockerSandbox(options: {
         ? { OPENCODE_SERVER_PASSWORD: options.opencode.password }
         : {}),
       ...(options.openwork.opencodeUsername
-        ? { OPENWORK_OPENCODE_USERNAME: options.openwork.opencodeUsername }
+        ? { SPRINTNEX_OPENCODE_USERNAME: options.openwork.opencodeUsername }
         : {}),
       ...(options.openwork.opencodePassword
-        ? { OPENWORK_OPENCODE_PASSWORD: options.openwork.opencodePassword }
+        ? { SPRINTNEX_OPENCODE_PASSWORD: options.openwork.opencodePassword }
         : {}),
     },
   });
@@ -3760,7 +3760,7 @@ async function startAppleContainerSandbox(options: {
     "--name",
     options.containerName,
     "-p",
-    `127.0.0.1:${options.ports.openwork}:${SANDBOX_INTERNAL_OPENWORK_PORT}`,
+    `127.0.0.1:${options.ports.openwork}:${SANDBOX_INTERNAL_SPRINTNEX_PORT}`,
     "-v",
     `${options.workspace}:/workspace`,
     "-v",
@@ -3828,8 +3828,8 @@ async function startAppleContainerSandbox(options: {
     env: {
       ...userEnv,
       ...process.env,
-      OPENWORK_TOKEN: options.openwork.token,
-      OPENWORK_HOST_TOKEN: options.openwork.hostToken,
+      SPRINTNEX_TOKEN: options.openwork.token,
+      SPRINTNEX_HOST_TOKEN: options.openwork.hostToken,
       ...(options.opencode.username
         ? { OPENCODE_SERVER_USERNAME: options.opencode.username }
         : {}),
@@ -3837,10 +3837,10 @@ async function startAppleContainerSandbox(options: {
         ? { OPENCODE_SERVER_PASSWORD: options.opencode.password }
         : {}),
       ...(options.openwork.opencodeUsername
-        ? { OPENWORK_OPENCODE_USERNAME: options.openwork.opencodeUsername }
+        ? { SPRINTNEX_OPENCODE_USERNAME: options.openwork.opencodeUsername }
         : {}),
       ...(options.openwork.opencodePassword
-        ? { OPENWORK_OPENCODE_PASSWORD: options.openwork.opencodePassword }
+        ? { SPRINTNEX_OPENCODE_PASSWORD: options.openwork.opencodePassword }
         : {}),
     },
   });
@@ -3877,7 +3877,7 @@ async function verifyOpencodeVersion(
     binary.expectedVersion !== actual
   ) {
     process.stderr.write(
-      `[openwork-orchestrator] Warning: opencode version mismatch (expected ${binary.expectedVersion}, got ${actual}). Proceeding with ${binary.bin}.\n`,
+      `[sprintnex-orchestrator] Warning: opencode version mismatch (expected ${binary.expectedVersion}, got ${actual}). Proceeding with ${binary.bin}.\n`,
     );
     return actual;
   }
@@ -3900,7 +3900,7 @@ async function verifyOpenworkServer(input: {
   const actualVersion =
     typeof health?.version === "string" ? health.version : undefined;
   assertVersionMatch(
-    "openwork-server",
+    "sprintnex-server",
     input.expectedVersion,
     actualVersion,
     `${input.baseUrl}/health`,
@@ -4076,7 +4076,7 @@ async function runChecks(input: {
 
 /**
  * Lighter check suite for sandbox mode.  Uses only raw HTTP against the
- * openwork-server endpoints — no OpenCode SDK calls that rely on Bearer
+ * sprintnex-server endpoints — no OpenCode SDK calls that rely on Bearer
  * auth through the proxy (since the released server binary may predate our
  * token/proxy changes).
  */
@@ -4092,13 +4092,13 @@ async function runSandboxChecks(input: {
   // 1. Server health
   const health = await fetchJson(`${baseUrl}/health`);
   if (!health || typeof health !== "object") {
-    throw new Error("openwork-server /health returned invalid payload");
+    throw new Error("sprintnex-server /health returned invalid payload");
   }
 
   // 2. Workspaces list
   const workspaces = await fetchJson(`${baseUrl}/workspaces`, { headers });
   if (!workspaces?.items?.length) {
-    throw new Error("openwork-server returned no workspaces");
+    throw new Error("sprintnex-server returned no workspaces");
   }
   const workspaceId = workspaces.items[0].id as string;
 
@@ -4210,7 +4210,7 @@ function outputError(error: unknown, json: boolean): void {
 function createVerboseLogger(
   enabled: boolean,
   logger?: Logger,
-  component = "openwork-orchestrator",
+  component = "sprintnex-orchestrator",
 ) {
   return (message: string) => {
     if (!enabled) return;
@@ -4307,7 +4307,7 @@ function isSensitiveAttributeKey(key?: string): boolean {
   const normalized = trimmed.toLowerCase();
   if (SENSITIVE_ATTRIBUTE_KEYS.has(normalized)) return true;
   return (
-    (trimmed.startsWith("OPENWORK_") ||
+    (trimmed.startsWith("SPRINTNEX_") ||
       trimmed.startsWith("OPENCODE_") ||
       trimmed.startsWith("DEN_")) &&
     /TOKEN|PASSWORD|USERNAME|AUTHORIZATION/.test(trimmed)
@@ -4401,10 +4401,10 @@ function createLogger(options: {
   const output = options.output ?? "stdout";
   const colorEnabled = options.color ?? false;
   const componentColors: Record<string, string> = {
-    "openwork-orchestrator": ANSI.gray,
+    "sprintnex-orchestrator": ANSI.gray,
     opencode: ANSI.cyan,
-    "openwork-server": ANSI.green,
-    "openwork-orchestrator-router": ANSI.cyan,
+    "sprintnex-server": ANSI.green,
+    "sprintnex-orchestrator-router": ANSI.cyan,
   };
   const levelColors: Record<LogLevel, string> = {
     debug: ANSI.gray,
@@ -4610,50 +4610,50 @@ async function spawnRouterDaemon(
   ];
 
   const opencodeBin =
-    readFlag(args.flags, "opencode-bin") ?? process.env.OPENWORK_OPENCODE_BIN;
+    readFlag(args.flags, "opencode-bin") ?? process.env.SPRINTNEX_OPENCODE_BIN;
   assertManagedOpencodeAuth(args);
   const opencodeHost = resolveManagedOpencodeHost(
-    readFlag(args.flags, "opencode-host") ?? process.env.OPENWORK_OPENCODE_HOST,
+    readFlag(args.flags, "opencode-host") ?? process.env.SPRINTNEX_OPENCODE_HOST,
   );
   const opencodePort =
-    readFlag(args.flags, "opencode-port") ?? process.env.OPENWORK_OPENCODE_PORT;
+    readFlag(args.flags, "opencode-port") ?? process.env.SPRINTNEX_OPENCODE_PORT;
   const opencodeWorkdir =
     readFlag(args.flags, "opencode-workdir") ??
-    process.env.OPENWORK_OPENCODE_WORKDIR;
+    process.env.SPRINTNEX_OPENCODE_WORKDIR;
   const opencodeLogLevel = resolveOpencodeLogLevel(
     readFlag(args.flags, "opencode-log-level") ??
-      process.env.OPENWORK_OPENCODE_LOG_LEVEL,
+      process.env.SPRINTNEX_OPENCODE_LOG_LEVEL,
   );
   const opencodeHotReload =
     readFlag(args.flags, "opencode-hot-reload") ??
-    process.env.OPENWORK_OPENCODE_HOT_RELOAD;
+    process.env.SPRINTNEX_OPENCODE_HOT_RELOAD;
   const opencodeHotReloadDebounceMs =
     readFlag(args.flags, "opencode-hot-reload-debounce-ms") ??
-    process.env.OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS;
+    process.env.SPRINTNEX_OPENCODE_HOT_RELOAD_DEBOUNCE_MS;
   const opencodeHotReloadCooldownMs =
     readFlag(args.flags, "opencode-hot-reload-cooldown-ms") ??
-    process.env.OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS;
+    process.env.SPRINTNEX_OPENCODE_HOT_RELOAD_COOLDOWN_MS;
   const opencodeCredentials = resolveManagedOpencodeCredentials(args);
   const opencodeUsername = opencodeCredentials.username;
   const opencodePassword = opencodeCredentials.password;
   const corsValue =
-    readFlag(args.flags, "cors") ?? process.env.OPENWORK_OPENCODE_CORS;
+    readFlag(args.flags, "cors") ?? process.env.SPRINTNEX_OPENCODE_CORS;
   const allowExternal = readBool(
     args.flags,
     "allow-external",
     false,
-    "OPENWORK_ALLOW_EXTERNAL",
+    "SPRINTNEX_ALLOW_EXTERNAL",
   );
   const sidecarSource =
     readFlag(args.flags, "sidecar-source") ??
-    process.env.OPENWORK_SIDECAR_SOURCE;
+    process.env.SPRINTNEX_SIDECAR_SOURCE;
   const opencodeSource =
     readFlag(args.flags, "opencode-source") ??
-    process.env.OPENWORK_OPENCODE_SOURCE;
-  const verbose = readBool(args.flags, "verbose", false, "OPENWORK_VERBOSE");
+    process.env.SPRINTNEX_OPENCODE_SOURCE;
+  const verbose = readBool(args.flags, "verbose", false, "SPRINTNEX_VERBOSE");
   const logFormat =
-    readFlag(args.flags, "log-format") ?? process.env.OPENWORK_LOG_FORMAT;
-  const runId = readFlag(args.flags, "run-id") ?? process.env.OPENWORK_RUN_ID;
+    readFlag(args.flags, "log-format") ?? process.env.SPRINTNEX_LOG_FORMAT;
+  const runId = readFlag(args.flags, "run-id") ?? process.env.SPRINTNEX_RUN_ID;
 
   if (opencodeBin) commandArgs.push("--opencode-bin", opencodeBin);
   if (opencodeHost) commandArgs.push("--opencode-host", opencodeHost);
@@ -4686,8 +4686,8 @@ async function spawnRouterDaemon(
     stdio: "ignore",
     env: {
       ...process.env,
-      OPENWORK_OPENCODE_USERNAME: opencodeUsername,
-      OPENWORK_OPENCODE_PASSWORD: opencodePassword,
+      SPRINTNEX_OPENCODE_USERNAME: opencodeUsername,
+      SPRINTNEX_OPENCODE_PASSWORD: opencodePassword,
     },
   });
   child.unref();
@@ -4716,7 +4716,7 @@ async function ensureRouterDaemon(
 
   const host = readFlag(args.flags, "daemon-host") ?? "127.0.0.1";
   const port = await resolvePort(
-    readNumber(args.flags, "daemon-port", undefined, "OPENWORK_DAEMON_PORT"),
+    readNumber(args.flags, "daemon-port", undefined, "SPRINTNEX_DAEMON_PORT"),
     "127.0.0.1",
   );
   const baseUrl = `http://${host}:${port}`;
@@ -4878,25 +4878,25 @@ async function runInstanceCommand(args: ParsedArgs) {
 
 async function runRouterDaemon(args: ParsedArgs) {
   const outputJson = readBool(args.flags, "json", false);
-  const verbose = readBool(args.flags, "verbose", false, "OPENWORK_VERBOSE");
+  const verbose = readBool(args.flags, "verbose", false, "SPRINTNEX_VERBOSE");
   const logFormat = readLogFormat(
     args.flags,
     "log-format",
     "pretty",
-    "OPENWORK_LOG_FORMAT",
+    "SPRINTNEX_LOG_FORMAT",
   );
   const colorEnabled =
-    readBool(args.flags, "color", process.stdout.isTTY, "OPENWORK_COLOR") &&
+    readBool(args.flags, "color", process.stdout.isTTY, "SPRINTNEX_COLOR") &&
     !process.env.NO_COLOR;
   const runId =
     readFlag(args.flags, "run-id") ??
-    process.env.OPENWORK_RUN_ID ??
+    process.env.SPRINTNEX_RUN_ID ??
     randomUUID();
   const cliVersion = await resolveCliVersion();
   const logger = createLogger({
     format: logFormat,
     runId,
-    serviceName: "openwork-orchestrator",
+    serviceName: "sprintnex-orchestrator",
     serviceVersion: cliVersion,
     output: "stdout",
     color: colorEnabled,
@@ -4904,19 +4904,19 @@ async function runRouterDaemon(args: ParsedArgs) {
   const logVerbose = createVerboseLogger(
     verbose && !outputJson,
     logger,
-    "openwork-orchestrator",
+    "sprintnex-orchestrator",
   );
   const sidecarSourceInput = readBinarySource(
     args.flags,
     "sidecar-source",
     "auto",
-    "OPENWORK_SIDECAR_SOURCE",
+    "SPRINTNEX_SIDECAR_SOURCE",
   );
   const opencodeSourceInput = readBinarySource(
     args.flags,
     "opencode-source",
     "auto",
-    "OPENWORK_OPENCODE_SOURCE",
+    "SPRINTNEX_OPENCODE_SOURCE",
   );
   const sidecarSource = sidecarSourceInput;
   const opencodeSource = opencodeSourceInput;
@@ -4926,15 +4926,15 @@ async function runRouterDaemon(args: ParsedArgs) {
 
   const host = readFlag(args.flags, "daemon-host") ?? "127.0.0.1";
   const port = await resolvePort(
-    readNumber(args.flags, "daemon-port", undefined, "OPENWORK_DAEMON_PORT"),
+    readNumber(args.flags, "daemon-port", undefined, "SPRINTNEX_DAEMON_PORT"),
     "127.0.0.1",
   );
 
   const opencodeBin =
-    readFlag(args.flags, "opencode-bin") ?? process.env.OPENWORK_OPENCODE_BIN;
+    readFlag(args.flags, "opencode-bin") ?? process.env.SPRINTNEX_OPENCODE_BIN;
   assertManagedOpencodeAuth(args);
   const opencodeHost = resolveManagedOpencodeHost(
-    readFlag(args.flags, "opencode-host") ?? process.env.OPENWORK_OPENCODE_HOST,
+    readFlag(args.flags, "opencode-host") ?? process.env.SPRINTNEX_OPENCODE_HOST,
   );
   const opencodeCredentials = resolveManagedOpencodeCredentials(args);
   const opencodeUsername = opencodeCredentials.username;
@@ -4947,14 +4947,14 @@ async function runRouterDaemon(args: ParsedArgs) {
       args.flags,
       "opencode-port",
       state.opencode?.port,
-      "OPENWORK_OPENCODE_PORT",
+      "SPRINTNEX_OPENCODE_PORT",
     ),
     "127.0.0.1",
     state.opencode?.port,
   );
   const opencodeLogLevel = resolveOpencodeLogLevel(
     readFlag(args.flags, "opencode-log-level") ??
-      process.env.OPENWORK_OPENCODE_LOG_LEVEL,
+      process.env.SPRINTNEX_OPENCODE_LOG_LEVEL,
   );
   const opencodeHotReload = readOpencodeHotReload(
     args.flags,
@@ -4964,19 +4964,19 @@ async function runRouterDaemon(args: ParsedArgs) {
       cooldownMs: DEFAULT_OPENCODE_HOT_RELOAD_COOLDOWN_MS,
     },
     {
-      enabled: "OPENWORK_OPENCODE_HOT_RELOAD",
-      debounceMs: "OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
-      cooldownMs: "OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
+      enabled: "SPRINTNEX_OPENCODE_HOT_RELOAD",
+      debounceMs: "SPRINTNEX_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
+      cooldownMs: "SPRINTNEX_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
     },
   );
   const corsValue =
     readFlag(args.flags, "cors") ??
-    process.env.OPENWORK_OPENCODE_CORS ??
+    process.env.SPRINTNEX_OPENCODE_CORS ??
     "http://localhost:5173,tauri://localhost,http://tauri.localhost";
   const corsOrigins = parseList(corsValue);
   const opencodeWorkdirFlag =
     readFlag(args.flags, "opencode-workdir") ??
-    process.env.OPENWORK_OPENCODE_WORKDIR;
+    process.env.SPRINTNEX_OPENCODE_WORKDIR;
   const activeWorkspace = state.workspaces.find(
     (entry) => entry.id === state.activeId && entry.workspaceType === "local",
   );
@@ -4993,7 +4993,7 @@ async function runRouterDaemon(args: ParsedArgs) {
   logger.info(
     "Daemon starting",
     { runId, logFormat, workdir: resolvedWorkdir, host, port },
-    "openwork-orchestrator",
+    "sprintnex-orchestrator",
   );
 
   const sidecar = resolveSidecarConfig(args.flags, cliVersion);
@@ -5001,7 +5001,7 @@ async function runRouterDaemon(args: ParsedArgs) {
     args.flags,
     "allow-external",
     false,
-    "OPENWORK_ALLOW_EXTERNAL",
+    "SPRINTNEX_ALLOW_EXTERNAL",
   );
   const manifest = await readVersionManifest();
   logVerbose(`cli version: ${cliVersion}`);
@@ -5126,7 +5126,7 @@ async function runRouterDaemon(args: ParsedArgs) {
           durationMs: Date.now() - startedAt,
           activeId: state.activeId,
         },
-        "openwork-orchestrator-router",
+        "sprintnex-orchestrator-router",
       );
     });
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -5374,7 +5374,7 @@ async function runRouterDaemon(args: ParsedArgs) {
     logger.info(
       "Daemon shutting down",
       { host, port },
-      "openwork-orchestrator-router",
+      "sprintnex-orchestrator-router",
     );
     try {
       await new Promise<void>((resolve) => server.close(() => resolve()));
@@ -5410,7 +5410,7 @@ async function runRouterDaemon(args: ParsedArgs) {
         logger.info(
           "Daemon running",
           { host, port },
-          "openwork-orchestrator-router",
+          "sprintnex-orchestrator-router",
         );
       } else {
         console.log(`orchestrator daemon running on ${host}:${port}`);
@@ -5429,13 +5429,13 @@ function readOpenworkClientAuth(args: ParsedArgs): {
 } {
   const openworkUrl =
     readFlag(args.flags, "openwork-url") ??
-    process.env.OPENWORK_URL ??
-    process.env.OPENWORK_SERVER_URL ??
+    process.env.SPRINTNEX_URL ??
+    process.env.SPRINTNEX_SERVER_URL ??
     "";
   const token =
     readFlag(args.flags, "token") ??
     readFlag(args.flags, "openwork-token") ??
-    process.env.OPENWORK_TOKEN ??
+    process.env.SPRINTNEX_TOKEN ??
     "";
 
   if (!openworkUrl || !token) {
@@ -5717,11 +5717,11 @@ async function runApprovals(args: ParsedArgs) {
 
   const openworkUrl =
     readFlag(args.flags, "openwork-url") ??
-    process.env.OPENWORK_URL ??
-    process.env.OPENWORK_SERVER_URL ??
+    process.env.SPRINTNEX_URL ??
+    process.env.SPRINTNEX_SERVER_URL ??
     "";
   const hostToken =
-    readFlag(args.flags, "host-token") ?? process.env.OPENWORK_HOST_TOKEN ?? "";
+    readFlag(args.flags, "host-token") ?? process.env.SPRINTNEX_HOST_TOKEN ?? "";
 
   if (!openworkUrl || !hostToken) {
     throw new Error("openwork-url and host-token are required for approvals");
@@ -5774,7 +5774,7 @@ async function runApprovals(args: ParsedArgs) {
 
 async function runStatus(args: ParsedArgs) {
   const openworkUrl =
-    readFlag(args.flags, "openwork-url") ?? process.env.OPENWORK_URL ?? "";
+    readFlag(args.flags, "openwork-url") ?? process.env.SPRINTNEX_URL ?? "";
   const opencodeUrl =
     readFlag(args.flags, "opencode-url") ?? process.env.OPENCODE_URL ?? "";
   const username =
@@ -5845,18 +5845,18 @@ async function runStart(args: ParsedArgs) {
   const outputJson = readBool(args.flags, "json", false);
   const checkOnly = readBool(args.flags, "check", false);
   const checkEvents = readBool(args.flags, "check-events", false);
-  const verbose = readBool(args.flags, "verbose", false, "OPENWORK_VERBOSE");
+  const verbose = readBool(args.flags, "verbose", false, "SPRINTNEX_VERBOSE");
   const logFormat = readLogFormat(
     args.flags,
     "log-format",
     "pretty",
-    "OPENWORK_LOG_FORMAT",
+    "SPRINTNEX_LOG_FORMAT",
   );
   const detachRequested = readBool(
     args.flags,
     "detach",
     false,
-    "OPENWORK_DETACH",
+    "SPRINTNEX_DETACH",
   );
   const defaultTui =
     process.stdout.isTTY && !outputJson && !checkOnly && !checkEvents;
@@ -5869,11 +5869,11 @@ async function runStart(args: ParsedArgs) {
     !checkEvents &&
     logFormat === "pretty";
   const colorPreferred =
-    readBool(args.flags, "color", process.stdout.isTTY, "OPENWORK_COLOR") &&
+    readBool(args.flags, "color", process.stdout.isTTY, "SPRINTNEX_COLOR") &&
     !process.env.NO_COLOR;
   const runId =
     readFlag(args.flags, "run-id") ??
-    process.env.OPENWORK_RUN_ID ??
+    process.env.SPRINTNEX_RUN_ID ??
     randomUUID();
   const cliVersion = await resolveCliVersion();
   const compiledBinary = isCompiledBunBinary();
@@ -5882,14 +5882,14 @@ async function runStart(args: ParsedArgs) {
   const baseLoggerOptions = {
     format: logFormat,
     runId,
-    serviceName: "openwork-orchestrator",
+    serviceName: "sprintnex-orchestrator",
     serviceVersion: cliVersion,
     onLog: (event: LogEvent) => {
       if (!tui) return;
       tui.pushLog({
         time: event.time,
         level: event.level,
-        component: event.component ?? "openwork-orchestrator",
+        component: event.component ?? "sprintnex-orchestrator",
         message: event.message,
       });
     },
@@ -5902,7 +5902,7 @@ async function runStart(args: ParsedArgs) {
   let logVerbose = createVerboseLogger(
     verbose && !outputJson,
     logger,
-    "openwork-orchestrator",
+    "sprintnex-orchestrator",
   );
   const switchToPlainOutput = (error: string) => {
     if (!useTui) return;
@@ -5919,52 +5919,52 @@ async function runStart(args: ParsedArgs) {
     logVerbose = createVerboseLogger(
       verbose && !outputJson,
       logger,
-      "openwork-orchestrator",
+      "sprintnex-orchestrator",
     );
     logger.warn(
       "TUI failed to start; falling back to plain output. Use `openwork serve` for explicit non-TUI mode.",
       { error },
-      "openwork-orchestrator",
+      "sprintnex-orchestrator",
     );
   };
   const sidecarSourceInput = readBinarySource(
     args.flags,
     "sidecar-source",
     "auto",
-    "OPENWORK_SIDECAR_SOURCE",
+    "SPRINTNEX_SIDECAR_SOURCE",
   );
   const opencodeSourceInput = readBinarySource(
     args.flags,
     "opencode-source",
     "auto",
-    "OPENWORK_OPENCODE_SOURCE",
+    "SPRINTNEX_OPENCODE_SOURCE",
   );
 
   const workspace =
     readFlag(args.flags, "workspace") ??
-    process.env.OPENWORK_WORKSPACE ??
+    process.env.SPRINTNEX_WORKSPACE ??
     process.cwd();
   const resolvedWorkspace = await ensureWorkspace(workspace);
   logger.info(
     "Run starting",
     { workspace: resolvedWorkspace, logFormat, runId },
-    "openwork-orchestrator",
+    "sprintnex-orchestrator",
   );
 
   const sandboxRequested = readSandboxMode(
     args.flags,
     "sandbox",
     "none",
-    "OPENWORK_SANDBOX",
+    "SPRINTNEX_SANDBOX",
   );
   const sandboxMode = await resolveSandboxMode(sandboxRequested);
   const sandboxImage =
     readFlag(args.flags, "sandbox-image") ??
-    process.env.OPENWORK_SANDBOX_IMAGE ??
+    process.env.SPRINTNEX_SANDBOX_IMAGE ??
     "debian:bookworm-slim";
   const sandboxPersistOverride =
     readFlag(args.flags, "sandbox-persist-dir") ??
-    process.env.OPENWORK_SANDBOX_PERSIST_DIR;
+    process.env.SPRINTNEX_SANDBOX_PERSIST_DIR;
   const dataDir = resolveRouterDataDir(args.flags);
   const devMode = resolveInternalDevMode(args.flags);
   const opencodeStateLayout = resolveOpencodeStateLayout({
@@ -5984,7 +5984,7 @@ async function runStart(args: ParsedArgs) {
   }
 
   const sandboxMountValue =
-    readFlag(args.flags, "sandbox-mount") ?? process.env.OPENWORK_SANDBOX_MOUNT;
+    readFlag(args.flags, "sandbox-mount") ?? process.env.SPRINTNEX_SANDBOX_MOUNT;
   const sandboxMountSpecs = parseList(sandboxMountValue);
   const sandboxExtraMounts =
     sandboxMode !== "none" && sandboxMountSpecs.length
@@ -5992,14 +5992,14 @@ async function runStart(args: ParsedArgs) {
       : [];
 
   const explicitOpencodeBin =
-    readFlag(args.flags, "opencode-bin") ?? process.env.OPENWORK_OPENCODE_BIN;
+    readFlag(args.flags, "opencode-bin") ?? process.env.SPRINTNEX_OPENCODE_BIN;
   const explicitOpenworkServerBin =
-    readFlag(args.flags, "openwork-server-bin") ??
-    process.env.OPENWORK_SERVER_BIN;
+    readFlag(args.flags, "sprintnex-server-bin") ??
+    process.env.SPRINTNEX_SERVER_BIN;
   assertManagedOpencodeAuth(args);
   const opencodeBindHost = resolveManagedOpencodeHost(
     readFlag(args.flags, "opencode-host") ??
-      process.env.OPENWORK_OPENCODE_BIND_HOST,
+      process.env.SPRINTNEX_OPENCODE_BIND_HOST,
   );
   const opencodePort =
     sandboxMode !== "none"
@@ -6009,13 +6009,13 @@ async function runStart(args: ParsedArgs) {
             args.flags,
             "opencode-port",
             undefined,
-            "OPENWORK_OPENCODE_PORT",
+            "SPRINTNEX_OPENCODE_PORT",
           ),
           "127.0.0.1",
         );
   const opencodeLogLevel = resolveOpencodeLogLevel(
     readFlag(args.flags, "opencode-log-level") ??
-      process.env.OPENWORK_OPENCODE_LOG_LEVEL,
+      process.env.SPRINTNEX_OPENCODE_LOG_LEVEL,
   );
   const opencodeHotReload = readOpencodeHotReload(
     args.flags,
@@ -6025,9 +6025,9 @@ async function runStart(args: ParsedArgs) {
       cooldownMs: DEFAULT_OPENCODE_HOT_RELOAD_COOLDOWN_MS,
     },
     {
-      enabled: "OPENWORK_OPENCODE_HOT_RELOAD",
-      debounceMs: "OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
-      cooldownMs: "OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
+      enabled: "SPRINTNEX_OPENCODE_HOT_RELOAD",
+      debounceMs: "SPRINTNEX_OPENCODE_HOT_RELOAD_DEBOUNCE_MS",
+      cooldownMs: "SPRINTNEX_OPENCODE_HOT_RELOAD_COOLDOWN_MS",
     },
   );
   const opencodeCredentials = resolveManagedOpencodeCredentials(args);
@@ -6037,35 +6037,35 @@ async function runStart(args: ParsedArgs) {
   const remoteAccessEnabled = resolveOpenworkRemoteAccess(args);
   const openworkHost = remoteAccessEnabled ? "0.0.0.0" : "127.0.0.1";
   const openworkPort = await resolvePort(
-    readNumber(args.flags, "openwork-port", undefined, "OPENWORK_PORT"),
+    readNumber(args.flags, "openwork-port", undefined, "SPRINTNEX_PORT"),
     "127.0.0.1",
   );
   const openworkToken =
     readFlag(args.flags, "openwork-token") ??
-    process.env.OPENWORK_TOKEN ??
+    process.env.SPRINTNEX_TOKEN ??
     randomUUID();
   const openworkHostToken =
     readFlag(args.flags, "openwork-host-token") ??
-    process.env.OPENWORK_HOST_TOKEN ??
+    process.env.SPRINTNEX_HOST_TOKEN ??
     randomUUID();
   const approvalMode =
     (readFlag(args.flags, "approval") as ApprovalMode | undefined) ??
-    (process.env.OPENWORK_APPROVAL_MODE as ApprovalMode | undefined) ??
+    (process.env.SPRINTNEX_APPROVAL_MODE as ApprovalMode | undefined) ??
     "manual";
   const approvalTimeoutMs = readNumber(
     args.flags,
     "approval-timeout",
     DEFAULT_APPROVAL_TIMEOUT,
-    "OPENWORK_APPROVAL_TIMEOUT_MS",
+    "SPRINTNEX_APPROVAL_TIMEOUT_MS",
   ) as number;
   const readOnly = readBool(
     args.flags,
     "read-only",
     false,
-    "OPENWORK_READONLY",
+    "SPRINTNEX_READONLY",
   );
   const corsValue =
-    readFlag(args.flags, "cors") ?? process.env.OPENWORK_CORS_ORIGINS ?? "*";
+    readFlag(args.flags, "cors") ?? process.env.SPRINTNEX_CORS_ORIGINS ?? "*";
   const corsOrigins = parseList(corsValue);
   const connectHost = readFlag(args.flags, "connect-host");
 
@@ -6074,7 +6074,7 @@ async function runStart(args: ParsedArgs) {
     args.flags,
     "allow-external",
     false,
-    "OPENWORK_ALLOW_EXTERNAL",
+    "SPRINTNEX_ALLOW_EXTERNAL",
   );
   const sidecarTarget = resolveSandboxSidecarTarget(sandboxMode);
   const sidecar = resolveSidecarConfigForTarget(
@@ -6170,11 +6170,11 @@ async function runStart(args: ParsedArgs) {
   if (sandboxMode !== "none") {
     // Ensure the binaries we stage into the container are actual files.
     await assertSandboxBinaryFile("opencode", opencodeBinary.bin);
-    await assertSandboxBinaryFile("openwork-server", openworkServerBinary.bin);
+    await assertSandboxBinaryFile("sprintnex-server", openworkServerBinary.bin);
   }
   logVerbose(`opencode bin: ${opencodeBinary.bin} (${opencodeBinary.source})`);
   logVerbose(
-    `openwork-server bin: ${openworkServerBinary.bin} (${openworkServerBinary.source})`,
+    `sprintnex-server bin: ${openworkServerBinary.bin} (${openworkServerBinary.source})`,
   );
 
   const openworkBaseUrl = `http://127.0.0.1:${openworkPort}`;
@@ -6237,7 +6237,7 @@ async function runStart(args: ParsedArgs) {
   const getRuntimeSnapshot = () => {
     const services = [
       buildRuntimeServiceSnapshot({
-        name: "openwork-server",
+        name: "sprintnex-server",
         enabled: true,
         running: Boolean(openworkChild && isProcessAlive(openworkChild.pid)),
         binary: openworkServerBinary,
@@ -6324,8 +6324,8 @@ async function runStart(args: ParsedArgs) {
       );
     }
     if (openworkChild) {
-      restartingServices.add("openwork-server");
-      removeChildHandle("openwork-server");
+      restartingServices.add("sprintnex-server");
+      removeChildHandle("sprintnex-server");
       await stopChild(openworkChild);
       openworkChild = null;
     }
@@ -6351,16 +6351,16 @@ async function runStart(args: ParsedArgs) {
       controlToken,
     });
     openworkChild = child;
-    children.push({ name: "openwork-server", child });
+    children.push({ name: "sprintnex-server", child });
     logger.info(
       "Process spawned",
       { pid: child.pid ?? 0, cause: "runtime-upgrade" },
-      "openwork-server",
+      "sprintnex-server",
     );
     child.on("exit", (code, signal) =>
-      handleExit("openwork-server", code, signal),
+      handleExit("sprintnex-server", code, signal),
     );
-    child.on("error", (error) => handleSpawnError("openwork-server", error));
+    child.on("error", (error) => handleSpawnError("sprintnex-server", error));
     await waitForHealthy(openworkBaseUrl);
     openworkActualVersion = await verifyOpenworkServer({
       baseUrl: openworkBaseUrl,
@@ -6389,15 +6389,15 @@ async function runStart(args: ParsedArgs) {
         );
       }
       if (
-        services.includes("openwork-server") &&
+        services.includes("sprintnex-server") &&
         openworkServerBinary.source === "external" &&
         openworkServerBinary.expectedVersion
       ) {
         await installGlobalPackages([
-          `openwork-server@${openworkServerBinary.expectedVersion}`,
+          `sprintnex-server@${openworkServerBinary.expectedVersion}`,
         ]);
       }
-      if (services.includes("openwork-server")) {
+      if (services.includes("sprintnex-server")) {
         openworkServerBinary = await resolveOpenworkServerBin({
           explicit: explicitOpenworkServerBin,
           manifest,
@@ -6419,7 +6419,7 @@ async function runStart(args: ParsedArgs) {
         await restartOpencode();
       }
       if (
-        services.includes("openwork-server") ||
+        services.includes("sprintnex-server") ||
         services.includes("opencode")
       ) {
         await restartOpenworkServer();
@@ -6434,7 +6434,7 @@ async function runStart(args: ParsedArgs) {
       logger.error(
         "Runtime upgrade failed",
         { error: runtimeUpgradeState.error, services },
-        "openwork-orchestrator",
+        "sprintnex-orchestrator",
       );
     }
   };
@@ -6456,7 +6456,7 @@ async function runStart(args: ParsedArgs) {
     logger.info(
       "Shutting down",
       { children: children.map((handle) => handle.name) },
-      "openwork-orchestrator",
+      "sprintnex-orchestrator",
     );
     if (sandboxContainerName && sandboxStop) {
       await sandboxStop(sandboxContainerName);
@@ -6537,7 +6537,7 @@ async function runStart(args: ParsedArgs) {
           .join(" ");
         if (
           text.includes("React is not defined") ||
-          text.includes("/$bunfs/root/openwork-orchestrator") ||
+          text.includes("/$bunfs/root/sprintnex-orchestrator") ||
           text.includes("/$bunfs/root/openwork")
         ) {
           switchToPlainOutput(text);
@@ -6575,8 +6575,8 @@ async function runStart(args: ParsedArgs) {
             port: opencodePort,
           },
           {
-            name: "openwork-server",
-            label: "openwork-server",
+            name: "sprintnex-server",
+            label: "sprintnex-server",
             status: "starting",
             port: openworkPort,
           },
@@ -6611,7 +6611,7 @@ async function runStart(args: ParsedArgs) {
       code !== null ? `code ${code}` : signal ? `signal ${signal}` : "unknown";
     const services =
       name === "sandbox"
-        ? ["opencode", "openwork-server"]
+        ? ["opencode", "sprintnex-server"]
         : [name];
     for (const service of services) {
       tui?.updateService(service, { status: "stopped", message: reason });
@@ -6669,12 +6669,12 @@ async function runStart(args: ParsedArgs) {
         }
         const requested = Array.isArray(body?.services)
           ? body.services
-          : ["openwork-server", "opencode"];
+          : ["sprintnex-server", "opencode"];
         const services = Array.from(
           new Set(
             requested.filter(
               (item): item is RuntimeServiceName =>
-                item === "openwork-server" || item === "opencode",
+                item === "sprintnex-server" || item === "opencode",
             ),
           ),
         );
@@ -6715,7 +6715,7 @@ async function runStart(args: ParsedArgs) {
     });
 
     if (sandboxMode !== "none") {
-      const containerName = `openwork-orchestrator-${runId.replace(/[^a-zA-Z0-9_.-]+/g, "-").slice(0, 24)}`;
+      const containerName = `sprintnex-orchestrator-${runId.replace(/[^a-zA-Z0-9_.-]+/g, "-").slice(0, 24)}`;
       sandboxContainerName = containerName;
 
       sandboxStop =
@@ -6810,7 +6810,7 @@ async function runStart(args: ParsedArgs) {
         status: "running",
         port: SANDBOX_INTERNAL_OPENCODE_PORT,
       });
-      tui?.updateService("openwork-server", {
+      tui?.updateService("sprintnex-server", {
         status: "running",
         port: openworkPort,
       });
@@ -6835,21 +6835,21 @@ async function runStart(args: ParsedArgs) {
       logger.info(
         "Waiting for health",
         { url: openworkBaseUrl },
-        "openwork-server",
+        "sprintnex-server",
       );
       await waitForHealthy(openworkBaseUrl);
-      logger.info("Healthy", { url: openworkBaseUrl }, "openwork-server");
-      tui?.updateService("openwork-server", { status: "healthy" });
+      logger.info("Healthy", { url: openworkBaseUrl }, "sprintnex-server");
+      tui?.updateService("sprintnex-server", { status: "healthy" });
 
       opencodeClient = createOpencodeClient({
         baseUrl: `${openworkBaseUrl.replace(/\/$/, "")}/opencode`,
         headers: { Authorization: `Bearer ${openworkToken}` },
       });
 
-      // In sandbox mode, the released openwork-server binary may not have our
+      // In sandbox mode, the released sprintnex-server binary may not have our
       // latest proxy/auth changes yet.  Instead of using the OpenCode SDK client
       // (which relies on the proxy handling Bearer tokens), do a direct health
-      // check against the openwork-server's own /opencode proxy path.  If the
+      // check against the sprintnex-server's own /opencode proxy path.  If the
       // server is healthy *and* is proxying to a healthy opencode, we're good.
       logger.info(
         "Waiting for health (proxy)",
@@ -6887,7 +6887,7 @@ async function runStart(args: ParsedArgs) {
         logger.warn(
           "Sandbox server verification warning (non-fatal)",
           { error: String(verifyError) },
-          "openwork-server",
+          "sprintnex-server",
         );
       }
       openworkOwnerToken = await issueOpenworkOwnerToken(
@@ -6897,7 +6897,7 @@ async function runStart(args: ParsedArgs) {
       );
       tui?.setConnectInfo({ ownerToken: openworkOwnerToken });
       logVerbose(
-        `openwork-server version: ${openworkActualVersion ?? "unknown"}`,
+        `sprintnex-server version: ${openworkActualVersion ?? "unknown"}`,
       );
     } else {
       const startedOpencodeChild = await startOpencode({
@@ -6971,8 +6971,8 @@ async function runStart(args: ParsedArgs) {
         controlToken,
       });
       openworkChild = startedOpenworkChild;
-      children.push({ name: "openwork-server", child: startedOpenworkChild });
-      tui?.updateService("openwork-server", {
+      children.push({ name: "sprintnex-server", child: startedOpenworkChild });
+      tui?.updateService("sprintnex-server", {
         status: "running",
         pid: startedOpenworkChild.pid ?? undefined,
         port: openworkPort,
@@ -6980,23 +6980,23 @@ async function runStart(args: ParsedArgs) {
       logger.info(
         "Process spawned",
         { pid: startedOpenworkChild.pid ?? 0 },
-        "openwork-server",
+        "sprintnex-server",
       );
       startedOpenworkChild.on("exit", (code, signal) =>
-        handleExit("openwork-server", code, signal),
+        handleExit("sprintnex-server", code, signal),
       );
       startedOpenworkChild.on("error", (error) =>
-        handleSpawnError("openwork-server", error),
+        handleSpawnError("sprintnex-server", error),
       );
 
       logger.info(
         "Waiting for health",
         { url: openworkBaseUrl },
-        "openwork-server",
+        "sprintnex-server",
       );
       await waitForHealthy(openworkBaseUrl);
-      logger.info("Healthy", { url: openworkBaseUrl }, "openwork-server");
-      tui?.updateService("openwork-server", { status: "healthy" });
+      logger.info("Healthy", { url: openworkBaseUrl }, "sprintnex-server");
+      tui?.updateService("sprintnex-server", { status: "healthy" });
 
       openworkActualVersion = await verifyOpenworkServer({
         baseUrl: openworkBaseUrl,
@@ -7016,7 +7016,7 @@ async function runStart(args: ParsedArgs) {
       );
       tui?.setConnectInfo({ ownerToken: openworkOwnerToken });
       logVerbose(
-        `openwork-server version: ${openworkActualVersion ?? "unknown"}`,
+        `sprintnex-server version: ${openworkActualVersion ?? "unknown"}`,
       );
 
     }
@@ -7029,7 +7029,7 @@ async function runStart(args: ParsedArgs) {
           intervalMs: workerActivityHeartbeat.intervalMs,
           activeWindowMs: workerActivityHeartbeat.activeWindowMs,
         },
-        "openwork-orchestrator",
+        "sprintnex-orchestrator",
       );
       const runHeartbeat = () => {
         void postWorkerActivityHeartbeat({
@@ -7040,7 +7040,7 @@ async function runStart(args: ParsedArgs) {
           logger.warn(
             "Worker activity heartbeat failed",
             { error: error instanceof Error ? error.message : String(error) },
-            "openwork-orchestrator",
+            "sprintnex-orchestrator",
           );
         });
       };
@@ -7118,7 +7118,7 @@ async function runStart(args: ParsedArgs) {
           opencode: payload.opencode,
           openwork: payload.openwork,
         },
-        "openwork-orchestrator",
+        "sprintnex-orchestrator",
       );
     } else if (logFormat === "json") {
       logger.info(
@@ -7128,7 +7128,7 @@ async function runStart(args: ParsedArgs) {
           opencode: payload.opencode,
           openwork: payload.openwork,
         },
-        "openwork-orchestrator",
+        "sprintnex-orchestrator",
       );
     } else {
       console.log("OpenWork orchestrator running");
@@ -7167,7 +7167,7 @@ async function runStart(args: ParsedArgs) {
         if (sandboxMode !== "none") {
           // In sandbox mode the released server binary may not support the
           // Bearer-through-proxy auth that the OpenCode SDK client expects.
-          // Run a lighter set of checks: openwork-server endpoints + proxy
+          // Run a lighter set of checks: sprintnex-server endpoints + proxy
           // health.  Full SDK checks (session create, SSE events) are deferred
           // until the modified server binary is released.
           await runSandboxChecks({
@@ -7183,7 +7183,7 @@ async function runStart(args: ParsedArgs) {
             checkEvents,
           });
         }
-        logger.info("Checks ok", { checkEvents }, "openwork-orchestrator");
+        logger.info("Checks ok", { checkEvents }, "sprintnex-orchestrator");
         if (!outputJson && logFormat === "pretty") {
           console.log("Checks: ok");
         }
@@ -7191,7 +7191,7 @@ async function runStart(args: ParsedArgs) {
         logger.error(
           "Checks failed",
           { error: String(error) },
-          "openwork-orchestrator",
+          "sprintnex-orchestrator",
         );
         await shutdown();
         tui?.stop();
@@ -7211,7 +7211,7 @@ async function runStart(args: ParsedArgs) {
     logger.error(
       "Run failed",
       { error: error instanceof Error ? error.message : String(error) },
-      "openwork-orchestrator",
+      "sprintnex-orchestrator",
     );
     process.exit(1);
   }

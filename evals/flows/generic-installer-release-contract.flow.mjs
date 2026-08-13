@@ -8,9 +8,9 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 
 const FLOW_ID = "generic-installer-release-contract";
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
-const REPO = process.env.OPENWORK_EVAL_RELEASE_REPO?.trim() || "different-ai/openwork";
-const UNIQUE_TAG = process.env.OPENWORK_EVAL_RELEASE_TAG?.trim() || "";
-const RECOVERY_TAG = process.env.OPENWORK_EVAL_RECOVERY_TAG?.trim() || "v0.17.19";
+const REPO = process.env.SPRINTNEX_EVAL_RELEASE_REPO?.trim() || "different-ai/openwork";
+const UNIQUE_TAG = process.env.SPRINTNEX_EVAL_RELEASE_TAG?.trim() || "";
+const RECOVERY_TAG = process.env.SPRINTNEX_EVAL_RECOVERY_TAG?.trim() || "v0.17.19";
 const MAC_ARM_ASSET = "openwork-installer-mac-arm64.zip";
 const APP_NAME = "OpenWork Installer.app";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
@@ -110,7 +110,7 @@ export default {
   title: "Generic installer release links are downloadable before a stable release becomes public",
   kind: "internal",
   requiresApp: false,
-  requiredEnv: ["OPENWORK_EVAL_RELEASE_TAG"],
+  requiredEnv: ["SPRINTNEX_EVAL_RELEASE_TAG"],
   steps: [
     {
       name: "A unique prerelease proves the artifact from this PR",

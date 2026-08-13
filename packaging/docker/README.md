@@ -257,7 +257,7 @@ Run the install-link migration once against the Den database:
 docker compose -f packaging/docker/docker-compose.den-dev.yml exec den sh -lc "pnpm --dir /app/ee/packages/den-db run db:bootstrap"
 ```
 
-Set `DEN_BOOTSTRAP_ADMIN_EMAILS` on the Den API service, restart it, open `/admin`, and toggle `Install links` for each org. Optional installer artifact env vars are `OPENWORK_INSTALLER_RELEASE_TAG`, `OPENWORK_INSTALLER_RELEASE_REPO`, and `OPENWORK_INSTALLER_ARTIFACTS_DIR`; see the [operator guide](../../docs/org-install-links.md).
+Set `DEN_BOOTSTRAP_ADMIN_EMAILS` on the Den API service, restart it, open `/admin`, and toggle `Install links` for each org. Optional installer artifact env vars are `SPRINTNEX_INSTALLER_RELEASE_TAG`, `SPRINTNEX_INSTALLER_RELEASE_REPO`, and `SPRINTNEX_INSTALLER_ARTIFACTS_DIR`; see the [operator guide](../../docs/org-install-links.md).
 
 ### Faster inner-loop alternative
 
@@ -302,7 +302,7 @@ pnpm dev:den:mysql:down
 
 ## Pre-baked Micro-Sandbox Image
 
-For micro-sandbox work, use the pre-baked image that compiles `openwork` and `openwork-server` from source and downloads the pinned `opencode` binary during `docker build`.
+For micro-sandbox work, use the pre-baked image that compiles `openwork` and `sprintnex-server` from source and downloads the pinned `opencode` binary during `docker build`.
 
 Build it from the repo root:
 
@@ -314,14 +314,14 @@ Run it locally:
 
 ```bash
 docker run --rm -p 8787:8787 \
-  -e OPENWORK_CONNECT_HOST=127.0.0.1 \
+  -e SPRINTNEX_CONNECT_HOST=127.0.0.1 \
   openwork-microsandbox:dev
 ```
 
 Defaults:
-- `OPENWORK_TOKEN=microsandbox-token`
-- `OPENWORK_HOST_TOKEN=microsandbox-host-token`
-- `OPENWORK_APPROVAL_MODE=auto`
+- `SPRINTNEX_TOKEN=microsandbox-token`
+- `SPRINTNEX_HOST_TOKEN=microsandbox-host-token`
+- `SPRINTNEX_APPROVAL_MODE=auto`
 
 Verification:
 - Health: `curl http://127.0.0.1:8787/health`
@@ -329,9 +329,9 @@ Verification:
 - Docker health: `docker inspect --format '{{json .State.Health}}' <container>`
 
 Useful overrides:
-- `OPENWORK_TOKEN` — set your own client bearer token
-- `OPENWORK_HOST_TOKEN` — set your own host/admin token
-- `OPENWORK_CONNECT_HOST` — host name embedded in the printed connect URL
+- `SPRINTNEX_TOKEN` — set your own client bearer token
+- `SPRINTNEX_HOST_TOKEN` — set your own host/admin token
+- `SPRINTNEX_CONNECT_HOST` — host name embedded in the printed connect URL
 - `DOCKER_PLATFORM` — optional platform passed to `docker build`
 
 ---
@@ -343,7 +343,7 @@ This is a minimal packaging template to run the OpenWork Host contract in a sing
 It runs:
 
 - `opencode serve` (engine) bound to `127.0.0.1:4096` inside the container
-- `openwork-server` published on `0.0.0.0:8787` via an explicit `--remote-access` launch path (the only published surface)
+- `sprintnex-server` published on `0.0.0.0:8787` via an explicit `--remote-access` launch path (the only published surface)
 
 ### Local run (compose)
 
@@ -361,13 +361,13 @@ Then open:
 
 Recommended env vars:
 
-- `OPENWORK_TOKEN` (client token)
-- `OPENWORK_HOST_TOKEN` (host/owner token)
+- `SPRINTNEX_TOKEN` (client token)
+- `SPRINTNEX_HOST_TOKEN` (host/owner token)
 
 Optional:
 
-- `OPENWORK_APPROVAL_MODE=auto|manual`
-- `OPENWORK_APPROVAL_TIMEOUT_MS=30000`
+- `SPRINTNEX_APPROVAL_MODE=auto|manual`
+- `SPRINTNEX_APPROVAL_TIMEOUT_MS=30000`
 
 Persistence:
 

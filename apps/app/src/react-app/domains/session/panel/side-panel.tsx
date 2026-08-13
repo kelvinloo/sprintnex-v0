@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useDragControls } from "motion/react";
 
-import type { OpenworkServerClient } from "@/app/lib/openwork-server";
+import type { OpenworkServerClient } from "@/app/lib/sprintnex-server";
 import { PanelTab, PanelTabClose, PanelTabItem, PanelTabList } from "@/components/panel-tabs";
 import { Button } from "@/components/ui/button";
 import {

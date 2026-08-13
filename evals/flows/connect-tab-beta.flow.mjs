@@ -4,13 +4,13 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 const FLOW_ID = "connect-tab-beta";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 
-const DEN_API_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_API_URL);
-const DEN_WEB_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL || DEN_API_URL);
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const PLATFORM_ADMIN_EMAIL = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
-const PLATFORM_ADMIN_PASSWORD = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
-const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const DEN_API_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_API_URL);
+const DEN_WEB_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL || DEN_API_URL);
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const PLATFORM_ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
+const PLATFORM_ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
+const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
 const WORKSPACE_PATH = "/tmp/openwork-connect-tab-beta";
 const RUN_TAG = Date.now();
 const CONNECTION_NAME = `connect-tab-beta-${RUN_TAG}`;
@@ -29,10 +29,10 @@ export default {
   kind: "user-facing",
   spec: "evals/voiceovers/connect-tab-beta.md",
   requiredEnv: [
-    "OPENWORK_EVAL_DEN_API_URL",
-    "OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL",
-    "OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD",
-    "OPENWORK_EVAL_MARK_VERIFIED_CMD",
+    "SPRINTNEX_EVAL_DEN_API_URL",
+    "SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL",
+    "SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD",
+    "SPRINTNEX_EVAL_MARK_VERIFIED_CMD",
   ],
   steps: [
     {
@@ -203,7 +203,7 @@ async function signIn(email, password) {
 function markEmailVerified(ctx, email) {
   ctx.assert(
     MARK_VERIFIED_CMD.length > 0,
-    "Platform-admin provisioning requires OPENWORK_EVAL_MARK_VERIFIED_CMD with an {email} placeholder.",
+    "Platform-admin provisioning requires SPRINTNEX_EVAL_MARK_VERIFIED_CMD with an {email} placeholder.",
   );
   execSync(MARK_VERIFIED_CMD.replaceAll("{email}", email), { stdio: "ignore" });
 }
@@ -345,10 +345,10 @@ async function signDesktopIntoCloud(ctx) {
   } catch {
     await reloadUntilAlive(ctx, "desktop initial boot");
   }
-  await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
+  await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
   const bootstrap = { baseUrl: DEN_API_URL, apiBaseUrl: DEN_API_URL, requireSignin: false, handoff: null };
   const written = await ctx.eval(`(async () => {
-    const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
+    const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
     if (!bridge) return { ok: false };
     await bridge("setDesktopBootstrapConfig", ${JSON.stringify(bootstrap)});
     localStorage.setItem('openwork.den.baseUrl', ${JSON.stringify(DEN_API_URL)});

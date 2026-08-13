@@ -17,7 +17,7 @@ import { z } from "zod";
  * - Voice mode, browser, skills, automations
  */
 
-const OPENWORK_CAPABILITIES_KNOWLEDGE = `You are running inside OpenWork, a desktop app for agentic work.
+const SPRINTNEX_CAPABILITIES_KNOWLEDGE = `You are running inside OpenWork, a desktop app for agentic work.
 
 CRITICAL: To navigate or control the OpenWork app (open settings, add providers, etc.), use the openwork_ui_execute_action tool, NOT browser tools. For example, to open settings: openwork_ui_execute_action({actionId:"settings.panel.open", args:{panel:"general"}}).
 
@@ -133,7 +133,7 @@ let docsCache: Promise<DocsEntry[]> | null = null;
 function docsCandidates(): string[] {
   const here = dirname(fileURLToPath(import.meta.url));
   return [
-    process.env.OPENWORK_DOCS_DIR?.trim() ?? "",
+    process.env.SPRINTNEX_DOCS_DIR?.trim() ?? "",
     join(here, "..", "openwork-docs"),
     join(here, "..", "..", "openwork-docs"),
     resolve(here, "..", "..", "..", "..", "packages", "docs"),
@@ -229,7 +229,7 @@ function excerpt(content: string, query: string): string {
 
 export const OpenWorkCapabilitiesKnowledge = async () => ({
   "experimental.chat.system.transform": async (_input: unknown, output: { system: string[] }) => {
-    output.system.push(OPENWORK_CAPABILITIES_KNOWLEDGE);
+    output.system.push(SPRINTNEX_CAPABILITIES_KNOWLEDGE);
   },
   tool: {
     openwork_docs_search: {

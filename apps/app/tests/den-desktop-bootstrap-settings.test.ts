@@ -49,7 +49,7 @@ describe("desktop Den bootstrap settings", () => {
       value: {
         localStorage: memoryStorage(),
         dispatchEvent: () => true,
-        __OPENWORK_ELECTRON__: {
+        __SPRINTNEX_ELECTRON__: {
           invokeDesktop: async (command: string, payload?: { baseUrl: string; requireSignin: boolean }) => {
             if (command === "getDesktopBootstrapConfig") return bootstrapConfig;
             if (command === "setDesktopBootstrapConfig" && payload) {

@@ -5,13 +5,13 @@ import {
   buildOpenworkWorkspaceBaseUrl,
   createOpenworkServerClient,
   parseOpenworkWorkspaceIdFromUrl,
-} from "../../../app/lib/openwork-server";
+} from "../../../app/lib/sprintnex-server";
 import type {
   EngineInfo,
   OpenworkServerInfo,
   WorkspaceInfo,
 } from "../../../app/lib/desktop";
-import type { OpenworkServerSettings } from "../../../app/lib/openwork-server";
+import type { OpenworkServerSettings } from "../../../app/lib/sprintnex-server";
 import { t } from "../../../i18n";
 import { isDesktopRuntime, normalizeDirectoryPath } from "../../../app/utils";
 

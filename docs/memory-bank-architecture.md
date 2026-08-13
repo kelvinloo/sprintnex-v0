@@ -211,7 +211,7 @@ existing accessible Base UI primitives** (Switch, Dialog/AlertDialog, `ConfirmMo
 - **Content is rendered escaped** in the panel (stored-XSS guard; §8). [FIX]
 
 ### Agent priming [DECISION: static `## Memory Bank`, search-first]
-Append a static, distinct `## Memory Bank` section to `OPENWORK_AGENT_PROMPT`
+Append a static, distinct `## Memory Bank` section to `SPRINTNEX_AGENT_PROMPT`
 (`apps/server/src/openwork-runtime-config.ts:34-66`) — separate from the existing
 `## Memory` (credential-hygiene) section. It must **[FIX B1]**:
 - Be **search-first**: "to save a memory, search for a capability to save a memory, then

@@ -33,9 +33,9 @@ bun install
 bun test
 
 # Headless dry run (no download/install; verifies config write + version + asset):
-OPENWORK_INSTALLER_CLIENT_NAME="Acme" \
-OPENWORK_INSTALLER_WEB_URL="https://openwork.acme.com" \
-OPENWORK_INSTALLER_API_URL="https://openwork-api.acme.com" \
+SPRINTNEX_INSTALLER_CLIENT_NAME="Acme" \
+SPRINTNEX_INSTALLER_WEB_URL="https://openwork.acme.com" \
+SPRINTNEX_INSTALLER_API_URL="https://openwork-api.acme.com" \
 bun run src/index.ts --headless --dry-run
 
 # UI mode (uses install-link stamp, sidecar, filename tag, build config, or env overrides):

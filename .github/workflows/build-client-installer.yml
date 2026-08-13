@@ -179,7 +179,7 @@ jobs:
         if: github.event.inputs.smoke_check_deployment == 'true' && matrix.bun_target != 'bun-darwin-x64'
         shell: bash
         env:
-          OPENWORK_DESKTOP_BOOTSTRAP_PATH: ${{ runner.temp }}/smoke/desktop-bootstrap.json
+          SPRINTNEX_DESKTOP_BOOTSTRAP_PATH: ${{ runner.temp }}/smoke/desktop-bootstrap.json
         run: |
           cd apps/installer
           binary=dist/openwork-installer

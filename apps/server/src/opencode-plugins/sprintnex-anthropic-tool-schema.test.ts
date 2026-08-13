@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { OpenWorkAnthropicToolSchema } from "./openwork-anthropic-tool-schema.js";
+import { OpenWorkAnthropicToolSchema } from "./sprintnex-anthropic-tool-schema.js";
 
 const calls: { input: Parameters<typeof fetch>[0]; init?: RequestInit }[] = [];
 const fakeBase = Object.assign(
@@ -119,7 +119,7 @@ describe("OpenWorkAnthropicToolSchema fetch patch", () => {
   });
 
   test("module exposes only the plugin factory", async () => {
-    const mod = await import("./openwork-anthropic-tool-schema.js");
+    const mod = await import("./sprintnex-anthropic-tool-schema.js");
     expect(Object.keys(mod)).toEqual(["OpenWorkAnthropicToolSchema"]);
   });
 });

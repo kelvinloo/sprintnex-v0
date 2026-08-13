@@ -5,7 +5,7 @@ import {
   workspaceUpdateRemote,
   type WorkspaceInfo,
 } from "../../../app/lib/desktop";
-import { buildOpenworkWorkspaceBaseUrl } from "../../../app/lib/openwork-server";
+import { buildOpenworkWorkspaceBaseUrl } from "../../../app/lib/sprintnex-server";
 import { t } from "../../../i18n";
 import type { RemoteWorkspaceInput } from "./types";
 

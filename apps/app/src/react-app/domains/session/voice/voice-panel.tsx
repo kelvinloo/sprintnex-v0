@@ -19,13 +19,13 @@ import {
   Square,
   X,
 } from "lucide-react";
-import { PaperGrainGradient } from "@openwork/ui/react";
+import { PaperGrainGradient } from "@sprintnex/ui/react";
 
 import { desktopFetch } from "@/app/lib/desktop";
 import type {
   OpenworkServerClient,
   OpenworkSessionMessage,
-} from "@/app/lib/openwork-server";
+} from "@/app/lib/sprintnex-server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -325,7 +325,7 @@ function setRealtimeDiagnostics(text: string) {
 }
 
 async function requestMacMicrophoneAccess() {
-  const ask = window.__OPENWORK_ELECTRON__?.system?.askMicrophoneAccess;
+  const ask = window.__SPRINTNEX_ELECTRON__?.system?.askMicrophoneAccess;
   if (!ask) return true;
   const result = await ask();
   if (result.platform !== "darwin") return true;

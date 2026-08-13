@@ -25,10 +25,10 @@
  * navigate instead of navigateHash.
  *
  * Prerequisites:
- * - den-api reachable at OPENWORK_EVAL_DEN_API_URL, signed in with
- *   OPENWORK_EVAL_DEMO_EMAIL / OPENWORK_EVAL_DEMO_PASSWORD (defaults to the
+ * - den-api reachable at SPRINTNEX_EVAL_DEN_API_URL, signed in with
+ *   SPRINTNEX_EVAL_DEMO_EMAIL / SPRINTNEX_EVAL_DEMO_PASSWORD (defaults to the
  *   seeded demo owner).
- * - den-web reachable at OPENWORK_EVAL_DEN_WEB_URL, pointed at that den-api.
+ * - den-web reachable at SPRINTNEX_EVAL_DEN_WEB_URL, pointed at that den-api.
  * - The mock OAuth+MCP server running and reachable at
  *   MOCK_OAUTH_MCP_URL (default http://127.0.0.1:3978) from wherever den-api
  *   runs — for a cloud/Daytona run this must be a URL den-api's own network
@@ -42,8 +42,8 @@
 
 import { denApiFetch, denWebUrl, mcpAgentCall, mintMcpToken, openAdminConnections, signInApi, signInViaBrowser } from "./lib/den-web.mjs";
 
-const DEMO_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const DEMO_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEMO_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const DEMO_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const MOCK_SERVER_URL = (process.env.MOCK_OAUTH_MCP_URL ?? "http://127.0.0.1:3978").trim().replace(/\/+$/, "");
 const CONNECTION_NAME = `fraimz-mcp-${Date.now()}`;
 const ECHO_TEXT = "search and execute in the cloud proof";
@@ -53,7 +53,7 @@ export default {
   title: "Admin adds an MCP connection in Den; search_capabilities/execute_capability use it for real",
   spec: "evals/cloud-mcp-agent-flows.md",
   preserveTheme: true,
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "den-web and the mock OAuth+MCP server are reachable",

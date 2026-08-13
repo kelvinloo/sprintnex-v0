@@ -63,11 +63,11 @@ import { ConfirmModal } from "../../../design-system/modals/confirm-modal";
 import { AddMcpModal } from "../../connections/modals/add-mcp-modal";
 import { ClaudePluginImportModal } from "../../connections/modals/claude-plugin-import-modal";
 import { canDisconnectNativeProviderAccount } from "../../connections/native-provider-connections";
-import type { OpenworkClaudePluginPreview } from "../../../../app/lib/openwork-server";
+import type { OpenworkClaudePluginPreview } from "../../../../app/lib/sprintnex-server";
 import {
   isOpenWorkExtensionEnabled,
   isOpenWorkExtensionHidden,
-  OPENWORK_EXTENSION_STATE_CHANGED,
+  SPRINTNEX_EXTENSION_STATE_CHANGED,
   setOpenWorkExtensionEnabled,
   setOpenWorkExtensionHidden,
 } from "../extension-state";
@@ -346,10 +346,10 @@ export function McpView(props: McpViewProps) {
 
   useEffect(() => {
     const refresh = () => setExtensionStateVersion((value) => value + 1);
-    window.addEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
+    window.addEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
     window.addEventListener("storage", refresh);
     return () => {
-      window.removeEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
+      window.removeEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
       window.removeEventListener("storage", refresh);
     };
   }, []);
@@ -358,7 +358,7 @@ export function McpView(props: McpViewProps) {
     if (!isDesktopRuntime()) return;
     void (async () => {
       try {
-        const command = await window.__OPENWORK_ELECTRON__?.invokeDesktop?.(
+        const command = await window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.(
           "getOpenworkUiMcpCommand",
         );
         if (
@@ -367,7 +367,7 @@ export function McpView(props: McpViewProps) {
         ) {
           setOpenworkUiMcpCommand(command);
         }
-        const environment = await window.__OPENWORK_ELECTRON__?.invokeDesktop?.(
+        const environment = await window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.(
           "getOpenworkUiMcpEnvironment",
         );
         if (
@@ -385,7 +385,7 @@ export function McpView(props: McpViewProps) {
           );
         }
         const computerUseCommand =
-          await window.__OPENWORK_ELECTRON__?.invokeDesktop?.(
+          await window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.(
             "getComputerUseMcpCommand",
           );
         if (

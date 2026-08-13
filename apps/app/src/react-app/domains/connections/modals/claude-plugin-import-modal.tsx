@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { TextInput } from "../../../design-system/text-input";
-import type { OpenworkClaudePluginPreview } from "../../../../app/lib/openwork-server";
+import type { OpenworkClaudePluginPreview } from "../../../../app/lib/sprintnex-server";
 
 export type ClaudePluginImportModalProps = {
   open: boolean;

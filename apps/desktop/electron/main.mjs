@@ -66,13 +66,13 @@ const NATIVE_DEEP_LINK_EVENT = "openwork:deep-link-native";
 const TAURI_APP_IDENTIFIER = "com.differentai.openwork";
 const DEV_APP_IDENTIFIER = "com.differentai.openwork.dev";
 const DESKTOP_PROTOCOL_SCHEME = "openwork";
-const isDevMode = process.env.OPENWORK_DEV_MODE === "1";
+const isDevMode = process.env.SPRINTNEX_DEV_MODE === "1";
 const APP_NAME =
-  process.env.OPENWORK_ELECTRON_APP_NAME?.trim() ||
+  process.env.SPRINTNEX_ELECTRON_APP_NAME?.trim() ||
   (isDevMode ? "OpenWork - Dev" : "OpenWork");
 let currentDisplayAppName = APP_NAME;
 const APP_IDENTIFIER =
-  process.env.OPENWORK_ELECTRON_APP_IDENTIFIER?.trim() ||
+  process.env.SPRINTNEX_ELECTRON_APP_IDENTIFIER?.trim() ||
   (isDevMode ? DEV_APP_IDENTIFIER : TAURI_APP_IDENTIFIER);
 const RELEASE_DOWNLOAD_BASE_URL =
   "https://github.com/different-ai/openwork/releases/latest/download";
@@ -138,14 +138,14 @@ function killTerminalsForWebContents(webContentsId) {
 // so in-place migration is a no-op for almost every file. Dev mode uses the
 // separate dev identifier so it can run beside the production app.
 //
-// Override via OPENWORK_ELECTRON_USERDATA so dogfooders can isolate their
+// Override via SPRINTNEX_ELECTRON_USERDATA so dogfooders can isolate their
 // Electron install from the real Tauri app.
 app.setName(APP_NAME);
 app.setAppUserModelId(APP_IDENTIFIER);
 if (app.isPackaged) {
   app.setAsDefaultProtocolClient(DESKTOP_PROTOCOL_SCHEME);
 }
-const userDataOverride = process.env.OPENWORK_ELECTRON_USERDATA?.trim();
+const userDataOverride = process.env.SPRINTNEX_ELECTRON_USERDATA?.trim();
 if (userDataOverride) {
   app.setPath("userData", userDataOverride);
 } else {
@@ -917,7 +917,7 @@ if (
 }
 
 // Expose Chrome DevTools Protocol so the opencode-chrome-devtools plugin can
-// drive the built-in browser panel.  Use OPENWORK_ELECTRON_REMOTE_DEBUG_PORT to
+// drive the built-in browser panel.  Use SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT to
 // pin a specific port; otherwise probe for a free one starting at 9223.
 // Must resolve before app.commandLine.appendSwitch (before `ready`).
 function probePort(port) {
@@ -938,7 +938,7 @@ async function findFreeCdpPort(candidates) {
 }
 
 const explicitCdpPort = Number.parseInt(
-  process.env.OPENWORK_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? "",
+  process.env.SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT?.trim() ?? "",
   10,
 );
 const remoteDebugPort =
@@ -954,7 +954,7 @@ if (remoteDebugPort > 0) {
 }
 // Make the resolved port available to the embedded server so it flows into
 // agent instructions via ensureOpenworkAgent → resolveAgentTemplate.
-process.env.OPENWORK_ELECTRON_REMOTE_DEBUG_PORT = String(remoteDebugPort);
+process.env.SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT = String(remoteDebugPort);
 
 // Apply extra Chromium flags from ELECTRON_EXTRA_LAUNCH_ARGS.
 // Used in headless/Daytona environments to pass e.g. --disable-gpu.
@@ -974,10 +974,10 @@ if (extraLaunchArgs) {
     }
   }
 }
-configureFakeMediaForTests(app, envFlagEnabled("OPENWORK_ELECTRON_FAKE_MEDIA"));
+configureFakeMediaForTests(app, envFlagEnabled("SPRINTNEX_ELECTRON_FAKE_MEDIA"));
 const DEFAULT_DEN_BASE_URL = "https://app.openworklabs.com";
 const DEFAULT_LOCAL_BASE_URL = "http://127.0.0.1:4096";
-const FORCE_DESKTOP_REQUIRE_SIGNIN = envFlagEnabled("OPENWORK_FORCE_SIGNIN");
+const FORCE_DESKTOP_REQUIRE_SIGNIN = envFlagEnabled("SPRINTNEX_FORCE_SIGNIN");
 const DEFAULT_DESKTOP_REQUIRE_SIGNIN = FORCE_DESKTOP_REQUIRE_SIGNIN;
 
 function envFlagEnabled(name) {
@@ -1001,7 +1001,7 @@ const IDLE_ENGINE_INFO = Object.freeze({
   lastStderr: null,
 });
 
-const IDLE_OPENWORK_SERVER_INFO = Object.freeze({
+const IDLE_SPRINTNEX_SERVER_INFO = Object.freeze({
   running: false,
   remoteAccessEnabled: false,
   host: null,
@@ -1752,9 +1752,9 @@ const desktopCommandHandlers = {
   appBuildInfo: async (event, ...args) => {
     return {
       version: app.getVersion(),
-      gitSha: process.env.OPENWORK_GIT_SHA ?? null,
-      buildEpoch: process.env.OPENWORK_BUILD_EPOCH ?? null,
-      openworkDevMode: process.env.OPENWORK_DEV_MODE === "1",
+      gitSha: process.env.SPRINTNEX_GIT_SHA ?? null,
+      buildEpoch: process.env.SPRINTNEX_BUILD_EPOCH ?? null,
+      openworkDevMode: process.env.SPRINTNEX_DEV_MODE === "1",
     };
   },
   desktopNotificationShow: async (event, ...args) => {
@@ -1772,7 +1772,7 @@ const desktopCommandHandlers = {
     }
   },
   getOpenworkUiMcpCommand: async (event, ...args) => {
-    if (process.env.OPENWORK_DEV_MODE === "1") {
+    if (process.env.SPRINTNEX_DEV_MODE === "1") {
       return [
         "node",
         path.resolve(
@@ -1808,7 +1808,7 @@ const desktopCommandHandlers = {
   },
   getOpenworkUiMcpEnvironment: async (event, ...args) => {
     return {
-      OPENWORK_UI_CONTROL_DISCOVERY: path.join(
+      SPRINTNEX_UI_CONTROL_DISCOVERY: path.join(
         app.getPath("userData"),
         "openwork-ui-control.json",
       ),
@@ -2594,7 +2594,7 @@ async function createMainWindow() {
   );
 
   const startUrl =
-    process.env.OPENWORK_ELECTRON_START_URL?.trim() ||
+    process.env.SPRINTNEX_ELECTRON_START_URL?.trim() ||
     process.env.ELECTRON_START_URL?.trim();
   if (startUrl) {
     await mainWindow.loadURL(startUrl);
@@ -2664,7 +2664,7 @@ ipcMain.handle("openwork:terminal:create", async (event, options = {}) => {
       ...process.env,
       TERM: "xterm-256color",
       COLORTERM: "truecolor",
-      OPENWORK_TERMINAL: "1",
+      SPRINTNEX_TERMINAL: "1",
     },
   });
 

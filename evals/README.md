@@ -84,8 +84,8 @@ is `voiceover-first-dx` — this workflow demoing itself.
 The runner probes `http://127.0.0.1:9825` (Daytona) then `:9823` (local
 `pnpm dev`) by default. Flows that need cloud credentials declare
 `requiredEnv` and are skipped (not failed) when the env is missing — e.g.
-`cloud-signin-handoff` needs `OPENWORK_EVAL_DEN_API_URL` and
-`OPENWORK_EVAL_DEN_TOKEN`. Reports land in `evals/results/<run-id>/`
+`cloud-signin-handoff` needs `SPRINTNEX_EVAL_DEN_API_URL` and
+`SPRINTNEX_EVAL_DEN_TOKEN`. Reports land in `evals/results/<run-id>/`
 (gitignored). Open `evals/results/<run-id>/index.html` for the frame proof.
 A non-zero exit code means at least one flow failed.
 
@@ -99,8 +99,8 @@ pnpm evals --stack-down          # stop what --stack den started
 
 `--stack den` is idempotent: each layer (MySQL, schema, den-api, seed, app)
 is skipped when already up. It signs in as the seeded demo owner
-(`alex@acme.test`) and exports `OPENWORK_EVAL_DEN_API_URL` /
-`OPENWORK_EVAL_DEN_TOKEN`, so the env-gated cloud flows run with zero manual
+(`alex@acme.test`) and exports `SPRINTNEX_EVAL_DEN_API_URL` /
+`SPRINTNEX_EVAL_DEN_TOKEN`, so the env-gated cloud flows run with zero manual
 setup. Requires Docker. The MySQL volume survives `--stack-down`, so
 subsequent runs skip schema push and seeding.
 

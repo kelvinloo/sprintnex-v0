@@ -36,14 +36,14 @@ function serverConfig(root: string): ServerConfig {
 
 async function withWorkspace(fn: (input: { root: string; config: ServerConfig }) => Promise<void>) {
   const root = await mkdtemp(join(tmpdir(), "openwork-extensions-export-"));
-  const previousDb = process.env.OPENWORK_RUNTIME_DB;
-  process.env.OPENWORK_RUNTIME_DB = join(root, "runtime.sqlite");
+  const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
+  process.env.SPRINTNEX_RUNTIME_DB = join(root, "runtime.sqlite");
   try {
     await mkdir(join(root, ".git"), { recursive: true });
     await fn({ root, config: serverConfig(root) });
   } finally {
-    if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
-    else process.env.OPENWORK_RUNTIME_DB = previousDb;
+    if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
+    else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
     await rm(root, { recursive: true, force: true });
   }
 }
@@ -219,12 +219,12 @@ describe("openwork_extensions_export plugin tool", () => {
       });
 
       const server = await startServer(config) as Served;
-      const previousUrl = process.env.OPENWORK_SERVER_URL;
-      const previousToken = process.env.OPENWORK_SERVER_TOKEN;
-      process.env.OPENWORK_SERVER_URL = `http://127.0.0.1:${server.port}`;
-      process.env.OPENWORK_SERVER_TOKEN = config.token;
+      const previousUrl = process.env.SPRINTNEX_SERVER_URL;
+      const previousToken = process.env.SPRINTNEX_SERVER_TOKEN;
+      process.env.SPRINTNEX_SERVER_URL = `http://127.0.0.1:${server.port}`;
+      process.env.SPRINTNEX_SERVER_TOKEN = config.token;
       try {
-        const { OpenWorkExtensionsPreview } = await import("./opencode-plugins/openwork-extensions-preview.js");
+        const { OpenWorkExtensionsPreview } = await import("./opencode-plugins/sprintnex-extensions-preview.js");
         const plugin = await OpenWorkExtensionsPreview();
         const output = await plugin.tool.openwork_extensions_export.execute(
           { skills: ["release-notes"], mcps: ["linear", "not-installed"] },
@@ -243,10 +243,10 @@ describe("openwork_extensions_export plugin tool", () => {
         expect(findMcp(parsed.components, "linear")?.config.headers).toEqual({ Authorization: "<redacted>" });
         expect(parsed.missing).toEqual({ skills: [], mcps: ["not-installed"] });
       } finally {
-        if (previousUrl === undefined) delete process.env.OPENWORK_SERVER_URL;
-        else process.env.OPENWORK_SERVER_URL = previousUrl;
-        if (previousToken === undefined) delete process.env.OPENWORK_SERVER_TOKEN;
-        else process.env.OPENWORK_SERVER_TOKEN = previousToken;
+        if (previousUrl === undefined) delete process.env.SPRINTNEX_SERVER_URL;
+        else process.env.SPRINTNEX_SERVER_URL = previousUrl;
+        if (previousToken === undefined) delete process.env.SPRINTNEX_SERVER_TOKEN;
+        else process.env.SPRINTNEX_SERVER_TOKEN = previousToken;
         await server.stop(true);
       }
     });

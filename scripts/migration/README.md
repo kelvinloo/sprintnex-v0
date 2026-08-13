@@ -69,7 +69,7 @@ What it does:
    AGENTS.md release runbook).
 3. Creates a release-config fragment at
    `apps/app/.env.migration-release` setting
-   `VITE_OPENWORK_MIGRATION_RELEASE=1` and the per-platform download
+   `VITE_SPRINTNEX_MIGRATION_RELEASE=1` and the per-platform download
    URLs. The `Release App` workflow copies this into the build env so
    the migration prompt is dormant on every other build but live for
    this release.
@@ -136,7 +136,7 @@ If the v0.12.0 migration release is bad:
 - Users on Electron already: ship v0.12.1 via electron-updater. Same
   mechanism as any other update.
 - Users still on Tauri: the migrate prompt is gated on
-  `VITE_OPENWORK_MIGRATION_RELEASE=1` at build time. Re-cut the
+  `VITE_SPRINTNEX_MIGRATION_RELEASE=1` at build time. Re-cut the
   release with that flag unset, minisign-sign a replacement
   `latest.json`, and users who haven't clicked "Install now" yet will
   fall back to the non-migrating release.

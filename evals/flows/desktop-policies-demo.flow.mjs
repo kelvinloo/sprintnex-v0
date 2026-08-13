@@ -20,8 +20,8 @@
 const GENPACT_LOGO = "https://upload.wikimedia.org/wikipedia/commons/5/50/Genpact_Logo_Black_%283%29.png";
 
 async function denFetch(ctx, path, options = {}) {
-  const base = ctx.env.OPENWORK_EVAL_DEN_API_URL;
-  const token = ctx.env.OPENWORK_EVAL_DEN_TOKEN;
+  const base = ctx.env.SPRINTNEX_EVAL_DEN_API_URL;
+  const token = ctx.env.SPRINTNEX_EVAL_DEN_TOKEN;
   const url = `${base}${path}`;
   const res = await fetch(url, {
     ...options,
@@ -55,7 +55,7 @@ export default {
   id: "desktop-policies-demo",
   title: "Admin configures desktop policies → member app reacts in real-time",
   spec: "evals/desktop-policy-white-label.md",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
   steps: [
     // ---------------------------------------------------------------
     // ACT 1: Setup

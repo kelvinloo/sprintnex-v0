@@ -51,7 +51,7 @@ const PROVIDER_LABELS: Record<string, string> = {
   openrouter: "OpenRouter",
 };
 
-const OPENWORK_MODELS_PROVIDER_ID = "openwork";
+const SPRINTNEX_MODELS_PROVIDER_ID = "openwork";
 
 export type ProviderAuthModalProps = {
   open: boolean;
@@ -226,10 +226,10 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
       .sort(compareProviders);
 
     if (props.showOpenWorkModelsSubscribe) {
-      const connectedToOpenWork = connected.has(OPENWORK_MODELS_PROVIDER_ID);
+      const connectedToOpenWork = connected.has(SPRINTNEX_MODELS_PROVIDER_ID);
       return [
         {
-          id: OPENWORK_MODELS_PROVIDER_ID,
+          id: SPRINTNEX_MODELS_PROVIDER_ID,
           name: "OpenWork",
           methods: [{ type: "cloud", label: "Subscribe" }],
           connected: connectedToOpenWork,
@@ -237,7 +237,7 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
         },
         ...nextEntries.filter(
           (entry) =>
-            entry.id.trim().toLowerCase() !== OPENWORK_MODELS_PROVIDER_ID,
+            entry.id.trim().toLowerCase() !== SPRINTNEX_MODELS_PROVIDER_ID,
         ),
       ];
     }
@@ -603,7 +603,7 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
 
     if (
       props.showOpenWorkModelsSubscribe &&
-      entry.id.trim().toLowerCase() === OPENWORK_MODELS_PROVIDER_ID
+      entry.id.trim().toLowerCase() === SPRINTNEX_MODELS_PROVIDER_ID
     ) {
       setView("openwork-subscribe");
       return;

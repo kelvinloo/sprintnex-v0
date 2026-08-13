@@ -22,15 +22,15 @@ async function withIsolatedBootstrapStore(callback) {
   const xdg = path.join(root, "xdg");
   const previousHome = process.env.HOME;
   const previousXdg = process.env.XDG_CONFIG_HOME;
-  const previousOverride = process.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH;
-  const previousBundleDir = process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR;
-  const previousDevMode = process.env.OPENWORK_DEV_MODE;
+  const previousOverride = process.env.SPRINTNEX_DESKTOP_BOOTSTRAP_PATH;
+  const previousBundleDir = process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR;
+  const previousDevMode = process.env.SPRINTNEX_DEV_MODE;
 
   process.env.HOME = home;
   process.env.XDG_CONFIG_HOME = xdg;
-  delete process.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH;
-  delete process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR;
-  delete process.env.OPENWORK_DEV_MODE;
+  delete process.env.SPRINTNEX_DESKTOP_BOOTSTRAP_PATH;
+  delete process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR;
+  delete process.env.SPRINTNEX_DEV_MODE;
 
   try {
     const module = await import(`./workspace-store.mjs?bootstrap-test=${Date.now()}-${Math.random()}`);
@@ -52,9 +52,9 @@ async function withIsolatedBootstrapStore(callback) {
   } finally {
     restoreEnv("HOME", previousHome);
     restoreEnv("XDG_CONFIG_HOME", previousXdg);
-    restoreEnv("OPENWORK_DESKTOP_BOOTSTRAP_PATH", previousOverride);
-    restoreEnv("OPENWORK_BOOTSTRAP_BUNDLE_DIR", previousBundleDir);
-    restoreEnv("OPENWORK_DEV_MODE", previousDevMode);
+    restoreEnv("SPRINTNEX_DESKTOP_BOOTSTRAP_PATH", previousOverride);
+    restoreEnv("SPRINTNEX_BOOTSTRAP_BUNDLE_DIR", previousBundleDir);
+    restoreEnv("SPRINTNEX_DEV_MODE", previousDevMode);
   }
 }
 
@@ -72,7 +72,7 @@ test("recovers empty desktop workspace state from token store paths", async () =
     "utf8",
   );
   await writeFile(
-    path.join(userData, "openwork-server-tokens.json"),
+    path.join(userData, "sprintnex-server-tokens.json"),
     JSON.stringify({
       version: 1,
       workspaces: {
@@ -84,8 +84,8 @@ test("recovers empty desktop workspace state from token store paths", async () =
     "utf8",
   );
 
-  const previous = process.env.OPENWORK_SERVER_CONFIG;
-  process.env.OPENWORK_SERVER_CONFIG = path.join(root, "missing-server.json");
+  const previous = process.env.SPRINTNEX_SERVER_CONFIG;
+  process.env.SPRINTNEX_SERVER_CONFIG = path.join(root, "missing-server.json");
   try {
     const store = createWorkspaceStore({
       app: { getPath: (name) => name === "userData" ? userData : root },
@@ -104,8 +104,8 @@ test("recovers empty desktop workspace state from token store paths", async () =
     assert.equal(persisted.workspaces.length, 1);
     assert.equal(persisted.selectedWorkspaceId, state.workspaces[0].id);
   } finally {
-    if (previous === undefined) delete process.env.OPENWORK_SERVER_CONFIG;
-    else process.env.OPENWORK_SERVER_CONFIG = previous;
+    if (previous === undefined) delete process.env.SPRINTNEX_SERVER_CONFIG;
+    else process.env.SPRINTNEX_SERVER_CONFIG = previous;
   }
 });
 
@@ -129,13 +129,13 @@ test("prefers server config workspaces when desktop state is empty", async () =>
     "utf8",
   );
   await writeFile(
-    path.join(userData, "openwork-server-tokens.json"),
+    path.join(userData, "sprintnex-server-tokens.json"),
     JSON.stringify({ version: 1, workspaces: { [path.join(root, "other")]: { updatedAt: 9 } } }),
     "utf8",
   );
 
-  const previous = process.env.OPENWORK_SERVER_CONFIG;
-  process.env.OPENWORK_SERVER_CONFIG = serverConfig;
+  const previous = process.env.SPRINTNEX_SERVER_CONFIG;
+  process.env.SPRINTNEX_SERVER_CONFIG = serverConfig;
   try {
     const store = createWorkspaceStore({
       app: { getPath: (name) => name === "userData" ? userData : root },
@@ -149,8 +149,8 @@ test("prefers server config workspaces when desktop state is empty", async () =>
     assert.equal(state.workspaces[0].path, oldWorkspaceReal);
     assert.equal(state.workspaces[0].name, "From Server");
   } finally {
-    if (previous === undefined) delete process.env.OPENWORK_SERVER_CONFIG;
-    else process.env.OPENWORK_SERVER_CONFIG = previous;
+    if (previous === undefined) delete process.env.SPRINTNEX_SERVER_CONFIG;
+    else process.env.SPRINTNEX_SERVER_CONFIG = previous;
   }
 });
 
@@ -188,8 +188,8 @@ test("normalizes recovered remote OpenWork entries before persisting", async () 
     "utf8",
   );
 
-  const previous = process.env.OPENWORK_SERVER_CONFIG;
-  process.env.OPENWORK_SERVER_CONFIG = serverConfig;
+  const previous = process.env.SPRINTNEX_SERVER_CONFIG;
+  process.env.SPRINTNEX_SERVER_CONFIG = serverConfig;
   try {
     const store = createWorkspaceStore({
       app: { getPath: (name) => name === "userData" ? userData : root },
@@ -205,8 +205,8 @@ test("normalizes recovered remote OpenWork entries before persisting", async () 
     assert.equal(state.workspaces[0].openworkWorkspaceId, "ws_remote");
     assert.equal(state.selectedId, "rem_ws_remote");
   } finally {
-    if (previous === undefined) delete process.env.OPENWORK_SERVER_CONFIG;
-    else process.env.OPENWORK_SERVER_CONFIG = previous;
+    if (previous === undefined) delete process.env.SPRINTNEX_SERVER_CONFIG;
+    else process.env.SPRINTNEX_SERVER_CONFIG = previous;
   }
 });
 
@@ -356,7 +356,7 @@ test("imports the newest organization bootstrap beside a Windows installer when 
     const bundleDir = path.join(root, "downloads", "OpenWork-example-org");
     const olderBundleDir = path.join(bundleDir, "older");
     const newerBundleDir = path.join(bundleDir, "latest");
-    process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR = bundleDir;
+    process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR = bundleDir;
     await mkdir(olderBundleDir, { recursive: true });
     await mkdir(newerBundleDir, { recursive: true });
     await writeFile(path.join(bundleDir, "openwork-win-x64-10.0.0.exe"), "signed installer", "utf8");
@@ -402,7 +402,7 @@ test("imports the newest organization bootstrap beside a Windows installer when 
 test("ignores a downloaded bootstrap that is not beside a standard installer", async () => {
   await withIsolatedBootstrapStore(async ({ store, canonicalPath, root }) => {
     const bundleDir = path.join(root, "downloads");
-    process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR = bundleDir;
+    process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR = bundleDir;
     await writeBootstrapConfig(path.join(bundleDir, "desktop-bootstrap.json"), {
       baseUrl: "https://untrusted.example.com",
       requireSignin: true,
@@ -417,7 +417,7 @@ test("ignores a downloaded bootstrap that is not beside a standard installer", a
 test("keeps an installed organization bootstrap across a newer Windows installer bundle and restart", async () => {
   await withIsolatedBootstrapStore(async ({ store, createStore, canonicalPath, root }) => {
     const bundleDir = path.join(root, "downloads");
-    process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR = bundleDir;
+    process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR = bundleDir;
     await writeBootstrapConfig(canonicalPath, {
       baseUrl: "https://openwork.organization.internal.example",
       requireSignin: true,
@@ -448,7 +448,7 @@ test("keeps an installed organization bootstrap across a newer Windows installer
 test("keeps and migrates an installed legacy bootstrap beside a newer Windows installer bundle", async () => {
   await withIsolatedBootstrapStore(async ({ store, canonicalPath, legacyPath, root }) => {
     const bundleDir = path.join(root, "downloads");
-    process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR = bundleDir;
+    process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR = bundleDir;
     await writeBootstrapConfig(legacyPath, {
       baseUrl: "https://legacy.organization.internal.example",
       requireSignin: true,
@@ -474,7 +474,7 @@ test("keeps and migrates an installed legacy bootstrap beside a newer Windows in
 test("replaces an installed hosted default with a custom organization Windows bundle", async () => {
   await withIsolatedBootstrapStore(async ({ store, canonicalPath, root }) => {
     const bundleDir = path.join(root, "downloads");
-    process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR = bundleDir;
+    process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR = bundleDir;
     await writeBootstrapConfig(canonicalPath, {
       baseUrl: "https://app.openworklabs.com/",
       apiBaseUrl: "https://api.openworklabs.com/",

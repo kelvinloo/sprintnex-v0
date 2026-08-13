@@ -117,7 +117,7 @@ async function ensureWorkspaceAndSession(ctx) {
 }
 
 const tabMetricsExpression = `(async () => {
-  const state = await window.__OPENWORK_ELECTRON__.browser.getState();
+  const state = await window.__SPRINTNEX_ELECTRON__.browser.getState();
   const activeTabId = state?.activeTabId ?? null;
   const buttons = Array.from(document.querySelectorAll('button[aria-label^="Select tab:"]'));
   const scroller = buttons[0]
@@ -162,7 +162,7 @@ export default {
     {
       name: "Open many built-in browser tabs",
       run: async (ctx) => {
-        await ctx.eval("window.__OPENWORK_ELECTRON__.browser.closeAllTabs?.()", { awaitPromise: true });
+        await ctx.eval("window.__SPRINTNEX_ELECTRON__.browser.closeAllTabs?.()", { awaitPromise: true });
         await ctx.control("browser.open_url", {
           provider: "builtin",
           url: "https://example.com/?openwork-overflow-tab=1",
@@ -174,7 +174,7 @@ export default {
 
         const tabIds = [];
         for (let index = 2; index <= TAB_COUNT; index += 1) {
-          const result = await ctx.eval(`window.__OPENWORK_ELECTRON__.browser.createTab(${JSON.stringify(
+          const result = await ctx.eval(`window.__SPRINTNEX_ELECTRON__.browser.createTab(${JSON.stringify(
             `https://example.com/?openwork-overflow-tab=${index}`,
           )})`, { awaitPromise: true });
           tabIds.push(result.tabId);
@@ -206,7 +206,7 @@ export default {
           return button?.closest('[id]')?.id ?? null;
         })()`);
         ctx.assert(typeof firstTabId === "string" && firstTabId.length > 0, "Could not resolve first tab id.");
-        await ctx.eval(`window.__OPENWORK_ELECTRON__.browser.selectTab(${JSON.stringify(firstTabId)})`, { awaitPromise: true });
+        await ctx.eval(`window.__SPRINTNEX_ELECTRON__.browser.selectTab(${JSON.stringify(firstTabId)})`, { awaitPromise: true });
         let metrics = null;
         const startedAt = Date.now();
         while (Date.now() - startedAt < 5_000) {

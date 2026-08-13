@@ -20,7 +20,7 @@ import {
 } from "@/app/lib/sprintnex-aicoe-api";
 import { createClient } from "@/app/lib/opencode";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
-import { createOpenworkServerClient } from "@/app/lib/openwork-server";
+import { createOpenworkServerClient } from "@/app/lib/sprintnex-server";
 import { writeActiveWorkspaceId } from "@/react-app/shell/session-memory";
 import { ProjectTaskHub } from "./project-task-hub";
 // import { SprintnexIntake } from "./sprintnex-intake";

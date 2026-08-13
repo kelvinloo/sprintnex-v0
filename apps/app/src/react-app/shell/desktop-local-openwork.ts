@@ -8,7 +8,7 @@ import {
 import {
   readOpenworkServerSettings,
   writeOpenworkServerSettings,
-} from "../../app/lib/openwork-server";
+} from "../../app/lib/sprintnex-server";
 import { safeStringify } from "../../app/utils";
 import { recordInspectorEvent } from "../../app/lib/app-inspector";
 
@@ -28,7 +28,7 @@ type EnsureDesktopLocalOpenworkOptions = {
 
 function emitOpenworkSettingsChanged() {
   try {
-    window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
+    window.dispatchEvent(new CustomEvent("sprintnex-server-settings-changed"));
   } catch {
     // ignore browser event dispatch failures
   }

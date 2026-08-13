@@ -25,9 +25,9 @@ import {
   hasOpenWorkModelsProvider,
   hideOpenWorkModelsPromo,
   isOpenWorkModelsPromoHidden,
-  OPENWORK_MODEL_PREVIEWS,
-  OPENWORK_MODELS_PROVIDER_ID,
-  OPENWORK_MODELS_PROVIDER_NAME,
+  SPRINTNEX_MODEL_PREVIEWS,
+  SPRINTNEX_MODELS_PROVIDER_ID,
+  SPRINTNEX_MODELS_PROVIDER_NAME,
   openWorkModelsPromoChangedEvent,
 } from "@/react-app/domains/cloud/openwork-models-promo";
 import { getConnectedProviderItems, useProviderListQuery } from "@/react-app/infra/provider-list-query";
@@ -176,9 +176,9 @@ function groupByProvider(modelOptions: ModelOption[]): ModelSelectGroup[] {
 
 function openWorkModelsGroup(): ModelSelectGroup {
   return {
-    value: OPENWORK_MODELS_PROVIDER_NAME,
+    value: SPRINTNEX_MODELS_PROVIDER_NAME,
     promo: true,
-    items: OPENWORK_MODEL_PREVIEWS.map((model) => ({
+    items: SPRINTNEX_MODEL_PREVIEWS.map((model) => ({
       kind: "openwork",
       id: model.id,
       title: model.title,
@@ -344,12 +344,12 @@ export function ModelSelect({
                         <CommandItem
                           className="gap-2 border border-blue-6/50 bg-blue-2/40 data-highlighted:bg-blue-3"
                           key={item.id}
-                          value={`${OPENWORK_MODELS_PROVIDER_NAME} ${item.title} ${item.id} sign in subscribe`}
+                          value={`${SPRINTNEX_MODELS_PROVIDER_NAME} ${item.title} ${item.id} sign in subscribe`}
                           onClick={handleOpenWorkModels}
                         >
                           <ProviderIcon
-                            providerId={OPENWORK_MODELS_PROVIDER_ID}
-                            providerName={OPENWORK_MODELS_PROVIDER_NAME}
+                            providerId={SPRINTNEX_MODELS_PROVIDER_ID}
+                            providerName={SPRINTNEX_MODELS_PROVIDER_NAME}
                             className="size-3.5 text-blue-11"
                             size={14}
                           />

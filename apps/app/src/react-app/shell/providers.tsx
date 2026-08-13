@@ -4,7 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 
 import { isWebDeployment } from "@/app/lib/openwork-deployment";
-import { hydrateOpenworkServerSettingsFromEnv } from "@/app/lib/openwork-server";
+import { hydrateOpenworkServerSettingsFromEnv } from "@/app/lib/sprintnex-server";
 import { isDesktopRuntime } from "@/app/utils";
 import { DenAuthProvider } from "@/react-app/domains/cloud/den-auth-provider";
 import { SprintnexAuthProvider } from "@/react-app/domains/auth/sprintnex-auth-provider";
@@ -24,8 +24,8 @@ function resolveDefaultServerUrl(): string {
   if (isDesktopRuntime()) return "http://127.0.0.1:4096";
 
   const openworkUrl =
-    typeof import.meta.env?.VITE_OPENWORK_URL === "string"
-      ? import.meta.env.VITE_OPENWORK_URL.trim()
+    typeof import.meta.env?.VITE_SPRINTNEX_URL === "string"
+      ? import.meta.env.VITE_SPRINTNEX_URL.trim()
       : "";
   if (openworkUrl) {
     return `${openworkUrl.replace(/\/+$/, "")}/opencode`;
@@ -50,7 +50,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   hydrateOpenworkServerSettingsFromEnv();
 
   useEffect(() => {
-    // Start the dev observability forwarder. Reads the current openwork-server
+    // Start the dev observability forwarder. Reads the current sprintnex-server
     // URL on every flush so reconnects after port changes still work. In prod
     // builds `startDebugLogger` is a no-op.
     startDebugLogger({

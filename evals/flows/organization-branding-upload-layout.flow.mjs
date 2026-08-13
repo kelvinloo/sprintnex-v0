@@ -24,7 +24,7 @@ let savedAssets = null;
 let brandShapeStates = [];
 
 function orgSettingsUrl(ctx) {
-  return `${ctx.env.OPENWORK_EVAL_DEN_WEB_URL.replace(/\/$/, "")}${ORG_SETTINGS_PATH}`;
+  return `${ctx.env.SPRINTNEX_EVAL_DEN_WEB_URL.replace(/\/$/, "")}${ORG_SETTINGS_PATH}`;
 }
 
 function parseMetadata(value) {
@@ -60,16 +60,16 @@ async function ensureDesktopSession(ctx) {
     body: JSON.stringify({ name: "Example Corp", brandAppName: "Example Work", brandLogoUrl: null, brandIconUrl: null }),
   });
 
-  await ctx.control("eval.auth.set-base-url", { baseUrl: process.env.OPENWORK_EVAL_DEN_WEB_URL });
+  await ctx.control("eval.auth.set-base-url", { baseUrl: process.env.SPRINTNEX_EVAL_DEN_WEB_URL });
   await ctx.eval(`(() => {
-    localStorage.setItem('openwork.den.baseUrl', ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_WEB_URL)});
-    localStorage.setItem('openwork.den.apiBaseUrl', ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_API_URL)});
-    localStorage.setItem('openwork.den.authToken', ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_TOKEN)});
+    localStorage.setItem('openwork.den.baseUrl', ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_WEB_URL)});
+    localStorage.setItem('openwork.den.apiBaseUrl', ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_API_URL)});
+    localStorage.setItem('openwork.den.authToken', ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_TOKEN)});
     localStorage.setItem('openwork.den.activeOrgId', ${JSON.stringify(activeOrg.id)});
     localStorage.setItem('openwork.den.activeOrgSlug', ${JSON.stringify(activeOrg.slug ?? "example-corp")});
     localStorage.setItem('openwork.den.activeOrgName', 'Example Corp');
     window.dispatchEvent(new CustomEvent('openwork-den-settings-changed', { detail: {} }));
-    window.dispatchEvent(new CustomEvent('openwork-den-session-updated', { detail: { token: ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_TOKEN)} } }));
+    window.dispatchEvent(new CustomEvent('openwork-den-session-updated', { detail: { token: ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_TOKEN)} } }));
     return true;
   })()`);
 
@@ -145,7 +145,7 @@ export default {
   id: "organization-branding-upload-layout",
   title: "Branding uploads stay contained and desktop wordmarks align without adjacent text",
   kind: "user-facing",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "setup",

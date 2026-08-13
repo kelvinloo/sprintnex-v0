@@ -11,7 +11,7 @@ export function desktopBootstrapPath(
   env: NodeJS.ProcessEnv = process.env,
   platform: NodeJS.Platform = process.platform,
 ): string {
-  const override = env.OPENWORK_DESKTOP_BOOTSTRAP_PATH?.trim()
+  const override = env.SPRINTNEX_DESKTOP_BOOTSTRAP_PATH?.trim()
   if (override) return override
 
   const configHome =

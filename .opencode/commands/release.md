@@ -16,7 +16,7 @@ Do the following, in order, and stop on any failure:
 4. Run `pnpm release:review` and resolve any mismatches.
 5. Tag and push: `git tag vX.Y.Z` and `git push origin vX.Y.Z`, then `git push origin dev`.
 6. Watch the Release App GitHub Actions workflow to completion.
-7. If releasing openwork-orchestrator sidecars, build deterministically with `SOURCE_DATE_EPOCH`, upload assets to `openwork-orchestrator-vX.Y.Z`, and publish `openwork-orchestrator`.
-8. If the `openwork-server` version changed, publish that package.
+7. If releasing sprintnex-orchestrator sidecars, build deterministically with `SOURCE_DATE_EPOCH`, upload assets to `sprintnex-orchestrator-vX.Y.Z`, and publish `sprintnex-orchestrator`.
+8. If the `sprintnex-server` version changed, publish that package.
 
 Report what you changed, the tag created, and the GHA status.

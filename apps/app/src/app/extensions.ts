@@ -149,7 +149,7 @@ export function isTrustedBuiltInExtension(manifest: OpenWorkExtensionManifest | 
   return manifest?.source.origin === "builtin" && manifest.source.trusted;
 }
 
-export const BUILT_IN_OPENWORK_EXTENSION_MANIFESTS: OpenWorkExtensionManifest[] = [
+export const BUILT_IN_SPRINTNEX_EXTENSION_MANIFESTS: OpenWorkExtensionManifest[] = [
   {
     schemaVersion: 1,
     id: "openwork-browser",

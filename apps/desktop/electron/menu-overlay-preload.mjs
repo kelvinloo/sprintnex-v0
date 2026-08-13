@@ -8,7 +8,7 @@ ipcRenderer.on("openwork:menu-overlay:show", (_event, request) => {
   showCallback?.(request);
 });
 
-contextBridge.exposeInMainWorld("__OPENWORK_MENU_OVERLAY__", {
+contextBridge.exposeInMainWorld("__SPRINTNEX_MENU_OVERLAY__", {
   ready() {
     ipcRenderer.send("openwork:menu-overlay:ready");
   },

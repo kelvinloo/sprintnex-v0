@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { OpenWorkAnthropicAdaptiveThinking } from "./openwork-anthropic-adaptive-thinking.js";
+import { OpenWorkAnthropicAdaptiveThinking } from "./sprintnex-anthropic-adaptive-thinking.js";
 
 async function runHook(apiId: string, options: Record<string, unknown>) {
   const hooks = await OpenWorkAnthropicAdaptiveThinking();
@@ -49,7 +49,7 @@ describe("OpenWorkAnthropicAdaptiveThinking chat.params", () => {
   });
 
   test("module exposes only the plugin factory", async () => {
-    const mod = await import("./openwork-anthropic-adaptive-thinking.js");
+    const mod = await import("./sprintnex-anthropic-adaptive-thinking.js");
     expect(Object.keys(mod)).toEqual(["OpenWorkAnthropicAdaptiveThinking"]);
   });
 });

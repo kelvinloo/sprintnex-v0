@@ -96,7 +96,7 @@ const levelColor: Record<TuiLogLevel, RGBA> = {
 
 const levelCycle: Array<"all" | TuiLogLevel> = ["all", "info", "warn", "error", "debug"];
 
-const serviceCycle = ["all", "openwork-orchestrator", "opencode", "openwork-server"];
+const serviceCycle = ["all", "sprintnex-orchestrator", "opencode", "sprintnex-server"];
 
 const viewTabs: Array<{ name: string; description: string; value: ViewName }> = [
   { name: "Overview", description: "Overview", value: "overview" },

@@ -1,7 +1,7 @@
 import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 
 const FLOW_ID = "new-signin-flow";
-const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? "http://localhost:3005").replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? "http://localhost:3005").replace(/\/+$/, "");
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 
 export default {

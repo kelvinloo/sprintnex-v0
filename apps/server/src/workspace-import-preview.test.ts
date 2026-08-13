@@ -108,7 +108,7 @@ async function requestWorkspaceImportWithPreview(
 async function silenceExpectedServerError<T>(run: () => Promise<T>): Promise<T> {
   const originalError = console.error;
   console.error = (...args: unknown[]) => {
-    if (args[0] === "[openwork-server] Unhandled error:") return;
+    if (args[0] === "[sprintnex-server] Unhandled error:") return;
     originalError(...args);
   };
   try {
@@ -309,8 +309,8 @@ describe("workspace import preview", () => {
     tempDirs.push(dataDir);
     await writeFile(join(workspace, "opencode.jsonc"), '{ "plugin": ["demo"] }\n', "utf8");
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -346,9 +346,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -359,8 +359,8 @@ describe("workspace import preview", () => {
     tempDirs.push(dataDir);
     await writeFile(join(workspace, "opencode.jsonc"), '{ "plugin": ["demo"] }\n', "utf8");
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -385,9 +385,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -397,8 +397,8 @@ describe("workspace import preview", () => {
     const dataDir = await mkdtemp(join(tmpdir(), "openwork-import-preview-data-"));
     tempDirs.push(dataDir);
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -428,9 +428,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -440,8 +440,8 @@ describe("workspace import preview", () => {
     const dataDir = await mkdtemp(join(tmpdir(), "openwork-import-preview-data-"));
     tempDirs.push(dataDir);
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -474,9 +474,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -510,8 +510,8 @@ describe("workspace import preview", () => {
     await writeFile(join(workspace, ".opencode", "tools", "shared.ts"), "shared tool\n", "utf8");
     await writeFile(join(workspace, ".opencode", "tools", "remove-me.ts"), "legacy tool\n", "utf8");
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -545,9 +545,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -564,8 +564,8 @@ describe("workspace import preview", () => {
     await writeFile(join(workspace, ".opencode", "commands", "old-command.md"), "old command\n", "utf8");
     await writeFile(join(workspace, ".opencode", "agents", "old.md"), "old agent\n", "utf8");
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -594,9 +594,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -607,8 +607,8 @@ describe("workspace import preview", () => {
     tempDirs.push(dataDir);
     await writeFile(join(workspace, "opencode.jsonc"), '{ "plugin": ["old"] }\n', "utf8");
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -648,9 +648,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -661,8 +661,8 @@ describe("workspace import preview", () => {
     tempDirs.push(dataDir);
     await writeFile(join(workspace, "opencode.jsonc"), '{ "plugin": ["old"] }\n', "utf8");
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const serverConfig = makeServerConfig(workspace, dataDir);
     serverConfig.approval = { mode: "manual", timeoutMs: 5000 };
     const server = await startServer(serverConfig) as {
@@ -709,9 +709,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -721,8 +721,8 @@ describe("workspace import preview", () => {
     const dataDir = await mkdtemp(join(tmpdir(), "openwork-import-preview-data-"));
     tempDirs.push(dataDir);
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -746,9 +746,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });
@@ -762,8 +762,8 @@ describe("workspace import preview", () => {
     await writeFile(join(workspace, ".opencode", "skills", "old", "SKILL.md"), "old skill\n", "utf8");
     await writeFile(join(workspace, ".opencode", "skills", "new"), "blocks new skill directory\n", "utf8");
 
-    const originalDataDir = process.env.OPENWORK_DATA_DIR;
-    process.env.OPENWORK_DATA_DIR = dataDir;
+    const originalDataDir = process.env.SPRINTNEX_DATA_DIR;
+    process.env.SPRINTNEX_DATA_DIR = dataDir;
     const server = await startServer(makeServerConfig(workspace, dataDir)) as {
       port: number;
       stop: (force?: boolean) => void;
@@ -796,9 +796,9 @@ describe("workspace import preview", () => {
     } finally {
       server.stop(true);
       if (originalDataDir === undefined) {
-        delete process.env.OPENWORK_DATA_DIR;
+        delete process.env.SPRINTNEX_DATA_DIR;
       } else {
-        process.env.OPENWORK_DATA_DIR = originalDataDir;
+        process.env.SPRINTNEX_DATA_DIR = originalDataDir;
       }
     }
   });

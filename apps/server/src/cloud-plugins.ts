@@ -487,7 +487,7 @@ function readCloudImports(config: Record<string, unknown>): WorkspaceCloudImport
 }
 
 function runtimeDbPath(config: ServerConfig): string {
-  const override = process.env.OPENWORK_RUNTIME_DB?.trim();
+  const override = process.env.SPRINTNEX_RUNTIME_DB?.trim();
   if (override) return resolve(override);
   const configPath = config.configPath?.trim();
   const configDir = configPath ? dirname(configPath) : resolve(homedir(), ".config", "openwork");

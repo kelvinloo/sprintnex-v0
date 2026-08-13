@@ -141,17 +141,17 @@ function isHostedDesktopBootstrapConfig(config) {
 
 export function createWorkspaceStore({ app, defaultDenBaseUrl, defaultRequireSignin, forceRequireSignin }) {
   function desktopBootstrapPath() {
-    if (process.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH?.trim()) {
-      return process.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH.trim();
+    if (process.env.SPRINTNEX_DESKTOP_BOOTSTRAP_PATH?.trim()) {
+      return process.env.SPRINTNEX_DESKTOP_BOOTSTRAP_PATH.trim();
     }
     // Dev mode swaps process.env.HOME to the sandboxed dev-data home midway
     // through startup (runtime.mjs buildChildEnv -> Object.assign(process.env)),
     // which changes what os.homedir() returns. Resolve the dev-data home
     // deterministically so early and late IPC reads target the same file.
-    if (process.env.OPENWORK_DEV_MODE === "1") {
+    if (process.env.SPRINTNEX_DEV_MODE === "1") {
       return path.join(
         app.getPath("userData"),
-        "openwork-dev-data",
+        "sprintnex-dev-data",
         "home",
         ".config",
         "openwork",
@@ -174,11 +174,11 @@ export function createWorkspaceStore({ app, defaultDenBaseUrl, defaultRequireSig
   }
 
   function openworkServerTokenStorePath() {
-    return path.join(app.getPath("userData"), "openwork-server-tokens.json");
+    return path.join(app.getPath("userData"), "sprintnex-server-tokens.json");
   }
 
   function openworkServerConfigPath() {
-    if (process.env.OPENWORK_SERVER_CONFIG?.trim()) return path.resolve(process.env.OPENWORK_SERVER_CONFIG.trim());
+    if (process.env.SPRINTNEX_SERVER_CONFIG?.trim()) return path.resolve(process.env.SPRINTNEX_SERVER_CONFIG.trim());
     if (process.platform === "win32") return path.join(process.env.APPDATA || path.join(os.homedir(), "AppData", "Roaming"), "openwork", "server.json");
     return path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "openwork", "server.json");
   }
@@ -346,7 +346,7 @@ export function createWorkspaceStore({ app, defaultDenBaseUrl, defaultRequireSig
 
   function bundleSearchRoots() {
     const roots = [];
-    const override = process.env.OPENWORK_BOOTSTRAP_BUNDLE_DIR?.trim();
+    const override = process.env.SPRINTNEX_BOOTSTRAP_BUNDLE_DIR?.trim();
     if (override) roots.push(path.resolve(override));
     for (const name of ["downloads", "desktop"]) {
       try {
@@ -459,7 +459,7 @@ export function createWorkspaceStore({ app, defaultDenBaseUrl, defaultRequireSig
       legacyExists: legacyPath ? existsSync(legacyPath) : false,
       home: os.homedir(),
       envHome: process.env.HOME ?? null,
-      envOverride: process.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH ?? null,
+      envOverride: process.env.SPRINTNEX_DESKTOP_BOOTSTRAP_PATH ?? null,
       exists: existsSync(configPath),
       raw: null,
       parsed: null,
@@ -634,8 +634,8 @@ export function createWorkspaceStore({ app, defaultDenBaseUrl, defaultRequireSig
   function firstRunDefaultWorkspaceDir() {
     // Dev mode sandboxes HOME under userData (see desktopBootstrapPath);
     // mirror that so the dev default workspace never touches the real home.
-    if (process.env.OPENWORK_DEV_MODE === "1") {
-      return path.join(app.getPath("userData"), "openwork-dev-data", "home", "OpenWork");
+    if (process.env.SPRINTNEX_DEV_MODE === "1") {
+      return path.join(app.getPath("userData"), "sprintnex-dev-data", "home", "OpenWork");
     }
     return path.join(os.homedir(), "OpenWork");
   }
@@ -831,7 +831,7 @@ export function createWorkspaceStore({ app, defaultDenBaseUrl, defaultRequireSig
     let activeId = typeof state?.activeId === "string" ? state.activeId : null;
     let workspaces = Array.isArray(state?.workspaces) ? state.workspaces : [];
     let changed = false;
-    if (workspaces.length === 0 && process.env.OPENWORK_DESKTOP_DISABLE_WORKSPACE_RECOVERY !== "1") {
+    if (workspaces.length === 0 && process.env.SPRINTNEX_DESKTOP_DISABLE_WORKSPACE_RECOVERY !== "1") {
       const recoveredWorkspaces = await recoverWorkspacesFromKnownState();
       if (recoveredWorkspaces.length > 0) {
         const selectedWorkspace = recoveredWorkspaces[0];
@@ -854,7 +854,7 @@ export function createWorkspaceStore({ app, defaultDenBaseUrl, defaultRequireSig
     if (
       workspaces.length === 0 &&
       !stateFileExists &&
-      (app.isPackaged || process.env.OPENWORK_DEV_MODE === "1")
+      (app.isPackaged || process.env.SPRINTNEX_DEV_MODE === "1")
     ) {
       try {
         const defaultWorkspace = await createDefaultFirstRunWorkspace();

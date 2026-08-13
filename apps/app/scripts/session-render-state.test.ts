@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import type { UIMessage } from "ai";
 
-import type { OpenworkSessionSnapshot } from "../src/app/lib/openwork-server";
+import type { OpenworkSessionSnapshot } from "../src/app/lib/sprintnex-server";
 import {
   deriveRenderedSessionMessages,
   resolveRenderedSessionSnapshot,

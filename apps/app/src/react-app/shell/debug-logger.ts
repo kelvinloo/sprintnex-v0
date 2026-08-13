@@ -1,6 +1,6 @@
 /**
  * Dev observability client. Forwards browser console logs, uncaught errors,
- * promise rejections, and fetch activity to the openwork-server `/dev/log`
+ * promise rejections, and fetch activity to the sprintnex-server `/dev/log`
  * sink so an operator can tail a single file and see everything the React
  * shell is doing — especially right before a hang.
  *
@@ -50,7 +50,7 @@ const sessionKey = `react-${Date.now().toString(36)}-${Math.random().toString(36
 
 // Cached availability of the server-side /dev/log sink, keyed by base URL.
 // Prevents the debug-logger from spamming 404s into the console when the
-// pnpm dev process was started WITHOUT OPENWORK_DEV_LOG_FILE set. The
+// pnpm dev process was started WITHOUT SPRINTNEX_DEV_LOG_FILE set. The
 // sink returns 404 in that case and the browser logs every failed POST.
 // We probe once per base URL and disable posting for the remainder of the
 // session when the probe fails.
@@ -141,7 +141,7 @@ async function flushQueue() {
   if (!base) return;
 
   // Skip the POST entirely when we know the sink is disabled, otherwise
-  // every dev session without OPENWORK_DEV_LOG_FILE set spams 404s.
+  // every dev session without SPRINTNEX_DEV_LOG_FILE set spams 404s.
   const available = await sinkIsAvailable(base);
   if (!available) {
     // Drop the queued entries; they're still retained in

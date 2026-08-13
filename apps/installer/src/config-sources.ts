@@ -1,4 +1,4 @@
-import { installConfigSchema, installConfigUrlFor, INSTALL_SIDECAR_FILENAME, parseInstallerFilenameTag, type InstallConfig } from "@openwork/install-config"
+import { installConfigSchema, installConfigUrlFor, INSTALL_SIDECAR_FILENAME, parseInstallerFilenameTag, type InstallConfig } from "@sprintnex/install-config"
 import { execFileSync } from "node:child_process"
 import { existsSync, readFileSync } from "node:fs"
 import path from "node:path"
@@ -86,18 +86,18 @@ function parseRequireSignin(value: string | undefined, fallback: boolean) {
 }
 
 export function envOverrides(env: NodeJS.ProcessEnv = process.env): InstallerConfig | null {
-  const appName = env.OPENWORK_INSTALLER_APP_NAME?.trim() || "OpenWork"
-  const clientName = env.OPENWORK_INSTALLER_CLIENT_NAME?.trim() ?? ""
-  const webUrl = env.OPENWORK_INSTALLER_WEB_URL?.trim() ?? ""
-  const apiUrl = env.OPENWORK_INSTALLER_API_URL?.trim() ?? ""
-  const logoUrl = env.OPENWORK_INSTALLER_LOGO_URL?.trim() ?? ""
-  const hasEnvOverride = Boolean(clientName || webUrl || apiUrl || logoUrl || env.OPENWORK_INSTALLER_REQUIRE_SIGNIN !== undefined)
+  const appName = env.SPRINTNEX_INSTALLER_APP_NAME?.trim() || "OpenWork"
+  const clientName = env.SPRINTNEX_INSTALLER_CLIENT_NAME?.trim() ?? ""
+  const webUrl = env.SPRINTNEX_INSTALLER_WEB_URL?.trim() ?? ""
+  const apiUrl = env.SPRINTNEX_INSTALLER_API_URL?.trim() ?? ""
+  const logoUrl = env.SPRINTNEX_INSTALLER_LOGO_URL?.trim() ?? ""
+  const hasEnvOverride = Boolean(clientName || webUrl || apiUrl || logoUrl || env.SPRINTNEX_INSTALLER_REQUIRE_SIGNIN !== undefined)
 
   if (!hasEnvOverride) {
     return null
   }
   if (!clientName || !webUrl || !apiUrl) {
-    throw new Error("OPENWORK_INSTALLER_CLIENT_NAME, OPENWORK_INSTALLER_WEB_URL, and OPENWORK_INSTALLER_API_URL are required when using installer env overrides")
+    throw new Error("SPRINTNEX_INSTALLER_CLIENT_NAME, SPRINTNEX_INSTALLER_WEB_URL, and SPRINTNEX_INSTALLER_API_URL are required when using installer env overrides")
   }
 
   return {
@@ -106,7 +106,7 @@ export function envOverrides(env: NodeJS.ProcessEnv = process.env): InstallerCon
     webUrl: normalizeUrl(webUrl, "web URL"),
     apiUrl: normalizeUrl(apiUrl, "API URL"),
     logoUrl: logoUrl ? normalizeUrl(logoUrl, "logo URL") : null,
-    requireSignin: parseRequireSignin(env.OPENWORK_INSTALLER_REQUIRE_SIGNIN, BUILD_REQUIRE_SIGNIN),
+    requireSignin: parseRequireSignin(env.SPRINTNEX_INSTALLER_REQUIRE_SIGNIN, BUILD_REQUIRE_SIGNIN),
   }
 }
 

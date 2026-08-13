@@ -4,14 +4,14 @@
  * deep link into Settings -> Cloud -> Account, and assert the session lands.
  *
  * Required env:
- * - OPENWORK_EVAL_DEN_API_URL    Den API base, e.g. https://api.example.com
- * - OPENWORK_EVAL_DEN_TOKEN      Bearer session token for a Den account
+ * - SPRINTNEX_EVAL_DEN_API_URL    Den API base, e.g. https://api.example.com
+ * - SPRINTNEX_EVAL_DEN_TOKEN      Bearer session token for a Den account
  */
 export default {
   id: "cloud-signin-handoff",
   title: "Cloud sign-in via desktop handoff paste code",
   spec: "evals/cloud-auth-flows.md#flow-1-cloud-sign-in-happy-path",
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "App booted",
@@ -22,11 +22,11 @@ export default {
     {
       name: "Create desktop handoff grant via Den API",
       run: async (ctx) => {
-        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
           method: "POST",
           headers: {
-            authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
+            authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({ desktopScheme: "openwork" }),

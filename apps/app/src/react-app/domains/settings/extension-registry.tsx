@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import type { McpDirectoryInfo } from "../../../app/constants";
 import { extensionContribution } from "../../../app/extensions";
-import type { OpenworkServerClient } from "../../../app/lib/openwork-server";
+import type { OpenworkServerClient } from "../../../app/lib/sprintnex-server";
 import type { LocalProviderInstallInput } from "./openai-image-extension";
 
 /**

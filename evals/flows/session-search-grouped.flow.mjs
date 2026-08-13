@@ -3,7 +3,7 @@
  * sidebar and returns grouped results (Recent / Session titles / Messages).
  *
  * The deep-search query defaults to "joke" and can be overridden with
- * OPENWORK_EVAL_SEARCH_QUERY for profiles seeded with different data. The flow
+ * SPRINTNEX_EVAL_SEARCH_QUERY for profiles seeded with different data. The flow
  * expects the query to match at least one session title or message.
  */
 const SEARCH_INPUT = 'input[placeholder="Search all sessions and messages…"]';
@@ -80,7 +80,7 @@ export default {
     {
       name: "Typing a query groups results by match kind",
       run: async (ctx) => {
-        const query = ctx.env.OPENWORK_EVAL_SEARCH_QUERY?.trim() || "joke";
+        const query = ctx.env.SPRINTNEX_EVAL_SEARCH_QUERY?.trim() || "joke";
         await ctx.prove("Query results are grouped with counts", {
           claim: `Typing "${query}" shows results grouped by why they matched (Session titles and/or Messages), each with a count.`,
           voiceover:

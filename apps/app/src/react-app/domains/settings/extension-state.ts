@@ -3,7 +3,7 @@ import { getMcpServerName, type McpDirectoryInfo } from "../../../app/constants"
 const EXTENSION_DISABLED_KEY_PREFIX = "openwork.extension.disabled.";
 const EXTENSION_ENABLED_KEY_PREFIX = "openwork.extension.enabled.";
 const EXTENSION_HIDDEN_KEY_PREFIX = "openwork.extension.hidden.";
-export const OPENWORK_EXTENSION_STATE_CHANGED = "openwork:extension-state-changed";
+export const SPRINTNEX_EXTENSION_STATE_CHANGED = "openwork:extension-state-changed";
 
 export function getExtensionId(entry: McpDirectoryInfo): string {
   return entry.id ?? entry.serverName ?? getMcpServerName(entry);
@@ -34,7 +34,7 @@ export function setOpenWorkExtensionEnabled(entry: McpDirectoryInfo, enabled: bo
       window.localStorage.removeItem(enabledKey);
     }
   }
-  window.dispatchEvent(new CustomEvent(OPENWORK_EXTENSION_STATE_CHANGED, {
+  window.dispatchEvent(new CustomEvent(SPRINTNEX_EXTENSION_STATE_CHANGED, {
     detail: { id, enabled },
   }));
 }
@@ -53,7 +53,7 @@ export function setOpenWorkExtensionHidden(entryOrId: McpDirectoryInfo | string,
   if (typeof window === "undefined") return;
   const key = `${EXTENSION_HIDDEN_KEY_PREFIX}${id}`;
   window.localStorage.setItem(key, hidden ? "1" : "0");
-  window.dispatchEvent(new CustomEvent(OPENWORK_EXTENSION_STATE_CHANGED, {
+  window.dispatchEvent(new CustomEvent(SPRINTNEX_EXTENSION_STATE_CHANGED, {
     detail: { id, hidden },
   }));
 }

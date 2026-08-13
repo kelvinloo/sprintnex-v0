@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import type { OpenworkSessionSnapshot } from "../../../../app/lib/openwork-server";
+import type { OpenworkSessionSnapshot } from "../../../../app/lib/sprintnex-server";
 import type { SessionRenderModel } from "../sync/transition-controller";
 
 export function SessionDebugPanel(props: {

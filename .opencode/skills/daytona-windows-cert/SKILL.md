@@ -210,7 +210,7 @@ daytona exec "$SANDBOX_ID" -- cmd /c 'copy C:\ow\openwork\ca-probe.js C:\ow\ca-p
 const { X509Certificate } = require("node:crypto");
 const tls = require("node:tls");
 
-const needle = (process.env.OPENWORK_TLS_REPRO_CA_MATCH || "OpenWork TLS Repro").toLowerCase();
+const needle = (process.env.SPRINTNEX_TLS_REPRO_CA_MATCH || "OpenWork TLS Repro").toLowerCase();
 
 function countMatchingSubjects(certificates) {
   let count = 0;

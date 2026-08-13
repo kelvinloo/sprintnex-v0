@@ -23,9 +23,9 @@ import {
 
 const vo = await loadVoiceoverParagraphs("microsoft-365-cloud-connect");
 
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MOCK_SERVER_URL = (process.env.OPENWORK_EVAL_CLOUD_CONNECT_MOCK_URL ?? "http://127.0.0.1:3979")
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MOCK_SERVER_URL = (process.env.SPRINTNEX_EVAL_CLOUD_CONNECT_MOCK_URL ?? "http://127.0.0.1:3979")
   .trim()
   .replace(/\/+$/, "");
 const TENANT_ID = "11111111-2222-3333-4444-555555555555";
@@ -223,7 +223,7 @@ export default {
   title: "Admins choose delegated Microsoft 365 capabilities; members connect, use them, reconnect for changes, and disconnect safely",
   kind: "user-facing",
   preserveTheme: true,
-  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "Setup: mock services are healthy and the demo owner starts disconnected",
@@ -241,8 +241,8 @@ export default {
         witness(ctx, reset.ok, "The Cloud Connect service mock starts from a clean request log.", { status: reset.status });
 
         state.adminSession = await signInApi(ADMIN_EMAIL, ADMIN_PASSWORD);
-        if (!state.adminSession && ctx.env.OPENWORK_EVAL_DEN_TOKEN?.trim()) {
-          state.adminSession = ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim();
+        if (!state.adminSession && ctx.env.SPRINTNEX_EVAL_DEN_TOKEN?.trim()) {
+          state.adminSession = ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim();
         }
         witness(ctx, Boolean(state.adminSession), `The demo owner can sign in as ${ADMIN_EMAIL}.`);
 

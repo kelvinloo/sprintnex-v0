@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import type { OpenworkSessionMessage } from "../src/app/lib/openwork-server";
+import type { OpenworkSessionMessage } from "../src/app/lib/sprintnex-server";
 import {
   createSessionSearcher,
   type SearchableSession,

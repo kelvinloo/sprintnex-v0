@@ -20,21 +20,21 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 // The runner fails this flow if the narration drifts from that script.
 const vo = await loadVoiceoverParagraphs("org-install-link");
 
-const DEN_API_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_API_URL);
-const DEN_WEB_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL);
-const ADMIN_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_ADMIN);
-const INVITEE_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_INVITEE);
-const INSTALLER_BIN = process.env.OPENWORK_EVAL_INSTALLER_BIN?.trim() ?? "";
-const ARTIFACTS_DIR = process.env.OPENWORK_EVAL_ARTIFACTS_DIR?.trim() ?? "";
-const BOOTSTRAP_PATH = process.env.OPENWORK_EVAL_BOOTSTRAP_PATH?.trim() ?? "";
-const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
-const PLATFORM_ADMIN_EMAIL = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
-const PLATFORM_ADMIN_PASSWORD = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_API_URL);
+const DEN_WEB_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL);
+const ADMIN_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_ADMIN);
+const INVITEE_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_INVITEE);
+const INSTALLER_BIN = process.env.SPRINTNEX_EVAL_INSTALLER_BIN?.trim() ?? "";
+const ARTIFACTS_DIR = process.env.SPRINTNEX_EVAL_ARTIFACTS_DIR?.trim() ?? "";
+const BOOTSTRAP_PATH = process.env.SPRINTNEX_EVAL_BOOTSTRAP_PATH?.trim() ?? "";
+const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const PLATFORM_ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
+const PLATFORM_ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const RUN_TAG = Date.now().toString(36);
-const MEMBER_EMAIL = process.env.OPENWORK_EVAL_MEMBER_EMAIL?.trim() || `riley.install+${RUN_TAG}@acme.test`;
-const MEMBER_PASSWORD = process.env.OPENWORK_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MEMBER_EMAIL = process.env.SPRINTNEX_EVAL_MEMBER_EMAIL?.trim() || `riley.install+${RUN_TAG}@acme.test`;
+const MEMBER_PASSWORD = process.env.SPRINTNEX_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
 const INSTALL_SIDECAR_FILENAME = "openwork-installer.json";
 const MAC_ARTIFACT_FILENAME = "openwork-installer-mac-arm64.zip";
 
@@ -59,17 +59,17 @@ export default {
   title: "Organization install links stamp Acme into the download, installer, and first desktop sign-in",
   kind: "user-facing",
   requiredEnv: [
-    "OPENWORK_EVAL_DEN_API_URL",
-    "OPENWORK_EVAL_DEN_TOKEN",
-    "OPENWORK_EVAL_DEN_WEB_URL",
-    "OPENWORK_EVAL_WEB_CDP_ADMIN",
-    "OPENWORK_EVAL_WEB_CDP_INVITEE",
-    "OPENWORK_EVAL_INSTALLER_BIN",
-    "OPENWORK_EVAL_ARTIFACTS_DIR",
-    "OPENWORK_EVAL_BOOTSTRAP_PATH",
-    "OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL",
-    "OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD",
-    "OPENWORK_EVAL_MARK_VERIFIED_CMD",
+    "SPRINTNEX_EVAL_DEN_API_URL",
+    "SPRINTNEX_EVAL_DEN_TOKEN",
+    "SPRINTNEX_EVAL_DEN_WEB_URL",
+    "SPRINTNEX_EVAL_WEB_CDP_ADMIN",
+    "SPRINTNEX_EVAL_WEB_CDP_INVITEE",
+    "SPRINTNEX_EVAL_INSTALLER_BIN",
+    "SPRINTNEX_EVAL_ARTIFACTS_DIR",
+    "SPRINTNEX_EVAL_BOOTSTRAP_PATH",
+    "SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL",
+    "SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD",
+    "SPRINTNEX_EVAL_MARK_VERIFIED_CMD",
   ],
   steps: [
     {
@@ -494,8 +494,8 @@ async function ensureAdminToken(ctx) {
     state.adminToken = signedIn.body.token;
     return state.adminToken;
   }
-  const token = process.env.OPENWORK_EVAL_DEN_TOKEN?.trim() ?? "";
-  ctx.assert(token.length > 0, `Admin sign-in failed and OPENWORK_EVAL_DEN_TOKEN is missing: ${signedIn.response.status}`);
+  const token = process.env.SPRINTNEX_EVAL_DEN_TOKEN?.trim() ?? "";
+  ctx.assert(token.length > 0, `Admin sign-in failed and SPRINTNEX_EVAL_DEN_TOKEN is missing: ${signedIn.response.status}`);
   state.adminToken = token;
   return token;
 }
@@ -640,7 +640,7 @@ async function ensureMemberAccount(ctx) {
 function markEmailVerified(ctx, email) {
   ctx.assert(
     MARK_VERIFIED_CMD.length > 0,
-    "Invitation acceptance requires a verified email; set OPENWORK_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
+    "Invitation acceptance requires a verified email; set SPRINTNEX_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
   );
   execSync(MARK_VERIFIED_CMD.replaceAll("{email}", email), { stdio: "ignore" });
 }
@@ -764,9 +764,9 @@ async function ensureDesktopReady(ctx) {
 async function deliverDeepLinkToDesktop(ctx, openworkUrl) {
   await ctx.eval(`(() => {
     const url = ${JSON.stringify(openworkUrl)};
-    window.__OPENWORK__ = window.__OPENWORK__ || {};
-    const pending = window.__OPENWORK__.deepLinks || [];
-    window.__OPENWORK__.deepLinks = [...pending, url];
+    window.__SPRINTNEX__ = window.__SPRINTNEX__ || {};
+    const pending = window.__SPRINTNEX__.deepLinks || [];
+    window.__SPRINTNEX__.deepLinks = [...pending, url];
     window.dispatchEvent(new CustomEvent("openwork:deep-link", { detail: { urls: [url] } }));
     return true;
   })()`);
@@ -901,7 +901,7 @@ async function startInstallerUi(tempPrefix, { sidecarJson = null } = {}) {
   }
   const child = spawn(installerPath, [], {
     cwd: tempDir,
-    env: sanitizedInstallerEnv({ OPENWORK_INSTALLER_UI: "manual" }),
+    env: sanitizedInstallerEnv({ SPRINTNEX_INSTALLER_UI: "manual" }),
     stdio: ["ignore", "pipe", "pipe"],
   });
   let output = "";
@@ -928,7 +928,7 @@ function runHeadlessInstallerWithSidecar() {
   const tempDir = makeTempDir("openwork-install-link-sidecar-");
   const installerPath = copyInstallerTo(tempDir);
   writeFileSync(path.join(tempDir, INSTALL_SIDECAR_FILENAME), sidecarJson, "utf8");
-  return runInstaller(installerPath, ["--headless", "--dry-run"], sanitizedInstallerEnv({ OPENWORK_DESKTOP_BOOTSTRAP_PATH: BOOTSTRAP_PATH }), tempDir);
+  return runInstaller(installerPath, ["--headless", "--dry-run"], sanitizedInstallerEnv({ SPRINTNEX_DESKTOP_BOOTSTRAP_PATH: BOOTSTRAP_PATH }), tempDir);
 }
 
 function runBareInstallerFallback() {
@@ -940,7 +940,7 @@ function runBareInstallerFallback() {
   const withLink = runInstaller(
     installerPath,
     ["--headless", "--dry-run", "--install-link", installLink],
-    sanitizedInstallerEnv({ OPENWORK_DESKTOP_BOOTSTRAP_PATH: secondBootstrapPath }),
+    sanitizedInstallerEnv({ SPRINTNEX_DESKTOP_BOOTSTRAP_PATH: secondBootstrapPath }),
     tempDir,
   );
   return { missing, withLink, secondBootstrapPath };
@@ -964,7 +964,7 @@ function runInstaller(installerPath, args, env, cwd) {
 function sanitizedInstallerEnv(overrides = {}) {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("OPENWORK_INSTALLER_") || key === "OPENWORK_DESKTOP_BOOTSTRAP_PATH") {
+    if (key.startsWith("SPRINTNEX_INSTALLER_") || key === "SPRINTNEX_DESKTOP_BOOTSTRAP_PATH") {
       delete env[key];
     }
   }

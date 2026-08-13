@@ -4,7 +4,7 @@
  * Run this against a single-org Den sandbox configured as Acme Robotics with:
  * - alex@acme.test in DEN_SINGLE_ORG_OWNER_EMAILS and DEN_BOOTSTRAP_ADMIN_EMAILS
  * - installLinks enabled by this flow through the platform-admin API
- * - a generic win-x64 installer available through OPENWORK_INSTALLER_ARTIFACTS_DIR
+ * - a generic win-x64 installer available through SPRINTNEX_INSTALLER_ARTIFACTS_DIR
  *
  * Riley is created through ordinary sign-up and single-org membership
  * provisioning. No invitation or app-version endpoint participates in setup.
@@ -15,13 +15,13 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 const FLOW_ID = "org-aware-dashboard-downloads";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 
-const DEN_API_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_API_URL);
-const DEN_WEB_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL);
-const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
-const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MEMBER_EMAIL = process.env.OPENWORK_EVAL_MEMBER_EMAIL?.trim() || "riley.downloads@acme.test";
-const MEMBER_PASSWORD = process.env.OPENWORK_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_API_URL);
+const DEN_WEB_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL);
+const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MEMBER_EMAIL = process.env.SPRINTNEX_EVAL_MEMBER_EMAIL?.trim() || "riley.downloads@acme.test";
+const MEMBER_PASSWORD = process.env.SPRINTNEX_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
 const ORGANIZATION_NAME = "Acme Robotics";
 
 const state = {
@@ -260,9 +260,9 @@ export default {
   title: "Every Acme member gets the configured desktop installer without invalidating earlier links",
   kind: "user-facing",
   requiredEnv: [
-    "OPENWORK_EVAL_DEN_API_URL",
-    "OPENWORK_EVAL_DEN_WEB_URL",
-    "OPENWORK_EVAL_MARK_VERIFIED_CMD",
+    "SPRINTNEX_EVAL_DEN_API_URL",
+    "SPRINTNEX_EVAL_DEN_WEB_URL",
+    "SPRINTNEX_EVAL_MARK_VERIFIED_CMD",
   ],
   steps: [
     {

@@ -8,12 +8,12 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 const FLOW_ID = "standard-dmg-bootstrap-zip";
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
-const DEN_WEB_URL = cleanUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL);
-const INSTALL_TOKEN = process.env.OPENWORK_EVAL_INSTALL_TOKEN?.trim() ?? "";
-const BUNDLE_ZIP = process.env.OPENWORK_EVAL_BUNDLE_ZIP?.trim() ?? "";
-const BUNDLE_DIR = process.env.OPENWORK_EVAL_BUNDLE_DIR?.trim() ?? "";
-const BOOTSTRAP_PATH = process.env.OPENWORK_EVAL_BOOTSTRAP_PATH?.trim() ?? "";
-const DESKTOP_CDP_URL = cleanUrl(process.env.OPENWORK_EVAL_DESKTOP_CDP_URL);
+const DEN_WEB_URL = cleanUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL);
+const INSTALL_TOKEN = process.env.SPRINTNEX_EVAL_INSTALL_TOKEN?.trim() ?? "";
+const BUNDLE_ZIP = process.env.SPRINTNEX_EVAL_BUNDLE_ZIP?.trim() ?? "";
+const BUNDLE_DIR = process.env.SPRINTNEX_EVAL_BUNDLE_DIR?.trim() ?? "";
+const BOOTSTRAP_PATH = process.env.SPRINTNEX_EVAL_BOOTSTRAP_PATH?.trim() ?? "";
+const DESKTOP_CDP_URL = cleanUrl(process.env.SPRINTNEX_EVAL_DESKTOP_CDP_URL);
 
 function cleanUrl(value) {
   return (value ?? "").trim().replace(/\/+$/, "");
@@ -64,12 +64,12 @@ export default {
   title: "Organization downloads reuse the standard signed installer and configure OpenWork on first launch",
   kind: "user-facing",
   requiredEnv: [
-    "OPENWORK_EVAL_DEN_WEB_URL",
-    "OPENWORK_EVAL_INSTALL_TOKEN",
-    "OPENWORK_EVAL_BUNDLE_ZIP",
-    "OPENWORK_EVAL_BUNDLE_DIR",
-    "OPENWORK_EVAL_BOOTSTRAP_PATH",
-    "OPENWORK_EVAL_DESKTOP_CDP_URL",
+    "SPRINTNEX_EVAL_DEN_WEB_URL",
+    "SPRINTNEX_EVAL_INSTALL_TOKEN",
+    "SPRINTNEX_EVAL_BUNDLE_ZIP",
+    "SPRINTNEX_EVAL_BUNDLE_DIR",
+    "SPRINTNEX_EVAL_BOOTSTRAP_PATH",
+    "SPRINTNEX_EVAL_DESKTOP_CDP_URL",
   ],
   steps: [
     {

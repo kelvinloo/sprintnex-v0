@@ -1,5 +1,5 @@
 import { DEFAULT_DEN_BASE_URL, normalizeDenBaseUrl } from "./den";
-import { normalizeOpenworkServerUrl } from "./openwork-server";
+import { normalizeOpenworkServerUrl } from "./sprintnex-server";
 
 export type RemoteWorkspaceDefaults = {
   openworkHostUrl?: string | null;
