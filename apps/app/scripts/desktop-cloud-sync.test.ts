@@ -4,7 +4,7 @@ import {
   derivePendingCloudPluginChanges,
   readPendingCloudSyncChanges,
 } from "../src/app/cloud/desktop-cloud-sync";
-import type { OpenworkDesktopCloudSyncChange } from "../src/app/lib/sprintnex-server";
+import type { OpenworkDesktopCloudSyncChange } from "../src/app/lib/openwork-server";
 
 function change(input: Partial<OpenworkDesktopCloudSyncChange> & Pick<OpenworkDesktopCloudSyncChange, "id" | "kind" | "resourceKind">): OpenworkDesktopCloudSyncChange {
   return {

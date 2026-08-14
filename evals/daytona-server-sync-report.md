@@ -5,7 +5,7 @@ PR: https://github.com/different-ai/openwork/pull/1887
 
 ## Topology
 
-- Server sandbox: `sprintnex-server-20260521-195504`
+- Server sandbox: `openwork-server-20260521-195504`
 - Electron sandbox: `openwork-test-20260521-200726`
 - Den Web: `https://3005-8a1fmav0r1lc67wb.daytonaproxy01.net`
 - Den API: `https://8788-fsjfdaoh0xoklgyn.daytonaproxy01.net`
@@ -83,5 +83,5 @@ Observation: the API allows adding a plugin to a marketplace, and the desktop ma
 - `bash -n .devcontainer/test-on-daytona.sh`
 - `bash -n .devcontainer/test-server-on-daytona.sh`
 - `bash -n .devcontainer/start-daytona-server.sh`
-- `bash -n .devcontainer/create-daytona-sprintnex-server-snapshot.sh`
+- `bash -n .devcontainer/create-daytona-openwork-server-snapshot.sh`
 - `pnpm --filter @openwork/app typecheck`

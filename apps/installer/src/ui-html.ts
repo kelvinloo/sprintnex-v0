@@ -1,5 +1,5 @@
 import { installerConfigSourceLabel, type InstallerConfigResolution } from "./config"
-import { SPRINTNEX_LOGO_SVG } from "./openwork-logo"
+import { OPENWORK_LOGO_SVG } from "./openwork-logo"
 
 function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => {
@@ -24,7 +24,7 @@ export function renderInstallerHtml(resolution: InstallerConfigResolution | null
   const config = resolution?.config ?? null
   const logo = config?.logoUrl
     ? `<img class="logo" src="${escapeHtml(config.logoUrl)}" alt="${escapeHtml(config.clientName)}" />`
-    : `<div class="logo">${SPRINTNEX_LOGO_SVG}</div>`
+    : `<div class="logo">${OPENWORK_LOGO_SVG}</div>`
   const sourceLabel = resolution ? installerConfigSourceLabel(resolution.source) : ""
   const appName = config?.appName ?? "OpenWork"
   const configuredContent = config
@@ -40,7 +40,7 @@ export function renderInstallerHtml(resolution: InstallerConfigResolution | null
   </div>
   <div class="status" id="status"></div>`
     : `
-  <div class="logo">${SPRINTNEX_LOGO_SVG}</div>
+  <div class="logo">${OPENWORK_LOGO_SVG}</div>
   <div class="title">Paste your OpenWork install link</div>
   <div class="client">Your organization admin can copy this link from the Members page.</div>
   <form class="paste" id="paste-form">

@@ -118,8 +118,8 @@ async function runInjectedSessionTools(baseUrl) {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      SPRINTNEX_SERVER_URL: baseUrl,
-      SPRINTNEX_SERVER_TOKEN: TOKEN,
+      OPENWORK_SERVER_URL: baseUrl,
+      OPENWORK_SERVER_TOKEN: TOKEN,
     },
     maxBuffer: 1024 * 1024,
   });

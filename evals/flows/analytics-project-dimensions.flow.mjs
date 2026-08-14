@@ -4,16 +4,16 @@
  * that server-derived project key.
  *
  * Required env:
- * - SPRINTNEX_EVAL_DEN_API_URL   Den API base, e.g. https://api.example.com
- * - SPRINTNEX_EVAL_DEN_TOKEN     Bearer session token for a Den account
+ * - OPENWORK_EVAL_DEN_API_URL   Den API base, e.g. https://api.example.com
+ * - OPENWORK_EVAL_DEN_TOKEN     Bearer session token for a Den account
  *
  * Optional env:
- * - SPRINTNEX_EVAL_PROJECT_DIR   Existing sandbox folder for the workspace
+ * - OPENWORK_EVAL_PROJECT_DIR   Existing sandbox folder for the workspace
  *                               (default /workspace/atlas-billing). The flow
  *                               assumes this folder already exists.
  *
  * How to run:
- * SPRINTNEX_EVAL_DEN_API_URL=... SPRINTNEX_EVAL_DEN_TOKEN=... pnpm fraimz --flow analytics-project-dimensions --cdp-url <electron-cdp>
+ * OPENWORK_EVAL_DEN_API_URL=... OPENWORK_EVAL_DEN_TOKEN=... pnpm fraimz --flow analytics-project-dimensions --cdp-url <electron-cdp>
  */
 import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 
@@ -26,11 +26,11 @@ const vo = await loadVoiceoverParagraphs(FLOW_ID);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function apiBase(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  return ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
 }
 
 function bearerToken(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim();
+  return ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim();
 }
 
 function optionalEnv(ctx, name, fallback) {
@@ -120,7 +120,7 @@ export default {
   title: "Project dimensions flow from desktop workspace to filtered org analytics",
   kind: "user-facing",
   spec: "evals/voiceovers/analytics-project-dimensions.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "Setup an onboarded desktop profile",
@@ -321,7 +321,7 @@ export default {
     {
       name: "Create the workspace and send its first task",
       run: async (ctx) => {
-        const projectDir = optionalEnv(ctx, "SPRINTNEX_EVAL_PROJECT_DIR", DEFAULT_PROJECT_DIR);
+        const projectDir = optionalEnv(ctx, "OPENWORK_EVAL_PROJECT_DIR", DEFAULT_PROJECT_DIR);
         await ctx.prove("The first task from the project workspace is tagged for telemetry", {
           voiceover: vo[2],
           action: async () => {

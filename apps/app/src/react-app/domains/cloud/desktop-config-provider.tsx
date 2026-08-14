@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { desktopPolicyKeys } from "@sprintnex/types/den/desktop-policies";
+import { desktopPolicyKeys } from "@openwork/types/den/desktop-policies";
 
 import {
   checkDesktopAppRestriction,
@@ -25,7 +25,7 @@ import {
   type DenDesktopConfig,
 } from "../../../app/lib/den";
 import { applyBrandAppName, applyBrandIcon } from "../../../app/lib/desktop";
-import { createOpenworkServerClient } from "../../../app/lib/sprintnex-server";
+import { createOpenworkServerClient } from "../../../app/lib/openwork-server";
 import {
   denSessionUpdatedEvent,
   denSettingsChangedEvent,

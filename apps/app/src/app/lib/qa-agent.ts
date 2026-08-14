@@ -153,7 +153,7 @@ async function desktopFetch<T = unknown>(
   payload: Record<string, unknown> = {},
 ): Promise<T | null> {
   const bridge = (window as unknown as Record<string, unknown>)
-    .__SPRINTNEX_ELECTRON__ as
+    .__OPENWORK_ELECTRON__ as
     | { invokeDesktop: (cmd: string, ...args: unknown[]) => Promise<unknown> }
     | undefined;
   if (!bridge?.invokeDesktop) return null;

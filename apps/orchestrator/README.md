@@ -2,12 +2,12 @@
 
 Host orchestrator for opencode + OpenWork server. This is a CLI-first way to run host mode without the desktop UI.
 
-Published on npm as `sprintnex-orchestrator` and installs the `openwork` command.
+Published on npm as `openwork-orchestrator` and installs the `openwork` command.
 
 ## Quick start
 
 ```bash
-npm install -g sprintnex-orchestrator
+npm install -g openwork-orchestrator
 openwork start --workspace /path/to/workspace --approval auto
 ```
 
@@ -21,24 +21,24 @@ openwork serve --workspace /path/to/workspace
 `openwork` ships as a compiled binary, so Bun is not required at runtime.
 
 If npm skips the optional platform package, `postinstall` falls back to downloading the matching
-binary from the `sprintnex-orchestrator-v<version>` GitHub release. Override the download host with
-`SPRINTNEX_ORCHESTRATOR_DOWNLOAD_BASE_URL` when you need to use a mirror.
+binary from the `openwork-orchestrator-v<version>` GitHub release. Override the download host with
+`OPENWORK_ORCHESTRATOR_DOWNLOAD_BASE_URL` when you need to use a mirror.
 
-`openwork` downloads and caches the `sprintnex-server` and `opencode` sidecars on
-first run using a SHA-256 manifest. Use `--sidecar-dir` or `SPRINTNEX_SIDECAR_DIR` to control the
+`openwork` downloads and caches the `openwork-server` and `opencode` sidecars on
+first run using a SHA-256 manifest. Use `--sidecar-dir` or `OPENWORK_SIDECAR_DIR` to control the
 cache location, and `--sidecar-base-url` / `--sidecar-manifest` to point at a custom host.
 
-Use `--sidecar-source` to control where `sprintnex-server` is resolved (`auto` | `bundled` |
+Use `--sidecar-source` to control where `openwork-server` is resolved (`auto` | `bundled` |
 `downloaded` | `external`), and `--opencode-source` to control `opencode` resolution. Set
-`SPRINTNEX_SIDECAR_SOURCE` / `SPRINTNEX_OPENCODE_SOURCE` to apply the same policies via env vars.
+`OPENWORK_SIDECAR_SOURCE` / `OPENWORK_OPENCODE_SOURCE` to apply the same policies via env vars.
 
 By default the manifest is fetched from
-`https://github.com/different-ai/openwork/releases/download/sprintnex-orchestrator-v<version>/sprintnex-orchestrator-sidecars.json`.
+`https://github.com/different-ai/openwork/releases/download/openwork-orchestrator-v<version>/openwork-orchestrator-sidecars.json`.
 
-For development overrides only, set `SPRINTNEX_ALLOW_EXTERNAL=1` or pass `--allow-external` to use
-locally installed `sprintnex-server` binaries.
+For development overrides only, set `OPENWORK_ALLOW_EXTERNAL=1` or pass `--allow-external` to use
+locally installed `openwork-server` binaries.
 
-Add `--verbose` (or `SPRINTNEX_VERBOSE=1`) to print extra diagnostics about resolved binaries.
+Add `--verbose` (or `OPENWORK_VERBOSE=1`) to print extra diagnostics about resolved binaries.
 
 OpenCode hot reload is enabled by default when launched via `openwork`.
 Tune it with:
@@ -49,21 +49,21 @@ Tune it with:
 
 Equivalent env vars:
 
-- `SPRINTNEX_OPENCODE_HOT_RELOAD` (router mode)
-- `SPRINTNEX_OPENCODE_HOT_RELOAD_DEBOUNCE_MS`
-- `SPRINTNEX_OPENCODE_HOT_RELOAD_COOLDOWN_MS`
-- `SPRINTNEX_OPENCODE_HOT_RELOAD` (start/serve mode)
-- `SPRINTNEX_OPENCODE_HOT_RELOAD_DEBOUNCE_MS`
-- `SPRINTNEX_OPENCODE_HOT_RELOAD_COOLDOWN_MS`
+- `OPENWORK_OPENCODE_HOT_RELOAD` (router mode)
+- `OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS`
+- `OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS`
+- `OPENWORK_OPENCODE_HOT_RELOAD` (start/serve mode)
+- `OPENWORK_OPENCODE_HOT_RELOAD_DEBOUNCE_MS`
+- `OPENWORK_OPENCODE_HOT_RELOAD_COOLDOWN_MS`
 
 Or from source:
 
 ```bash
-pnpm --filter sprintnex-orchestrator dev -- \
+pnpm --filter openwork-orchestrator dev -- \
   start --workspace /path/to/workspace --approval auto --allow-external
 ```
 
-When `SPRINTNEX_DEV_MODE=1` is set, orchestrator uses an isolated OpenCode dev state for config, auth, data, cache, and state. OpenWork's repo-level `pnpm dev` commands enable this automatically so local development does not reuse your personal OpenCode environment.
+When `OPENWORK_DEV_MODE=1` is set, orchestrator uses an isolated OpenCode dev state for config, auth, data, cache, and state. OpenWork's repo-level `pnpm dev` commands enable this automatically so local development does not reuse your personal OpenCode environment.
 
 The command prints pairing URLs by default and withholds live credentials from stdout to avoid leaking them into shell history or collected logs. Use `--json` only when you explicitly need the raw pairing secrets in command output.
 
@@ -107,7 +107,7 @@ Additional mounts are blocked unless you create an allowlist at:
 
 - `~/.config/openwork/sandbox-mount-allowlist.json`
 
-Override with `SPRINTNEX_SANDBOX_MOUNT_ALLOWLIST`.
+Override with `OPENWORK_SANDBOX_MOUNT_ALLOWLIST`.
 
 ## Logging
 
@@ -115,18 +115,18 @@ Override with `SPRINTNEX_SANDBOX_MOUNT_ALLOWLIST`.
 structured, OpenTelemetry-friendly logs and a stable run id for correlation.
 
 ```bash
-SPRINTNEX_LOG_FORMAT=json openwork start --workspace /path/to/workspace
+OPENWORK_LOG_FORMAT=json openwork start --workspace /path/to/workspace
 ```
 
-Use `--run-id` or `SPRINTNEX_RUN_ID` to supply your own correlation id.
+Use `--run-id` or `OPENWORK_RUN_ID` to supply your own correlation id.
 
 OpenCode runs at `INFO` by default, which produces large log files in
 `~/.local/share/opencode/log/`. Pass `--opencode-log-level <DEBUG|INFO|WARN|ERROR>` (or set
-`SPRINTNEX_OPENCODE_LOG_LEVEL`) to forward `--log-level` to managed `opencode serve` and reduce log
+`OPENWORK_OPENCODE_LOG_LEVEL`) to forward `--log-level` to managed `opencode serve` and reduce log
 volume.
 
 OpenWork server logs every request with method, path, status, and duration. Disable this when running
-`sprintnex-server` directly by setting `SPRINTNEX_LOG_REQUESTS=0` or passing `--no-log-requests`.
+`openwork-server` directly by setting `OPENWORK_LOG_REQUESTS=0` or passing `--no-log-requests`.
 
 ## Router daemon (multi-workspace)
 
@@ -141,7 +141,7 @@ openwork workspace path <id>
 openwork instance dispose <id>
 ```
 
-Use `SPRINTNEX_DATA_DIR` or `--data-dir` to isolate router state in tests.
+Use `OPENWORK_DATA_DIR` or `--data-dir` to isolate router state in tests.
 
 ## Pairing notes
 
@@ -224,5 +224,5 @@ Point to source CLIs for fast iteration:
 openwork start \
   --workspace /path/to/workspace \
   --allow-external \
-  --sprintnex-server-bin apps/server/src/cli.ts
+  --openwork-server-bin apps/server/src/cli.ts
 ```

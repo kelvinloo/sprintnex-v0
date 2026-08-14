@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import type { OpenworkSessionGroupState } from "@/app/lib/sprintnex-server";
+import type { OpenworkSessionGroupState } from "@/app/lib/openwork-server";
 import type { ResolvedWorkspaceEndpoint } from "@/app/lib/workspace-endpoint";
 import {
   applySessionGroupServerState,

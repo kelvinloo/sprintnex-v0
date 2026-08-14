@@ -3,7 +3,7 @@ import { useCallback } from "react";
 
 import type { McpDirectoryInfo } from "../../../app/constants";
 import { evaluateEnablement, type EnablementContext } from "../../../app/enablement";
-import type { OpenworkServerClient } from "../../../app/lib/sprintnex-server";
+import type { OpenworkServerClient } from "../../../app/lib/openwork-server";
 import type { McpServerEntry } from "../../../app/types";
 import { getExtensionConfigSlot, getExtensionConnected, type ExtensionConfigContext } from "./extension-registry";
 import type { LocalProviderInstallInput } from "./openai-image-extension";
@@ -53,7 +53,7 @@ type SettingsExtensionControllerInput = {
 function hasOpenAiEnv(input: Pick<SettingsExtensionControllerInput, "providers" | "providerConnectedIds" | "userEnvKeys">) {
   return input.userEnvKeys.includes("OPENAI_REALTIME_API_KEY") ||
     input.userEnvKeys.includes("OPENAI_API_KEY") ||
-    input.userEnvKeys.includes("SPRINTNEX_OPENAI_IMAGE_API_KEY") ||
+    input.userEnvKeys.includes("OPENWORK_OPENAI_IMAGE_API_KEY") ||
     input.providers.some((provider) => provider.id === "openai" && provider.source === "env") ||
     input.providerConnectedIds.includes("openai");
 }

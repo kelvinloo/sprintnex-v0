@@ -58,7 +58,7 @@ const emitThemeChange = () => {
 
 const syncNativeTheme = (mode: ThemeMode) => {
   if (typeof window === "undefined") return;
-  void window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.("__setNativeTheme", mode);
+  void window.__OPENWORK_ELECTRON__?.invokeDesktop?.("__setNativeTheme", mode);
 };
 
 const getCurrentMode = () => {

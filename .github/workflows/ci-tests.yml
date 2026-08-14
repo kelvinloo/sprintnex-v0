@@ -121,7 +121,7 @@ jobs:
         run: pnpm --filter @openwork/app test
 
       - name: Run server unit tests
-        run: pnpm --filter sprintnex-server test
+        run: pnpm --filter openwork-server test
 
       - name: Run desktop unit tests
         run: pnpm --filter @openwork/desktop test

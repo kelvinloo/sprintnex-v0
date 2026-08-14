@@ -18,15 +18,15 @@ let previousDb: string | undefined;
 afterEach(async () => {
   while (cleanups.length) cleanups.pop()?.();
   while (roots.length) await rm(roots.pop()!, { recursive: true, force: true });
-  if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
-  else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
+  if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
+  else process.env.OPENWORK_RUNTIME_DB = previousDb;
 });
 
 async function setup() {
   const root = await mkdtemp(join(tmpdir(), "openwork-runtime-config-file-"));
   roots.push(root);
-  previousDb = process.env.SPRINTNEX_RUNTIME_DB;
-  process.env.SPRINTNEX_RUNTIME_DB = join(root, "runtime.sqlite");
+  previousDb = process.env.OPENWORK_RUNTIME_DB;
+  process.env.OPENWORK_RUNTIME_DB = join(root, "runtime.sqlite");
   const config: ServerConfig = {
     host: "127.0.0.1",
     port: 0,
@@ -35,13 +35,7 @@ async function setup() {
     approval: { mode: "auto", timeoutMs: 1000 },
     corsOrigins: ["*"],
     workspaces: [
-      {
-        id: "ws_1",
-        name: "Workspace",
-        path: root,
-        preset: "starter",
-        workspaceType: "local",
-      },
+      { id: "ws_1", name: "Workspace", path: root, preset: "starter", workspaceType: "local" },
     ],
     authorizedRoots: [root],
     readOnly: false,
@@ -54,9 +48,7 @@ async function setup() {
   return { root, config };
 }
 
-async function readConfigFile(
-  config: ServerConfig,
-): Promise<Record<string, unknown>> {
+async function readConfigFile(config: ServerConfig): Promise<Record<string, unknown>> {
   const raw = await readFile(openworkRuntimeConfigFilePath(config), "utf8");
   return JSON.parse(raw) as Record<string, unknown>;
 }
@@ -66,13 +58,7 @@ describe("openwork runtime config file", () => {
     const { config } = await setup();
     await writeRuntimeOpencodeConfig(config, "ws_1", (current) => ({
       ...current,
-      mcp: {
-        posthog: {
-          type: "remote",
-          url: "https://mcp.posthog.com/mcp",
-          enabled: true,
-        },
-      },
+      mcp: { posthog: { type: "remote", url: "https://mcp.posthog.com/mcp", enabled: true } },
     }));
 
     const path = await writeOpenworkRuntimeConfigFile(config, "ws_1");
@@ -81,7 +67,7 @@ describe("openwork runtime config file", () => {
     const parsed = await readConfigFile(config);
     const mcp = parsed.mcp as Record<string, Record<string, unknown>>;
     expect(mcp.posthog?.enabled).toBe(true);
-    expect(parsed.default_agent).toBe("sprintnex");
+    expect(parsed.default_agent).toBe("openwork");
     expect(Array.isArray(parsed.plugin)).toBe(true);
   });
 
@@ -91,7 +77,7 @@ describe("openwork runtime config file", () => {
 
     const parsed = await readConfigFile(config);
     const agent = parsed.agent as Record<string, { prompt?: string }>;
-    const prompt = agent.sprintnex?.prompt ?? "";
+    const prompt = agent.openwork?.prompt ?? "";
 
     // The new Memory Bank section is present and distinct from the existing ## Memory section.
     expect(prompt).toContain("## Memory Bank");
@@ -112,13 +98,7 @@ describe("openwork runtime config file", () => {
 
     await writeRuntimeOpencodeConfig(config, "ws_1", (current) => ({
       ...current,
-      mcp: {
-        stripe: {
-          type: "remote",
-          url: "https://mcp.stripe.com",
-          enabled: false,
-        },
-      },
+      mcp: { stripe: { type: "remote", url: "https://mcp.stripe.com", enabled: false } },
     }));
 
     // The refresh is fire-and-forget; poll briefly for the rewrite.
@@ -139,13 +119,7 @@ describe("openwork runtime config file", () => {
 
     await writeRuntimeOpencodeConfig(config, "ws_other", (current) => ({
       ...current,
-      mcp: {
-        other: {
-          type: "remote",
-          url: "https://example.com/mcp",
-          enabled: true,
-        },
-      },
+      mcp: { other: { type: "remote", url: "https://example.com/mcp", enabled: true } },
     }));
     await new Promise((resolve) => setTimeout(resolve, 50));
 

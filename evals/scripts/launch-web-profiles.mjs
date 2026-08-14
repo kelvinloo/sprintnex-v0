@@ -78,5 +78,5 @@ for (const [, port] of PROFILES) {
 }
 
 for (const [name, port] of PROFILES) {
-  console.log(`export SPRINTNEX_EVAL_WEB_CDP_${name}=http://127.0.0.1:${port}`);
+  console.log(`export OPENWORK_EVAL_WEB_CDP_${name}=http://127.0.0.1:${port}`);
 }

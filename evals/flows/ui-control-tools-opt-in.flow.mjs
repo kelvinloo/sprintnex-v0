@@ -16,8 +16,8 @@ const PROBE_SCRIPT = `
 
 function envWithUiControl(value) {
   const env = { ...process.env };
-  if (value === null) delete env.SPRINTNEX_UI_CONTROL_TOOLS;
-  else env.SPRINTNEX_UI_CONTROL_TOOLS = value;
+  if (value === null) delete env.OPENWORK_UI_CONTROL_TOOLS;
+  else env.OPENWORK_UI_CONTROL_TOOLS = value;
   return env;
 }
 
@@ -57,7 +57,7 @@ export default {
           voiceover: "With the environment flag unset, the plugin still exposes extension discovery and cross-session memory, but the openwork UI-control preview tools are gone from the tool list and the system prompt.",
           action: async () => {
             result = await probeUiControlTools(null);
-            ctx.output("SPRINTNEX_UI_CONTROL_TOOLS unset", pretty(result));
+            ctx.output("OPENWORK_UI_CONTROL_TOOLS unset", pretty(result));
           },
           assert: async () => {
             witness(ctx, Array.isArray(result?.tools), "The probe printed a tools array", result ? pretty(result.tools) : "null");
@@ -71,14 +71,14 @@ export default {
       },
     },
     {
-      name: "Setting SPRINTNEX_UI_CONTROL_TOOLS=1 restores the surface",
+      name: "Setting OPENWORK_UI_CONTROL_TOOLS=1 restores the surface",
       run: async (ctx) => {
         let result = null;
         await ctx.prove("The preview UI-control surface returns when explicitly opted in", {
-          voiceover: "When internal tooling sets SPRINTNEX_UI_CONTROL_TOOLS to one, the same plugin initialization registers all three openwork UI-control tools and restores the steering that tells agents how to use them.",
+          voiceover: "When internal tooling sets OPENWORK_UI_CONTROL_TOOLS to one, the same plugin initialization registers all three openwork UI-control tools and restores the steering that tells agents how to use them.",
           action: async () => {
             result = await probeUiControlTools("1");
-            ctx.output("SPRINTNEX_UI_CONTROL_TOOLS=1", pretty(result));
+            ctx.output("OPENWORK_UI_CONTROL_TOOLS=1", pretty(result));
           },
           assert: async () => {
             witness(ctx, Array.isArray(result?.tools), "The opt-in probe printed a tools array", result ? pretty(result.tools) : "null");

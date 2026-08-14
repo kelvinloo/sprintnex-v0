@@ -7,7 +7,7 @@ identity first, create a first skill, prepare the desktop app with that
 workspace/skill, and verify the running app opens to the setup-complete state.
 
 > The bootstrap command is `openwork-bootstrap` (NOT `openwork`). The bare
-> `openwork` command belongs to the separate `sprintnex-orchestrator` package and
+> `openwork` command belongs to the separate `openwork-orchestrator` package and
 > may already be on the user's PATH - do not use it for these steps.
 
 ## 1. Install CLI
@@ -142,7 +142,7 @@ You are done only when all are true:
   - `setup.id` is present
   - `skill.id` is present
   - `skillRun.triggered` is `true`
-  - `skillRun.output` is `SPRINTNEX_BOOTSTRAP_SKILL_TRIGGERED`
+  - `skillRun.output` is `OPENWORK_BOOTSTRAP_SKILL_TRIGGERED`
   - `claimLinks[0].id` is present
   - `desktop.prepared` is `true`
   - `desktop.bootstrapPath` is present

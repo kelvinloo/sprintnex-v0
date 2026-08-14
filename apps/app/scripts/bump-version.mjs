@@ -75,9 +75,9 @@ const updatePackageJson = async (nextVersion) => {
   tauriData.version = nextVersion;
   orchestratorData.version = nextVersion;
 
-  // Ensure sprintnex-orchestrator uses the same sprintnex-server version.
+  // Ensure openwork-orchestrator uses the same openwork-server version.
   orchestratorData.dependencies = orchestratorData.dependencies ?? {};
-  orchestratorData.dependencies["sprintnex-server"] = nextVersion;
+  orchestratorData.dependencies["openwork-server"] = nextVersion;
 
   serverData.version = nextVersion;
   if (!isDryRun) {

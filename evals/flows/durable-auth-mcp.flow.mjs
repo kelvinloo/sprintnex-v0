@@ -16,13 +16,13 @@ const FLOW_ID = "durable-auth-mcp";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 const execFileAsync = promisify(execFile);
 
-const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
-const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? "").trim().replace(/\/+$/, "");
 const DEN_BROWSER_API_URL = DEN_API_URL.replace("://127.0.0.1", "://localhost");
-const DEMO_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const DEMO_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MYSQL_CONTAINER = process.env.SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER?.trim() || "openwork-web-local-mysql";
-const MOCK_PORT = Number(process.env.SPRINTNEX_EVAL_DURABLE_AUTH_MCP_PORT ?? 4521);
+const DEMO_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const DEMO_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MYSQL_CONTAINER = process.env.OPENWORK_EVAL_DEN_MYSQL_CONTAINER?.trim() || "openwork-web-local-mysql";
+const MOCK_PORT = Number(process.env.OPENWORK_EVAL_DURABLE_AUTH_MCP_PORT ?? 4521);
 const MOCK_BASE = `http://127.0.0.1:${MOCK_PORT}`;
 const MOCK_SERVER_SCRIPT = fileURLToPath(new URL("../../scripts/mock-oauth-mcp-server.mjs", import.meta.url));
 const RUN_TAG = Date.now();
@@ -188,12 +188,12 @@ async function cleanupEvalBrowserTargets(ctx) {
 }
 
 async function cleanupDesktopEvalWorkspaces(ctx) {
-  await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", {
+  await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", {
     timeoutMs: 30_000,
     label: "desktop bridge for workspace cleanup",
   });
   const cleanup = await ctx.eval(`(async () => {
-    const info = await window.__SPRINTNEX_ELECTRON__.invokeDesktop('openworkServerInfo', {});
+    const info = await window.__OPENWORK_ELECTRON__.invokeDesktop('openworkServerInfo', {});
     if (!info?.baseUrl) return { deleted: 0, failed: ['OpenWork server info unavailable'] };
     const token = info.ownerToken || info.clientToken;
     const headers = token ? { authorization: 'Bearer ' + token } : {};
@@ -296,10 +296,10 @@ async function ensureDedicatedWorkspace(ctx) {
 
 async function signDesktopIntoCloud(ctx) {
   await ctx.waitFor("Boolean(window.__openworkControl)", { timeoutMs: 120_000, label: "desktop control API" });
-  await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
+  await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
   const bootstrap = { baseUrl: DEN_API_URL, apiBaseUrl: DEN_API_URL, requireSignin: false, handoff: null };
   const written = await ctx.eval(`(async () => {
-    await window.__SPRINTNEX_ELECTRON__.invokeDesktop("setDesktopBootstrapConfig", ${JSON.stringify(bootstrap)});
+    await window.__OPENWORK_ELECTRON__.invokeDesktop("setDesktopBootstrapConfig", ${JSON.stringify(bootstrap)});
     localStorage.setItem("openwork.den.baseUrl", ${JSON.stringify(DEN_API_URL)});
     localStorage.setItem("openwork.den.apiBaseUrl", ${JSON.stringify(DEN_API_URL)});
     localStorage.removeItem("openwork.den.authToken");
@@ -478,7 +478,7 @@ async function expireAndRefreshSharedMcp(ctx) {
   state.mcpToken = await mintMcpToken(state.desktopToken, ctx);
   await stopMock(ctx);
   await startMock(ctx);
-  await ctx.eval('window.__SPRINTNEX_ELECTRON__.invokeDesktop("engineRestart", {})', { awaitPromise: true });
+  await ctx.eval('window.__OPENWORK_ELECTRON__.invokeDesktop("engineRestart", {})', { awaitPromise: true });
   state.engineRestarted = true;
 
   const searchResult = await mcpAgentCall(state.mcpToken, "tools/call", {
@@ -654,9 +654,9 @@ export default {
   kind: "user-facing",
   spec: "evals/voiceovers/durable-auth-mcp.md",
   requiredEnv: [
-    "SPRINTNEX_EVAL_DEN_API_URL",
-    "SPRINTNEX_EVAL_DEN_WEB_URL",
-    "SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER",
+    "OPENWORK_EVAL_DEN_API_URL",
+    "OPENWORK_EVAL_DEN_WEB_URL",
+    "OPENWORK_EVAL_DEN_MYSQL_CONTAINER",
   ],
   steps: [
     {

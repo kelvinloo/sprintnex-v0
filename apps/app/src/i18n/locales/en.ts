@@ -1362,9 +1362,9 @@ export default {
   "settings.reset_onboarding_warning":
     "Clears OpenWork local preferences and workspace onboarding markers.",
   "settings.reset_openwork_desc_dev":
-    "With dev mode active, it only clears the isolated OpenCode dev state inside sprintnex-dev-data.",
+    "With dev mode active, it only clears the isolated OpenCode dev state inside openwork-dev-data.",
   "settings.reset_openwork_desc_prod":
-    "With dev mode active, it only clears the isolated OpenCode dev state inside sprintnex-dev-data.",
+    "With dev mode active, it only clears the isolated OpenCode dev state inside openwork-dev-data.",
   "settings.reset_openwork_title": "Reset OpenWork + OpenCode state",
   "settings.reset_requires_confirm":
     "Requires typing RESET and will restart the app.",
@@ -1520,7 +1520,7 @@ export default {
   "settings.environment.empty_title": "No environment variables yet",
   "settings.environment.empty_value": "(empty)",
   "settings.environment.footer_hint":
-    "SPRINTNEX_ and OPENCODE_ keys are reserved for app/runtime wiring. Configure OpenCode runtime settings from your shell.",
+    "OPENWORK_ and OPENCODE_ keys are reserved for app/runtime wiring. Configure OpenCode runtime settings from your shell.",
   "settings.environment.override_hint":
     "Environment variables set before OpenWork starts take precedence over values saved here.",
   "settings.environment.hide": "Hide",
@@ -1562,7 +1562,7 @@ export default {
     "A variable with this name already exists.",
   "settings.environment.validation_empty": "Name is required.",
   "settings.environment.validation_reserved":
-    "SPRINTNEX_ and OPENCODE_ names are managed by OpenWork/OpenCode.",
+    "OPENWORK_ and OPENCODE_ names are managed by OpenWork/OpenCode.",
   "settings.environment.validation_shape":
     "Use letters, digits, and underscores; do not start with a digit.",
   "settings.environment.value_label": "Value",

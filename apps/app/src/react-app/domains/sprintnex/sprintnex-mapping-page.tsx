@@ -24,7 +24,7 @@ import {
 } from "@/app/lib/sprintnex-aicoe-api";
 import { readActiveWorkspaceId } from "@/react-app/shell/session-memory";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
-import { createOpenworkServerClient } from "@/app/lib/sprintnex-server";
+import { createOpenworkServerClient } from "@/app/lib/openwork-server";
 
 type WorkspaceRef = {
   id: string;

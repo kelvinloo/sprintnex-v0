@@ -13,7 +13,7 @@ import type {
   OpenworkAuditEntry,
   OpenworkServerCapabilities,
   OpenworkServerDiagnostics,
-} from "../../../../app/lib/sprintnex-server";
+} from "../../../../app/lib/openwork-server";
 import type { SandboxDebugProbeResult } from "../../../../app/lib/desktop";
 import type {
   OpencodeConnectStatus,

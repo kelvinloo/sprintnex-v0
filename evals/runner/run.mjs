@@ -16,7 +16,7 @@
  *
  * The CDP endpoint defaults to probing http://127.0.0.1:9825 (Daytona) then
  * http://127.0.0.1:9823 (local pnpm dev). Override with --cdp-url or
- * SPRINTNEX_EVAL_CDP_URL.
+ * OPENWORK_EVAL_CDP_URL.
  */
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
@@ -28,7 +28,7 @@ import { checkVoiceoverCoverage, loadVoiceoverParagraphs, scaffoldFlow } from ".
 import { postPrComment } from "./pr.mjs";
 
 const RUNNER_DIR = dirname(fileURLToPath(import.meta.url));
-const FLOWS_DIR = process.env.SPRINTNEX_EVAL_FLOWS_DIR?.trim() || join(RUNNER_DIR, "..", "flows");
+const FLOWS_DIR = process.env.OPENWORK_EVAL_FLOWS_DIR?.trim() || join(RUNNER_DIR, "..", "flows");
 const DEFAULT_RESULTS_DIR = join(RUNNER_DIR, "..", "results");
 const DEFAULT_CDP_CANDIDATES = ["http://127.0.0.1:9825", "http://127.0.0.1:9823"];
 
@@ -475,7 +475,7 @@ async function main() {
   // App-less flows (requiresApp: false) don't need a CDP endpoint; only probe
   // for one when at least one selected flow drives the app.
   const needsApp = selected.some((flow) => missingEnv(flow, process.env).length === 0 && flow.requiresApp !== false);
-  const envCdp = process.env.SPRINTNEX_EVAL_CDP_URL?.trim();
+  const envCdp = process.env.OPENWORK_EVAL_CDP_URL?.trim();
   const cdpBaseUrl = args.cdpUrl
     ?? (envCdp || (needsApp ? await resolveCdpBaseUrl(DEFAULT_CDP_CANDIDATES) : null));
 

@@ -12,7 +12,7 @@ import {
   Split,
   Undo2,
 } from "lucide-react";
-import { PaperGrainGradient } from "@sprintnex/ui/react";
+import { PaperGrainGradient } from "@openwork/ui/react";
 import {
   DynamicToolUIPart,
   isFileUIPart,

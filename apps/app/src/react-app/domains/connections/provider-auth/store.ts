@@ -21,7 +21,7 @@ import {
   workspaceOpenworkRead,
   workspaceOpenworkWrite,
 } from "../../../../app/lib/desktop";
-import { OpenworkServerError } from "../../../../app/lib/sprintnex-server";
+import { OpenworkServerError } from "../../../../app/lib/openwork-server";
 import type {
   Client,
   ProviderListItem,
@@ -34,10 +34,10 @@ import {
 } from "../../../../app/utils/providers";
 import { getReactQueryClient } from "../../../infra/query-client";
 import { ensureProviderListQuery } from "../../../infra/provider-list-query";
-import type { OpenworkServerStoreSnapshot } from "../sprintnex-server-store";
+import type { OpenworkServerStoreSnapshot } from "../openwork-server-store";
 
 /**
- * The slice of the sprintnex-server store this store actually consumes.
+ * The slice of the openwork-server store this store actually consumes.
  * The settings route passes the full store; the session route passes a
  * lightweight endpoint-backed adapter (previously forced through `as never`).
  */
@@ -322,8 +322,8 @@ export function createProviderAuthStore(options: CreateProviderAuthStoreOptions)
     const openworkClient = options.openworkServer.getSnapshot().openworkServerClient;
     if (!openworkClient) return;
     const baseUrl = readCloudProviderBaseUrl(provider);
-    const entries = [{ key: "SPRINTNEX_API_KEY", value: apiKey.trim() }];
-    if (baseUrl) entries.push({ key: "SPRINTNEX_INFERENCE_BASE_URL", value: baseUrl });
+    const entries = [{ key: "OPENWORK_API_KEY", value: apiKey.trim() }];
+    if (baseUrl) entries.push({ key: "OPENWORK_INFERENCE_BASE_URL", value: baseUrl });
     await openworkClient.upsertUserEnv(entries);
   };
 

@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 
-import type { OpenworkServerStore } from "./sprintnex-server-store";
+import type { OpenworkServerStore } from "./openwork-server-store";
 
 const OpenworkServerContext = createContext<OpenworkServerStore | null>(null);
 

@@ -75,7 +75,7 @@ When Daytona is down or quota-limited:
 ```bash
 pnpm install
 pnpm --filter @openwork/app typecheck
-SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT=9826 pnpm dev   # then:
+OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=9826 pnpm dev   # then:
 pnpm evals --flow <flow-id> --cdp-url http://127.0.0.1:9826
 ```
 

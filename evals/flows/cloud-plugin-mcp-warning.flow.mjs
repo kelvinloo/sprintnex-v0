@@ -31,16 +31,16 @@ function slugify(value) {
 }
 
 function baseWorkspacePath(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_WORKSPACE_PATH.trim().replace(/\/+$/, "");
+  return ctx.env.OPENWORK_EVAL_WORKSPACE_PATH.trim().replace(/\/+$/, "");
 }
 
 async function denJson(ctx, path, options = {}) {
-  const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${apiBase}${path}`, {
     ...options,
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
+      authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
       ...(options.headers ?? {}),
     },
   });
@@ -144,11 +144,11 @@ async function setupCloudPlugins(ctx) {
 }
 
 async function signInViaHandoff(ctx) {
-  const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
     method: "POST",
     headers: {
-      authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
+      authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
       "content-type": "application/json",
     },
     body: JSON.stringify({}),
@@ -326,7 +326,7 @@ async function installMarketplacePlugin(ctx, pluginName) {
 
 async function workspaceServerJson(ctx, path) {
   return ctx.eval(`(async () => {
-    const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
+    const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
     if (!bridge) throw new Error("Electron bridge unavailable");
     const info = await bridge("openworkServerInfo");
     const baseUrl = String(info?.baseUrl ?? "").replace(/\\/+$/, "");
@@ -346,12 +346,12 @@ async function workspaceServerJson(ctx, path) {
 
 async function waitForSkill(ctx, skillName) {
   await ctx.waitFor(
-    `window.__SPRINTNEX_ELECTRON__?.invokeDesktop ? true : false`,
+    `window.__OPENWORK_ELECTRON__?.invokeDesktop ? true : false`,
     { timeoutMs: 15_000, label: "Electron bridge for skill check" },
   );
   await ctx.waitFor(
     `(async () => {
-      const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
+      const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
       const info = await bridge("openworkServerInfo");
       const baseUrl = String(info?.baseUrl ?? "").replace(/\\/+$/, "");
       const token = String(info?.ownerToken || info?.clientToken || "").trim();
@@ -383,7 +383,7 @@ async function assertNoBrokenMcp(ctx) {
 async function assertLinearMcpSynced(ctx) {
   await ctx.waitFor(
     `(async () => {
-      const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
+      const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
       if (!bridge) return false;
       const info = await bridge("openworkServerInfo");
       const baseUrl = String(info?.baseUrl ?? "").replace(/\\/+$/, "");
@@ -425,7 +425,7 @@ export default {
   id: FLOW_ID,
   title: "Cloud marketplace plugins warn on malformed MCP payloads and hot-sync valid MCPs",
   kind: "user-facing",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_WORKSPACE_PATH"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_WORKSPACE_PATH"],
   steps: [
     {
       name: "Prepare Den plugins and desktop workspace",

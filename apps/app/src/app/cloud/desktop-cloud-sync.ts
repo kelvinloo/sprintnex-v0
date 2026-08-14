@@ -7,7 +7,7 @@ import type {
   OpenworkDesktopCloudSyncResult,
   OpenworkDesktopCloudSyncState,
   OpenworkServerClient,
-} from "../lib/sprintnex-server";
+} from "../lib/openwork-server";
 
 export type PendingCloudPluginChange = "modified" | "removed";
 

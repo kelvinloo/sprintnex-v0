@@ -710,18 +710,18 @@ function UiControlConnectionDetails(props: UiControlConnectionDetailsProps) {
                   </TableCell>
                   <TableCell className="py-2 whitespace-normal">
                     <span className="font-mono text-xs break-all">
-                      SPRINTNEX_UI_CONTROL_DISCOVERY=/path/to/openwork-ui-control.json
+                      OPENWORK_UI_CONTROL_DISCOVERY=/path/to/openwork-ui-control.json
                     </span>
                   </TableCell>
                 </TableRow>
-                {props.environment?.SPRINTNEX_UI_CONTROL_DISCOVERY ? (
+                {props.environment?.OPENWORK_UI_CONTROL_DISCOVERY ? (
                   <TableRow className="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                     <TableCell className="bg-muted/50 py-2 text-xs font-medium">
                       Current override
                     </TableCell>
                     <TableCell className="py-2 whitespace-normal">
                       <span className="font-mono text-xs break-all">
-                        {props.environment.SPRINTNEX_UI_CONTROL_DISCOVERY}
+                        {props.environment.OPENWORK_UI_CONTROL_DISCOVERY}
                       </span>
                     </TableCell>
                   </TableRow>

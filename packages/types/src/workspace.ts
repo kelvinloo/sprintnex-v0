@@ -2,7 +2,7 @@
  * Shared wire contract for workspace records.
  *
  * Producers:
- * - sprintnex-server (apps/server): `GET /workspaces` and friends — emits plain
+ * - openwork-server (apps/server): `GET /workspaces` and friends — emits plain
  *   optionals (never null) plus the `opencode*` engine credential fields.
  * - desktop Electron IPC bridge (apps/desktop main.mjs): emits explicit nulls
  *   and the desktop-managed `openworkClientToken`/`openworkHostToken`.
@@ -35,13 +35,13 @@ export type WorkspaceWire = {
   openworkWorkspaceName?: string | null;
   /**
    * Vocabulary differs per producer today ("docker" | "microsandbox" on the
-   * desktop, "none" | "docker" | "container" in sprintnex-server), so the wire
+   * desktop, "none" | "docker" | "container" in openwork-server), so the wire
    * stays a plain string until the backends converge.
    */
   sandboxBackend?: string | null;
   sandboxRunId?: string | null;
   sandboxContainerName?: string | null;
-  /** sprintnex-server only: credentials for the proxied opencode engine. */
+  /** openwork-server only: credentials for the proxied opencode engine. */
   opencodeUsername?: string | null;
   opencodePassword?: string | null;
   opencode?: {

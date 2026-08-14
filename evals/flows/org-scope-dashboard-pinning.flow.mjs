@@ -18,8 +18,8 @@ import { denApiFetch, denWebUrl, signInApi as signIn } from "./lib/den-web.mjs";
 
 const vo = await loadVoiceoverParagraphs("org-scope-dashboard-pinning");
 
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const DRIFT_ORG_NAME = "Drift Probe Org";
 const ORG_SCOPE_HEADER = "x-openwork-org-id";
 const PENDING_ORG_SELECTION_KEY = "openwork:web:pending-org-selection";
@@ -99,7 +99,7 @@ export default {
   title: "Dashboard settings writes stay pinned to the org on screen when the session's active org drifts",
   kind: "user-facing",
   preserveTheme: true,
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_WEB_URL", "SPRINTNEX_EVAL_DEN_MULTI_ORG"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_WEB_URL", "OPENWORK_EVAL_DEN_MULTI_ORG"],
   steps: [
     {
       name: "Setup: admin signs in, has (or gets) a second org, and org names are captured",

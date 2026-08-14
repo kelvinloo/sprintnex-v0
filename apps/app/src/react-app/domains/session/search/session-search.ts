@@ -1,4 +1,4 @@
-import type { OpenworkSessionMessage } from "@/app/lib/sprintnex-server";
+import type { OpenworkSessionMessage } from "@/app/lib/openwork-server";
 
 /** A session that can be deep-searched. */
 export type SearchableSession = {

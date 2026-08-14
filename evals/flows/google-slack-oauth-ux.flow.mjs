@@ -10,7 +10,7 @@ const FLOW_ID = "google-slack-oauth-ux";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 const execFileAsync = promisify(execFile);
 
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
 const MOCK_SERVER_URL = (process.env.MOCK_DCRLESS_MCP_URL ?? "http://127.0.0.1:3979").trim().replace(/\/+$/, "");
 const MOCK_CLIENT_ID = process.env.MOCK_CLIENT_ID || "mock-preregistered-client";
 const MOCK_CLIENT_SECRET = process.env.MOCK_CLIENT_SECRET || "mock-preregistered-secret";
@@ -42,20 +42,20 @@ function sqlString(value) {
 }
 
 function denWebUrl(ctx, path = "/") {
-  const base = ctx.env.SPRINTNEX_EVAL_DEN_WEB_URL.trim().replace(/\/+$/, "");
-  ctx.assert(base.length > 0, "SPRINTNEX_EVAL_DEN_WEB_URL was empty.");
+  const base = ctx.env.OPENWORK_EVAL_DEN_WEB_URL.trim().replace(/\/+$/, "");
+  ctx.assert(base.length > 0, "OPENWORK_EVAL_DEN_WEB_URL was empty.");
   if (path.startsWith("http")) return path;
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 function adminSessionToken(ctx) {
-  const token = ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim();
-  ctx.assert(token.length > 0, "SPRINTNEX_EVAL_DEN_TOKEN was empty.");
+  const token = ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim();
+  ctx.assert(token.length > 0, "OPENWORK_EVAL_DEN_TOKEN was empty.");
   return token;
 }
 
 function mysqlContainer(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER || "openwork-web-local-mysql";
+  return ctx.env.OPENWORK_EVAL_DEN_MYSQL_CONTAINER || "openwork-web-local-mysql";
 }
 
 function orgHeaders(session) {
@@ -489,7 +489,7 @@ export default {
   id: FLOW_ID,
   title: "Google and Slack OAuth setup tells admins exactly what to do next",
   kind: "user-facing",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_DEN_WEB_URL", "SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_DEN_WEB_URL", "OPENWORK_EVAL_DEN_MYSQL_CONTAINER"],
   spec: "evals/voiceovers/google-slack-oauth-ux.md",
   steps: [
     {

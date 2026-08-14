@@ -4,7 +4,7 @@ import type {
   OpenworkServerCapabilities,
   OpenworkServerDiagnostics,
   OpenworkWorkspaceInfo,
-} from "../../app/lib/sprintnex-server";
+} from "../../app/lib/openwork-server";
 
 export type ServerState = {
   url: string;

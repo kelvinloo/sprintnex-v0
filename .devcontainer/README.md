@@ -60,7 +60,7 @@ generic image path does not guarantee the desktop stack we need.
 ## Quick start with Daytona server
 
 ```bash
-bash .devcontainer/create-daytona-sprintnex-server-snapshot.sh  # one-time / refresh when deps change
+bash .devcontainer/create-daytona-openwork-server-snapshot.sh  # one-time / refresh when deps change
 bash .devcontainer/test-server-on-daytona.sh [branch-or-commit]
 ```
 

@@ -32,8 +32,8 @@ function serverConfig(workspaceRoot: string): ServerConfig {
 describe("mcp remote connect flow", () => {
   test("adds, lists, and removes a remote MCP without OAuth", async () => {
     const workspaceRoot = await mkdtemp(join(tmpdir(), "openwork-mcp-remote-e2e-"));
-    const previousDb = process.env.SPRINTNEX_RUNTIME_DB;
-    process.env.SPRINTNEX_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
+    const previousDb = process.env.OPENWORK_RUNTIME_DB;
+    process.env.OPENWORK_RUNTIME_DB = join(workspaceRoot, "runtime.sqlite");
     const config = serverConfig(workspaceRoot);
 
     try {
@@ -64,8 +64,8 @@ describe("mcp remote connect flow", () => {
       const listedAfterRemove = await listMcp(config, WORKSPACE_ID, workspaceRoot);
       expect(listedAfterRemove.some((entry) => entry.name === "simple-remote")).toBe(false);
     } finally {
-      if (previousDb === undefined) delete process.env.SPRINTNEX_RUNTIME_DB;
-      else process.env.SPRINTNEX_RUNTIME_DB = previousDb;
+      if (previousDb === undefined) delete process.env.OPENWORK_RUNTIME_DB;
+      else process.env.OPENWORK_RUNTIME_DB = previousDb;
       await rm(workspaceRoot, { recursive: true, force: true });
     }
   });

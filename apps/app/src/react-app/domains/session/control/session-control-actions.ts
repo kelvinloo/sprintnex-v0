@@ -5,7 +5,7 @@ import type { createClient } from "../../../../app/lib/opencode";
 import type {
   OpenworkServerClient,
   OpenworkWorkspaceInfo,
-} from "../../../../app/lib/sprintnex-server";
+} from "../../../../app/lib/openwork-server";
 import { setSessionArchived } from "../../../../app/lib/opencode-session";
 import { getDisplaySessionTitle } from "../../../../app/lib/session-title";
 import {

@@ -49,11 +49,11 @@ export type ClaudePluginBundle = {
 };
 
 function githubApiBase(): string {
-  return (process.env.SPRINTNEX_GITHUB_API_BASE?.trim() || "https://api.github.com").replace(/\/+$/, "");
+  return (process.env.OPENWORK_GITHUB_API_BASE?.trim() || "https://api.github.com").replace(/\/+$/, "");
 }
 
 function githubRawBase(): string {
-  return (process.env.SPRINTNEX_GITHUB_RAW_BASE?.trim() || "https://raw.githubusercontent.com").replace(/\/+$/, "");
+  return (process.env.OPENWORK_GITHUB_RAW_BASE?.trim() || "https://raw.githubusercontent.com").replace(/\/+$/, "");
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -98,7 +98,7 @@ export function parseClaudePluginSource(input: string): ClaudePluginSource {
 
 async function fetchGithubJson(url: string): Promise<unknown> {
   const response = await fetch(url, {
-    headers: { Accept: "application/vnd.github+json", "User-Agent": "sprintnex-server" },
+    headers: { Accept: "application/vnd.github+json", "User-Agent": "openwork-server" },
     signal: AbortSignal.timeout(20_000),
   });
   if (!response.ok) {
@@ -110,7 +110,7 @@ async function fetchGithubJson(url: string): Promise<unknown> {
 
 async function fetchGithubText(url: string): Promise<string> {
   const response = await fetch(url, {
-    headers: { Accept: "text/plain", "User-Agent": "sprintnex-server" },
+    headers: { Accept: "text/plain", "User-Agent": "openwork-server" },
     signal: AbortSignal.timeout(20_000),
   });
   if (!response.ok) {

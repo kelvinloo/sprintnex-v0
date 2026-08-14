@@ -6,15 +6,15 @@
  * few steps that should go through the real UI (marketplace install dialog).
  *
  * Required env:
- * - SPRINTNEX_EVAL_DEN_API_URL    Den API base (e.g. http://localhost:8788)
- * - SPRINTNEX_EVAL_DEN_TOKEN      Bearer session token for the demo owner
- * - SPRINTNEX_EVAL_WORKSPACE_PATH Absolute path for the eval workspace
+ * - OPENWORK_EVAL_DEN_API_URL    Den API base (e.g. http://localhost:8788)
+ * - OPENWORK_EVAL_DEN_TOKEN      Bearer session token for the demo owner
+ * - OPENWORK_EVAL_WORKSPACE_PATH Absolute path for the eval workspace
  */
 export default {
   id: "admin-to-member-marketplace",
   title: "Owner creates skill, shares via MCP, member discovers and installs from marketplace",
   spec: "evals/react-session-flows.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_WORKSPACE_PATH"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_WORKSPACE_PATH"],
   steps: [
     {
       name: "App booted and control API available",
@@ -34,11 +34,11 @@ export default {
         }
 
         // Create handoff grant via Den API
-        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
           method: "POST",
           headers: {
-            authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
+            authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({}),
@@ -58,7 +58,7 @@ export default {
     {
       name: "Create workspace",
       run: async (ctx) => {
-        const wsPath = ctx.env.SPRINTNEX_EVAL_WORKSPACE_PATH.trim();
+        const wsPath = ctx.env.OPENWORK_EVAL_WORKSPACE_PATH.trim();
 
         // Check if we are already in a workspace
         const route = await ctx.eval("window.location.hash");
@@ -172,8 +172,8 @@ export default {
     {
       name: "Verify org context via Den API",
       run: async (ctx) => {
-        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
-        const token = ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim();
+        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const token = ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim();
         const orgResponse = await fetch(`${apiBase}/v1/org`, {
           headers: { authorization: `Bearer ${token}` },
         });

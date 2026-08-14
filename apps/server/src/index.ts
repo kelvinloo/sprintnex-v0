@@ -2,7 +2,7 @@
  * Library entry point for the OpenWork server.
  *
  * ```ts
- * import { startEmbeddedServer } from "sprintnex-server";
+ * import { startEmbeddedServer } from "openwork-server";
  *
  * const handle = await startEmbeddedServer({
  *   host: "127.0.0.1",

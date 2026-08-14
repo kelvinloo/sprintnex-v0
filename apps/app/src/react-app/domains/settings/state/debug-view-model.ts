@@ -31,7 +31,7 @@ import { downloadTextAsFile } from "../../../../app/lib/download";
 
 import {
   writeOpenworkServerSettings,
-} from "../../../../app/lib/sprintnex-server";
+} from "../../../../app/lib/openwork-server";
 import {
   clearStartupPreference,
   isDesktopRuntime,
@@ -43,7 +43,7 @@ import { t } from "../../../../i18n";
 import { resetFirstRunClientState } from "../../../shell/session-memory";
 import type { DebugViewProps } from "../pages/debug-view";
 import type { ReleaseChannel } from "../../../../app/types";
-import type { OpenworkServerStore, OpenworkServerStoreSnapshot } from "../../connections/sprintnex-server-store";
+import type { OpenworkServerStore, OpenworkServerStoreSnapshot } from "../../connections/openwork-server-store";
 
 const STARTUP_PREFERENCE_KEY = "openwork.startupPreference";
 const ENGINE_SOURCE_KEY = "openwork.engineSource";
@@ -523,7 +523,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
 
   useEffect(() => {
     if (!developerMode || !isElectronRuntime()) return;
-    const bridge = window.__SPRINTNEX_ELECTRON__?.updater;
+    const bridge = window.__OPENWORK_ELECTRON__?.updater;
     if (!bridge?.getChannel) return;
     let cancelled = false;
     void bridge.getChannel()
@@ -546,7 +546,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       setElectronAlphaUpdaterStatus("Electron alpha updates are macOS-only for now.");
       return;
     }
-    const bridge = window.__SPRINTNEX_ELECTRON__?.updater;
+    const bridge = window.__OPENWORK_ELECTRON__?.updater;
     if (!bridge?.setChannel) {
       setElectronAlphaUpdaterStatus("Electron updater bridge is unavailable.");
       return;
@@ -572,7 +572,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       setElectronAlphaUpdaterStatus("Electron update checks are available only in the Electron desktop app.");
       return;
     }
-    const bridge = window.__SPRINTNEX_ELECTRON__?.updater;
+    const bridge = window.__OPENWORK_ELECTRON__?.updater;
     if (!bridge?.check) {
       setElectronAlphaUpdaterStatus("Electron updater bridge is unavailable.");
       return;
@@ -668,7 +668,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
       );
     }
 
-    // Collect ALL local workspace paths so sprintnex-server is started with
+    // Collect ALL local workspace paths so openwork-server is started with
     // --workspace <path> for every registered local workspace. Mirrors the
     // Solid reference (context/workspace.ts::resolveWorkspacePaths) so that
     // `client.listWorkspaces()` later returns the full set, not just the
@@ -698,7 +698,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
           .remoteAccessEnabled === true,
     });
 
-    // engine_start restarts sprintnex-server on a NEW port and lets that server
+    // engine_start restarts openwork-server on a NEW port and lets that server
     // manage OpenCode. Re-read host info and persist the fresh URL/token.
     try {
       const hostInfo = (await openworkServerInfoCmd()) as {
@@ -718,7 +718,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
           remoteAccessEnabled: hostInfo.remoteAccessEnabled === true,
         });
         if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("sprintnex-server-settings-changed"));
+          window.dispatchEvent(new CustomEvent("openwork-server-settings-changed"));
         }
       }
     } catch {
@@ -767,7 +767,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
         tone: "success",
         message: t("settings.restart_succeeded_template", { service: "OpenWork server" }),
       });
-      pushDeveloperLog("Restarted sprintnex-server");
+      pushDeveloperLog("Restarted openwork-server");
       await openworkServerStore.reconnectOpenworkServer();
     } catch (error) {
       const message = error instanceof Error ? error.message : safeStringify(error);
@@ -853,7 +853,7 @@ export function useDebugViewModel(options: UseDebugViewModelOptions) {
     }
     try {
       downloadTextAsFile(
-        `sprintnex-server-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
+        `openwork-server-${new Date().toISOString().replace(/[:.]/g, "-")}.log`,
         text,
         "text/plain",
       );

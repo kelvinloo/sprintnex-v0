@@ -6,7 +6,7 @@ import {
   parseOpenworkWorkspaceIdFromUrl,
   type OpenworkServerSettings,
   type OpenworkServerStatus,
-} from "../../../../app/lib/sprintnex-server";
+} from "../../../../app/lib/openwork-server";
 import type { OpenworkServerInfo } from "../../../../app/lib/desktop";
 import { isDesktopRuntime } from "../../../../app/utils";
 import { t } from "../../../../i18n";

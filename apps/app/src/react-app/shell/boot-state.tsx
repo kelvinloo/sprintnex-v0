@@ -13,7 +13,7 @@ import {
 export type BootPhaseId =
   | "idle"
   | "bootstrapping-workspaces"
-  | "starting-sprintnex-server"
+  | "starting-openwork-server"
   | "starting-engine"
   | "activating-workspace"
   | "ready"
@@ -48,7 +48,7 @@ const DEFAULT_STATE: BootStateSnapshot = {
 const PHASE_MESSAGES: Record<BootPhaseId, string> = {
   idle: "",
   "bootstrapping-workspaces": "Loading your workspaces",
-  "starting-sprintnex-server": "Starting the OpenWork server",
+  "starting-openwork-server": "Starting the OpenWork server",
   "starting-engine": "Preparing workspace",
   "activating-workspace": "Activating your workspace",
   ready: "Ready",

@@ -13,8 +13,8 @@ const SAVED_ORG_SERVER_TEXT = `Current organization server: ${SAVED_BASE_URL}`;
 const DEFAULT_ORG_SERVER_TEXT = "Using standard OpenWork Cloud.";
 
 function bootstrapPath(ctx) {
-  const rawPath = ctx.env.SPRINTNEX_DESKTOP_BOOTSTRAP_PATH?.trim();
-  ctx.assert(Boolean(rawPath), "SPRINTNEX_DESKTOP_BOOTSTRAP_PATH must be set so this flow never touches the real user config.");
+  const rawPath = ctx.env.OPENWORK_DESKTOP_BOOTSTRAP_PATH?.trim();
+  ctx.assert(Boolean(rawPath), "OPENWORK_DESKTOP_BOOTSTRAP_PATH must be set so this flow never touches the real user config.");
 
   const resolvedPath = resolve(rawPath);
   const home = os.homedir();
@@ -248,9 +248,9 @@ export default {
             })()`);
             ctx.assert(inputValue === "", `Expected the default URL to render as an empty custom URL field, got ${inputValue}`);
             ctx.assert(!(await bootstrapFileExists(ctx)), "Expected the isolated canonical bootstrap file to be removed.");
-            // With SPRINTNEX_DESKTOP_BOOTSTRAP_PATH set, the desktop code disables the legacy path
+            // With OPENWORK_DESKTOP_BOOTSTRAP_PATH set, the desktop code disables the legacy path
             // instead of resolving the real user's ~/.config path. Unit coverage asserts legacy removal.
-            ctx.log("Bootstrap file witness: isolated canonical file removed; legacy path is disabled under SPRINTNEX_DESKTOP_BOOTSTRAP_PATH.");
+            ctx.log("Bootstrap file witness: isolated canonical file removed; legacy path is disabled under OPENWORK_DESKTOP_BOOTSTRAP_PATH.");
           },
           screenshot: {
             name: "advanced-org-server-url-clear-confirmed",

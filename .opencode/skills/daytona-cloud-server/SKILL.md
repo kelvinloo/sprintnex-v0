@@ -31,7 +31,7 @@ and worker proxy, waits for health checks, then prints URLs.
 If dependencies or the base image changed, refresh the server snapshot:
 
 ```bash
-bash .devcontainer/create-daytona-sprintnex-server-snapshot.sh
+bash .devcontainer/create-daytona-openwork-server-snapshot.sh
 ```
 
 ## Connect Electron To Server

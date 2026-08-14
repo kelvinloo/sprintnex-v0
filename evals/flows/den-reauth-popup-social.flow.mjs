@@ -16,8 +16,8 @@ const FLOW_ID = "den-reauth-popup-social";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 const execFileAsync = promisify(execFile);
 
-const DEN_WEB_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL);
-const MYSQL_CONTAINER = process.env.SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER?.trim() ?? "";
+const DEN_WEB_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL);
+const MYSQL_CONTAINER = process.env.OPENWORK_EVAL_DEN_MYSQL_CONTAINER?.trim() ?? "";
 const DEMO_EMAIL = "alex@acme.test";
 const DEMO_PASSWORD = "OpenWorkDemo123!";
 const GOOGLE_ACCOUNT_ID = "acc_01kwx81tc6f208pn04555rws17";
@@ -46,7 +46,7 @@ export default {
   title: "Den social reauth completes in a popup and retries the queued action",
   kind: "user-facing",
   preserveTheme: true,
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_WEB_URL", "SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_WEB_URL", "OPENWORK_EVAL_DEN_MYSQL_CONTAINER"],
   steps: [
     {
       name: "Sign in; stage a stale session and a Google-linked account",

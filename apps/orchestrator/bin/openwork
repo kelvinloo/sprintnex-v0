@@ -17,7 +17,7 @@ function run(target) {
   process.exit(code)
 }
 
-const envPath = process.env.SPRINTNEX_ORCHESTRATOR_BIN_PATH
+const envPath = process.env.OPENWORK_ORCHESTRATOR_BIN_PATH
 if (envPath) {
   run(envPath)
 }
@@ -44,7 +44,7 @@ if (!arch) {
   arch = os.arch()
 }
 
-const pkg = `sprintnex-orchestrator-${platform}-${arch}`
+const pkg = `openwork-orchestrator-${platform}-${arch}`
 const binary = platform === "windows" ? "openwork.exe" : "openwork"
 const fallback = path.join(__dirname, "..", "dist", "bin", binary)
 
@@ -57,7 +57,7 @@ try {
   }
   console.error(
     `openwork: no prebuilt binary package found for ${platform}/${arch}.\n` +
-      `Try reinstalling sprintnex-orchestrator or installing the platform package manually: ${pkg}`,
+      `Try reinstalling openwork-orchestrator or installing the platform package manually: ${pkg}`,
   )
   process.exit(1)
 }

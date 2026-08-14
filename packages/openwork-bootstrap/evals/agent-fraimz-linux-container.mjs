@@ -64,7 +64,7 @@ function run(command, args, options = {}) {
 }
 
 function redactSecrets(value) {
-  return value.replace(/SPRINTNEX_OWNER_PASSWORD=[^\s]+/g, "SPRINTNEX_OWNER_PASSWORD=[redacted]")
+  return value.replace(/OPENWORK_OWNER_PASSWORD=[^\s]+/g, "OPENWORK_OWNER_PASSWORD=[redacted]")
 }
 
 function prove(claim, { action, assert, evidence }, ok) {
@@ -152,14 +152,14 @@ try {
     "/tmp/openwork/bin/openwork-bootstrap doctor --install-dir /tmp/openwork/install --bin-dir /tmp/openwork/bin --desktop-bootstrap --desktop-bootstrap-path /tmp/openwork/desktop-bootstrap.json --json >/tmp/doctor.json",
     "node -e \"const fs=require('fs'); console.log(JSON.stringify({onboard:JSON.parse(fs.readFileSync('/tmp/onboard.json','utf8')),doctor:JSON.parse(fs.readFileSync('/tmp/doctor.json','utf8'))}, null, 2))\"",
   ].join(" && "), {
-    env: ["-e", `SPRINTNEX_OWNER_PASSWORD=${randomPassword()}`],
+    env: ["-e", `OPENWORK_OWNER_PASSWORD=${randomPassword()}`],
     timeout: 90_000,
   })
   prove("Linux installed CLI can complete live cloud onboarding", {
     action: "Run openwork cloud onboard from inside Linux against live Den API",
     assert: "exit 0 and returns prepared desktop bootstrap with user, organization, invitation, skill, and triggered skill output from live API",
     evidence: onboard,
-  }, onboard.status === 0 && onboard.json?.onboard?.ok === true && onboard.json?.onboard?.organization?.id && onboard.json?.onboard?.invitation?.invitationId && onboard.json?.onboard?.skill?.id && onboard.json?.onboard?.skill?.title === skillName && onboard.json?.onboard?.skillRun?.triggered === true && onboard.json?.onboard?.skillRun?.output === "SPRINTNEX_BOOTSTRAP_SKILL_TRIGGERED" && onboard.json?.onboard?.desktop?.prepared === true && onboard.json?.onboard?.desktop?.bootstrapPath && onboard.json?.onboard?.desktop?.skillPath && onboard.json?.doctor?.ok === true && onboard.json?.doctor?.checks?.some((check) => check.name === "desktopBootstrap" && check.ok === true) && onboard.json?.doctor?.checks?.some((check) => check.name === "desktopBootstrapHandoff" && check.ok === true))
+  }, onboard.status === 0 && onboard.json?.onboard?.ok === true && onboard.json?.onboard?.organization?.id && onboard.json?.onboard?.invitation?.invitationId && onboard.json?.onboard?.skill?.id && onboard.json?.onboard?.skill?.title === skillName && onboard.json?.onboard?.skillRun?.triggered === true && onboard.json?.onboard?.skillRun?.output === "OPENWORK_BOOTSTRAP_SKILL_TRIGGERED" && onboard.json?.onboard?.desktop?.prepared === true && onboard.json?.onboard?.desktop?.bootstrapPath && onboard.json?.onboard?.desktop?.skillPath && onboard.json?.doctor?.ok === true && onboard.json?.doctor?.checks?.some((check) => check.name === "desktopBootstrap" && check.ok === true) && onboard.json?.doctor?.checks?.some((check) => check.name === "desktopBootstrapHandoff" && check.ok === true))
 } finally {
   rmSync(temp, { recursive: true, force: true })
 }

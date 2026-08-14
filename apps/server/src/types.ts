@@ -1,4 +1,4 @@
-import type { WorkspaceWire } from "@sprintnex/types/workspace";
+import type { WorkspaceWire } from "@openwork/types/workspace";
 
 export type WorkspaceType = "local" | "remote";
 

@@ -10,7 +10,7 @@ import { desktopFetch } from "./desktop";
 import {
   createOpenworkServerClient,
   OpenworkServerError,
-} from "./sprintnex-server";
+} from "./openwork-server";
 import { isDesktopRuntime } from "./runtime-env";
 
 type FieldsResult<T> =

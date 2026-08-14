@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { ProviderIcon } from "../../design-system/provider-icon";
 import {
-  SPRINTNEX_MODELS_PROVIDER_ID,
-  SPRINTNEX_MODELS_PROVIDER_NAME,
+  OPENWORK_MODELS_PROVIDER_ID,
+  OPENWORK_MODELS_PROVIDER_NAME,
   type OpenWorkModelPreview,
 } from "./openwork-models-promo";
 
@@ -38,7 +38,7 @@ export function OpenWorkModelsStartupDialog(props: OpenWorkModelsStartupDialogPr
       <DialogContent className="w-full max-w-lg overflow-hidden sm:max-w-lg">
         <DialogHeader>
           <div className="mb-2 flex size-11 items-center justify-center rounded-2xl border border-blue-6 bg-blue-2 text-blue-11">
-            <ProviderIcon providerId={SPRINTNEX_MODELS_PROVIDER_ID} providerName={SPRINTNEX_MODELS_PROVIDER_NAME} size={22} />
+            <ProviderIcon providerId={OPENWORK_MODELS_PROVIDER_ID} providerName={OPENWORK_MODELS_PROVIDER_NAME} size={22} />
           </div>
           <DialogTitle>Use OpenWork Models without API keys</DialogTitle>
           <DialogDescription>

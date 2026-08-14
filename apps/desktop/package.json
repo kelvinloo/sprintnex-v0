@@ -1,7 +1,7 @@
 {
-  "name": "@sprintnex/desktop",
+  "name": "@openwork/desktop",
   "private": true,
-  "version": "0.3.10",
+  "version": "0.3.9",
   "description": "Sprintnex Desktop",
   "author": {
     "name": "Sprintnex",
@@ -53,7 +53,7 @@
     "@lydell/node-pty-darwin-x64": "1.2.0-beta.12"
   },
   "devDependencies": {
-    "@sprintnex/types": "workspace:*",
+    "@openwork/types": "workspace:*",
     "electron": "^35.0.0",
     "electron-builder": "^26.15.3",
     "electron-devtools-installer": "^4.0.0"

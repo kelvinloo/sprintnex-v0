@@ -176,7 +176,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
 
 export function printHelp(): void {
   const message = [
-    "sprintnex-server",
+    "openwork-server",
     "",
     "Options:",
     "  --config <path>          Path to server.json",
@@ -208,12 +208,12 @@ async function loadFileConfig(configPath: string): Promise<FileConfig> {
 }
 
 export async function resolveServerConfig(cli: CliArgs): Promise<ServerConfig> {
-  const envConfigPath = process.env.SPRINTNEX_SERVER_CONFIG;
+  const envConfigPath = process.env.OPENWORK_SERVER_CONFIG;
   const configPath = cli.configPath ?? envConfigPath ?? resolve(homedir(), ".config", "openwork", DEFAULT_CONFIG_FILENAME);
   const fileConfig = await loadFileConfig(configPath);
   const configDir = dirname(configPath);
 
-  const envWorkspaces = parseList(process.env.SPRINTNEX_WORKSPACES);
+  const envWorkspaces = parseList(process.env.OPENWORK_WORKSPACES);
   let workspaceConfigs: WorkspaceConfig[] =
     cli.workspaces.length > 0
       ? cli.workspaces.map((path) => ({ path }))
@@ -221,10 +221,10 @@ export async function resolveServerConfig(cli: CliArgs): Promise<ServerConfig> {
         ? envWorkspaces.map((path) => ({ path }))
         : fileConfig.workspaces ?? [];
 
-  const envOpencodeBaseUrl = process.env.SPRINTNEX_OPENCODE_BASE_URL;
-  const envOpencodeDirectory = process.env.SPRINTNEX_OPENCODE_DIRECTORY;
-  const envOpencodeUsername = process.env.SPRINTNEX_OPENCODE_USERNAME;
-  const envOpencodePassword = process.env.SPRINTNEX_OPENCODE_PASSWORD;
+  const envOpencodeBaseUrl = process.env.OPENWORK_OPENCODE_BASE_URL;
+  const envOpencodeDirectory = process.env.OPENWORK_OPENCODE_DIRECTORY;
+  const envOpencodeUsername = process.env.OPENWORK_OPENCODE_USERNAME;
+  const envOpencodePassword = process.env.OPENWORK_OPENCODE_PASSWORD;
   const opencodeBaseUrl = cli.opencodeBaseUrl ?? envOpencodeBaseUrl ?? fileConfig.opencodeBaseUrl;
   const opencodeDirectory = cli.opencodeDirectory ?? envOpencodeDirectory ?? fileConfig.opencodeDirectory;
   const opencodeUsername = cli.opencodeUsername ?? envOpencodeUsername ?? fileConfig.opencodeUsername;
@@ -247,8 +247,8 @@ export async function resolveServerConfig(cli: CliArgs): Promise<ServerConfig> {
 
   const workspaces = buildWorkspaceInfos(workspaceConfigs, configDir);
 
-  const tokenFromEnv = process.env.SPRINTNEX_TOKEN;
-  const hostTokenFromEnv = process.env.SPRINTNEX_HOST_TOKEN;
+  const tokenFromEnv = process.env.OPENWORK_TOKEN;
+  const hostTokenFromEnv = process.env.OPENWORK_HOST_TOKEN;
 
   const token = cli.token ?? tokenFromEnv ?? fileConfig.token ?? shortId();
   const hostToken = cli.hostToken ?? hostTokenFromEnv ?? fileConfig.hostToken ?? shortId();
@@ -271,13 +271,13 @@ export async function resolveServerConfig(cli: CliArgs): Promise<ServerConfig> {
 
   const approvalMode =
     cli.approvalMode ??
-    (process.env.SPRINTNEX_APPROVAL_MODE as ApprovalMode | undefined) ??
+    (process.env.OPENWORK_APPROVAL_MODE as ApprovalMode | undefined) ??
     fileConfig.approval?.mode ??
     "manual";
 
   const approvalTimeoutMs =
     cli.approvalTimeoutMs ??
-    (process.env.SPRINTNEX_APPROVAL_TIMEOUT_MS ? Number(process.env.SPRINTNEX_APPROVAL_TIMEOUT_MS) : undefined) ??
+    (process.env.OPENWORK_APPROVAL_TIMEOUT_MS ? Number(process.env.OPENWORK_APPROVAL_TIMEOUT_MS) : undefined) ??
     fileConfig.approval?.timeoutMs ??
     DEFAULT_TIMEOUT_MS;
 
@@ -286,24 +286,24 @@ export async function resolveServerConfig(cli: CliArgs): Promise<ServerConfig> {
     timeoutMs: Number.isNaN(approvalTimeoutMs) ? DEFAULT_TIMEOUT_MS : approvalTimeoutMs,
   };
 
-  const envCorsOrigins = process.env.SPRINTNEX_CORS_ORIGINS;
+  const envCorsOrigins = process.env.OPENWORK_CORS_ORIGINS;
   const parsedEnvCors = envCorsOrigins ? parseList(envCorsOrigins) : null;
   const corsOrigins = cli.corsOrigins ?? parsedEnvCors ?? fileConfig.corsOrigins ?? ["*"];
 
-  const envReadOnly = process.env.SPRINTNEX_READONLY;
+  const envReadOnly = process.env.OPENWORK_READONLY;
   const parsedReadOnly = envReadOnly
     ? ["true", "1", "yes"].includes(envReadOnly.toLowerCase())
     : undefined;
   const readOnly = cli.readOnly ?? parsedReadOnly ?? fileConfig.readOnly ?? false;
 
-  const envLogFormat = process.env.SPRINTNEX_LOG_FORMAT;
+  const envLogFormat = process.env.OPENWORK_LOG_FORMAT;
   const logFormat =
     cli.logFormat ??
     normalizeLogFormat(envLogFormat) ??
     normalizeLogFormat(fileConfig.logFormat) ??
     DEFAULT_LOG_FORMAT;
 
-  const envLogRequests = parseBoolean(process.env.SPRINTNEX_LOG_REQUESTS);
+  const envLogRequests = parseBoolean(process.env.OPENWORK_LOG_REQUESTS);
   const logRequests = cli.logRequests ?? envLogRequests ?? fileConfig.logRequests ?? DEFAULT_LOG_REQUESTS;
 
   const authorizedRoots =
@@ -311,8 +311,8 @@ export async function resolveServerConfig(cli: CliArgs): Promise<ServerConfig> {
       ? fileConfig.authorizedRoots.map((root) => resolve(configDir, root))
       : workspaces.map((workspace) => workspace.path);
 
-  const host = cli.host ?? process.env.SPRINTNEX_HOST ?? fileConfig.host ?? DEFAULT_HOST;
-  const port = cli.port ?? (process.env.SPRINTNEX_PORT ? Number(process.env.SPRINTNEX_PORT) : undefined) ?? fileConfig.port ?? DEFAULT_PORT;
+  const host = cli.host ?? process.env.OPENWORK_HOST ?? fileConfig.host ?? DEFAULT_HOST;
+  const port = cli.port ?? (process.env.OPENWORK_PORT ? Number(process.env.OPENWORK_PORT) : undefined) ?? fileConfig.port ?? DEFAULT_PORT;
 
   return {
     host,

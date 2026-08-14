@@ -49,7 +49,7 @@ This may navigate OpenWork away from the user's current session while the lookup
 
 ### OpenWork agents
 
-Inside OpenWork, the supported way to grant an agent this UI-control surface is **Settings -> Extensions -> Show hidden**, then connect the hidden **OpenWork UI Control** MCP. The built-in preview tools injected by the extensions-preview plugin (`openwork_ui_*`) are disabled by default to keep sessions uncluttered; set `SPRINTNEX_UI_CONTROL_TOOLS=1` only for internal tooling that still needs that preview surface.
+Inside OpenWork, the supported way to grant an agent this UI-control surface is **Settings -> Extensions -> Show hidden**, then connect the hidden **OpenWork UI Control** MCP. The built-in preview tools injected by the extensions-preview plugin (`openwork_ui_*`) are disabled by default to keep sessions uncluttered; set `OPENWORK_UI_CONTROL_TOOLS=1` only for internal tooling that still needs that preview surface.
 
 ## Install
 

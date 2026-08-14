@@ -1,5 +1,5 @@
 {
-  "name": "@sprintnex/enterprise-mcp-client",
+  "name": "@openwork/enterprise-mcp-client",
   "private": true,
   "version": "0.1.0",
   "description": "Package-first remote MCP client runtime for enterprise Den connections",

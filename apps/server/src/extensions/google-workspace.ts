@@ -10,11 +10,11 @@ import type { ServerConfig } from "../types.js";
 export const GOOGLE_WORKSPACE_EXTENSION_ID = "google-workspace";
 
 const GOOGLE_WORKSPACE_DESKTOP_CLIENT_ID = "929071212606-pmkqimjhm2tnp68kbklnout0irllj99h.apps.googleusercontent.com";
-const GOOGLE_WORKSPACE_CLIENT_ID_ENV = "SPRINTNEX_GOOGLE_WORKSPACE_OAUTH_CLIENT_ID";
+const GOOGLE_WORKSPACE_CLIENT_ID_ENV = "OPENWORK_GOOGLE_WORKSPACE_OAUTH_CLIENT_ID";
 const GOOGLE_WORKSPACE_CLIENT_SECRET_ENV = "GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET";
-const LEGACY_GOOGLE_WORKSPACE_CLIENT_SECRET_ENV = "SPRINTNEX_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET";
-const GOOGLE_WORKSPACE_TOKEN_BROKER_URL_ENV = "SPRINTNEX_GOOGLE_WORKSPACE_TOKEN_BROKER_URL";
-const GOOGLE_WORKSPACE_ALLOW_PLAINTEXT_VAULT_ENV = "SPRINTNEX_GOOGLE_WORKSPACE_ALLOW_PLAINTEXT_VAULT";
+const LEGACY_GOOGLE_WORKSPACE_CLIENT_SECRET_ENV = "OPENWORK_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET";
+const GOOGLE_WORKSPACE_TOKEN_BROKER_URL_ENV = "OPENWORK_GOOGLE_WORKSPACE_TOKEN_BROKER_URL";
+const GOOGLE_WORKSPACE_ALLOW_PLAINTEXT_VAULT_ENV = "OPENWORK_GOOGLE_WORKSPACE_ALLOW_PLAINTEXT_VAULT";
 const GOOGLE_WORKSPACE_AUTH_TIMEOUT_MS = 5 * 60 * 1000;
 const GOOGLE_WORKSPACE_API_TIMEOUT_MS = 30_000;
 const GOOGLE_WORKSPACE_SCOPES = [
@@ -328,7 +328,7 @@ function googleWorkspaceVaultKeyPath(config: ServerConfig): string {
 }
 
 function googleWorkspacePlainTextVaultEnabled() {
-  return process.env.SPRINTNEX_DEV_MODE === "1" && process.env[GOOGLE_WORKSPACE_ALLOW_PLAINTEXT_VAULT_ENV] === "1";
+  return process.env.OPENWORK_DEV_MODE === "1" && process.env[GOOGLE_WORKSPACE_ALLOW_PLAINTEXT_VAULT_ENV] === "1";
 }
 
 function googleWorkspaceVaultMode() {
@@ -350,7 +350,7 @@ function createGoogleWorkspacePkce() {
 }
 
 async function googleWorkspaceVaultKey(config: ServerConfig): Promise<Buffer> {
-  const envKey = process.env.SPRINTNEX_ENCRYPTION_KEY?.trim();
+  const envKey = process.env.OPENWORK_ENCRYPTION_KEY?.trim();
   if (envKey) return createHash("sha256").update(envKey).digest();
 
   const keyPath = googleWorkspaceVaultKeyPath(config);

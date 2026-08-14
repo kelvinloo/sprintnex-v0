@@ -23,8 +23,8 @@
  *   5. Re-enable it and assert the intent record clears.
  *
  * Required env:
- * - SPRINTNEX_EVAL_DEN_API_URL  Den API base
- * - SPRINTNEX_EVAL_DEN_TOKEN    Bearer session token for a seeded user
+ * - OPENWORK_EVAL_DEN_API_URL  Den API base
+ * - OPENWORK_EVAL_DEN_TOKEN    Bearer session token for a seeded user
  */
 
 const CLOUD_TITLE = "OpenWork Cloud Control";
@@ -88,7 +88,7 @@ export default {
   id: "cloud-mcp-disable-sticks",
   title: "Disabling the OpenWork Cloud Control MCP sticks across sync",
   spec: "evals/cloud-mcp-agent-flows.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "App booted",
@@ -106,11 +106,11 @@ export default {
           ctx.log("Already signed in; reusing session.");
           return;
         }
-        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
           method: "POST",
           headers: {
-            authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
+            authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
             "content-type": "application/json",
           },
           body: JSON.stringify({ desktopScheme: "openwork" }),

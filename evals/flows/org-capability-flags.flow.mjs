@@ -6,17 +6,17 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 // The runner fails this flow if the narration drifts from that script.
 const vo = await loadVoiceoverParagraphs("org-capability-flags");
 
-const DEN_API_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_API_URL);
-const DEN_WEB_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL);
-const ADMIN_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_ADMIN);
-const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
-const PLATFORM_ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
-const PLATFORM_ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
+const DEN_API_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_API_URL);
+const DEN_WEB_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL);
+const ADMIN_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_ADMIN);
+const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const PLATFORM_ADMIN_EMAIL = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL?.trim() || "";
+const PLATFORM_ADMIN_PASSWORD = process.env.OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD?.trim() || "";
 // alex is the ORG admin: his /v1/org payload is the proof that an org can read
 // its own capabilities. He takes part through his API session only — the whole
 // visible demo happens in the platform admin's browser.
-const ORG_ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ORG_ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const ORG_ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ORG_ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 
 const ORG_FILTER_INPUT = 'input[placeholder="Org name, slug, or id"]';
 
@@ -33,13 +33,13 @@ export default {
   title: "Platform admins flip per-org capability flags from /admin; every org starts dark and reports its own state through /v1/org",
   kind: "user-facing",
   requiredEnv: [
-    "SPRINTNEX_EVAL_DEN_API_URL",
-    "SPRINTNEX_EVAL_DEN_TOKEN",
-    "SPRINTNEX_EVAL_DEN_WEB_URL",
-    "SPRINTNEX_EVAL_WEB_CDP_ADMIN",
-    "SPRINTNEX_EVAL_PLATFORM_ADMIN_EMAIL",
-    "SPRINTNEX_EVAL_PLATFORM_ADMIN_PASSWORD",
-    "SPRINTNEX_EVAL_MARK_VERIFIED_CMD",
+    "OPENWORK_EVAL_DEN_API_URL",
+    "OPENWORK_EVAL_DEN_TOKEN",
+    "OPENWORK_EVAL_DEN_WEB_URL",
+    "OPENWORK_EVAL_WEB_CDP_ADMIN",
+    "OPENWORK_EVAL_PLATFORM_ADMIN_EMAIL",
+    "OPENWORK_EVAL_PLATFORM_ADMIN_PASSWORD",
+    "OPENWORK_EVAL_MARK_VERIFIED_CMD",
   ],
   steps: [
     {
@@ -290,7 +290,7 @@ async function denApiFetch(pathname, options = {}) {
 function markEmailVerified(ctx, email) {
   ctx.assert(
     MARK_VERIFIED_CMD.length > 0,
-    "Platform-admin provisioning requires a verified email; set SPRINTNEX_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
+    "Platform-admin provisioning requires a verified email; set OPENWORK_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
   );
   execSync(MARK_VERIFIED_CMD.replaceAll("{email}", email), { stdio: "ignore" });
 }

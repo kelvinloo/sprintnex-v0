@@ -18,7 +18,7 @@ import type { ServerConfig } from "./types.js";
 export type EmbeddedServerOptions = CliArgs & {
   /** When true, spawn a managed OpenCode child process. */
   manageOpencode?: boolean;
-  /** Path to the OpenCode binary. Falls back to SPRINTNEX_OPENCODE_BIN env. */
+  /** Path to the OpenCode binary. Falls back to OPENWORK_OPENCODE_BIN env. */
   opencodeBin?: string;
   /** Working directory for the managed OpenCode process. */
   opencodeCwd?: string;
@@ -40,7 +40,7 @@ export type EmbeddedServerHandle = {
 export async function startEmbeddedServer(options: EmbeddedServerOptions): Promise<EmbeddedServerHandle> {
   const config = await resolveServerConfig(options);
   const serverUrl = `http://${config.host === "0.0.0.0" ? "127.0.0.1" : config.host}:${config.port}`;
-  const opencodeModelsUrl = process.env.SPRINTNEX_DEV_MODE === "1"
+  const opencodeModelsUrl = process.env.OPENWORK_DEV_MODE === "1"
     ? "http://localhost:8791/models"
     : "https://models.openworklabs.com/";
 
@@ -60,19 +60,19 @@ export async function startEmbeddedServer(options: EmbeddedServerOptions): Promi
       const runtimeConfigPath = await writeOpenworkRuntimeConfigFile(config, workspace.id);
       keepOpenworkRuntimeConfigFileFresh(config, workspace.id);
       const cwd = options.opencodeCwd
-        || process.env.SPRINTNEX_MANAGED_OPENCODE_CWD?.trim()
+        || process.env.OPENWORK_MANAGED_OPENCODE_CWD?.trim()
         || workspace.path;
       await mkdir(cwd, { recursive: true });
 
       managedOpencode = await createManagedOpencodeServer({
-        bin: options.opencodeBin || process.env.SPRINTNEX_OPENCODE_BIN,
+        bin: options.opencodeBin || process.env.OPENWORK_OPENCODE_BIN,
         cwd,
         excludedPorts: [config.port],
         env: {
-          ...(process.env.SPRINTNEX_DEV_MODE ? { SPRINTNEX_DEV_MODE: process.env.SPRINTNEX_DEV_MODE } : {}),
-          ...(process.env.SPRINTNEX_UI_CONTROL_DISCOVERY ? { SPRINTNEX_UI_CONTROL_DISCOVERY: process.env.SPRINTNEX_UI_CONTROL_DISCOVERY } : {}),
-          SPRINTNEX_SERVER_URL: serverUrl,
-          SPRINTNEX_SERVER_TOKEN: config.token,
+          ...(process.env.OPENWORK_DEV_MODE ? { OPENWORK_DEV_MODE: process.env.OPENWORK_DEV_MODE } : {}),
+          ...(process.env.OPENWORK_UI_CONTROL_DISCOVERY ? { OPENWORK_UI_CONTROL_DISCOVERY: process.env.OPENWORK_UI_CONTROL_DISCOVERY } : {}),
+          OPENWORK_SERVER_URL: serverUrl,
+          OPENWORK_SERVER_TOKEN: config.token,
           OPENCODE_CONFIG: runtimeConfigPath,
           OPENCODE_MODELS_URL: opencodeModelsUrl,
         },

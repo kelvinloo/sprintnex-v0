@@ -13,7 +13,7 @@ marketplaces from the app.
 ## Preconditions
 
 - Run Den Web and Den API from a fresh Daytona server sandbox or a clean local DB.
-- Use `SPRINTNEX_DEV_MODE=1` for local/Daytona email-password sign-up without email delivery.
+- Use `OPENWORK_DEV_MODE=1` for local/Daytona email-password sign-up without email delivery.
 - If Den Web runs behind a Daytona preview URL in `next dev`, set
   `DEN_WEB_ALLOWED_DEV_ORIGINS` to the preview host before starting Den Web.
 - Use a fresh browser profile so no previous Den session or org state is reused.
@@ -96,7 +96,7 @@ response, not only a filesystem or CLI proof.
 
 ## Latest Daytona Validation
 
-- Den sandbox: `sprintnex-server-onboarding-20260603-2108`.
+- Den sandbox: `openwork-server-onboarding-20260603-2108`.
 - Electron sandbox: `openwork-test-20260603-211949`.
 - New Den user created an org and landed on `/dashboard/onboarding`.
 - Den API returned both default marketplaces for the fresh org.

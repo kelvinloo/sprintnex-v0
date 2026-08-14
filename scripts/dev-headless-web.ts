@@ -64,9 +64,9 @@ const readBool = (value: string | undefined) => {
 const silent = process.argv.includes("--silent");
 
 const autoBuildEnabled =
-  process.env.SPRINTNEX_DEV_HEADLESS_WEB_AUTOBUILD == null
+  process.env.OPENWORK_DEV_HEADLESS_WEB_AUTOBUILD == null
     ? true
-    : readBool(process.env.SPRINTNEX_DEV_HEADLESS_WEB_AUTOBUILD);
+    : readBool(process.env.OPENWORK_DEV_HEADLESS_WEB_AUTOBUILD);
 
 const runCommand = (command: string, args: string[]) =>
   new Promise<void>((resolve, reject) => {
@@ -116,19 +116,19 @@ const shutdown = (
 
 await ensureTmp();
 
-const remoteAccessEnabled = readBool(process.env.SPRINTNEX_REMOTE_ACCESS);
+const remoteAccessEnabled = readBool(process.env.OPENWORK_REMOTE_ACCESS);
 const host = remoteAccessEnabled ? "0.0.0.0" : "127.0.0.1";
 const viteHost = process.env.VITE_HOST ?? process.env.HOST ?? host;
-const publicHost = process.env.SPRINTNEX_PUBLIC_HOST ?? null;
+const publicHost = process.env.OPENWORK_PUBLIC_HOST ?? null;
 const clientHost = publicHost ?? (host === "0.0.0.0" ? "127.0.0.1" : host);
-const workspace = process.env.SPRINTNEX_WORKSPACE ?? cwd;
-const openworkPort = await resolvePort(process.env.SPRINTNEX_PORT, "127.0.0.1");
-const webPort = await resolvePort(process.env.SPRINTNEX_WEB_PORT, "127.0.0.1");
-const openworkToken = process.env.SPRINTNEX_TOKEN ?? randomUUID();
-const openworkHostToken = process.env.SPRINTNEX_HOST_TOKEN ?? randomUUID();
+const workspace = process.env.OPENWORK_WORKSPACE ?? cwd;
+const openworkPort = await resolvePort(process.env.OPENWORK_PORT, "127.0.0.1");
+const webPort = await resolvePort(process.env.OPENWORK_WEB_PORT, "127.0.0.1");
+const openworkToken = process.env.OPENWORK_TOKEN ?? randomUUID();
+const openworkHostToken = process.env.OPENWORK_HOST_TOKEN ?? randomUUID();
 const openworkServerBin = path.join(
   cwd,
-  "apps/server/dist/bin/sprintnex-server",
+  "apps/server/dist/bin/openwork-server",
 );
 
 const ensureOpenworkServer = async () => {
@@ -140,13 +140,13 @@ const ensureOpenworkServer = async () => {
         `[dev:headless-web] Missing OpenWork server binary at ${openworkServerBin}`,
       );
       logLine(
-        "[dev:headless-web] Auto-build disabled (SPRINTNEX_DEV_HEADLESS_WEB_AUTOBUILD=0)",
+        "[dev:headless-web] Auto-build disabled (OPENWORK_DEV_HEADLESS_WEB_AUTOBUILD=0)",
       );
       logLine(
-        "[dev:headless-web] Run: pnpm --filter sprintnex-server build:bin",
+        "[dev:headless-web] Run: pnpm --filter openwork-server build:bin",
       );
       logLine(
-        "[dev:headless-web] Or unset/enable SPRINTNEX_DEV_HEADLESS_WEB_AUTOBUILD to auto-build.",
+        "[dev:headless-web] Or unset/enable OPENWORK_DEV_HEADLESS_WEB_AUTOBUILD to auto-build.",
       );
       process.exit(1);
     }
@@ -155,10 +155,10 @@ const ensureOpenworkServer = async () => {
       `[dev:headless-web] Missing OpenWork server binary at ${openworkServerBin}`,
     );
     logLine(
-      "[dev:headless-web] Auto-building: pnpm --filter sprintnex-server build:bin",
+      "[dev:headless-web] Auto-building: pnpm --filter openwork-server build:bin",
     );
     try {
-      await runCommand("pnpm", ["--filter", "sprintnex-server", "build:bin"]);
+      await runCommand("pnpm", ["--filter", "openwork-server", "build:bin"]);
       await access(openworkServerBin);
     } catch (error) {
       logLine(
@@ -175,20 +175,20 @@ const viteEnv = {
   ...process.env,
   HOST: viteHost,
   PORT: String(webPort),
-  VITE_SPRINTNEX_URL: process.env.VITE_SPRINTNEX_URL ?? openworkUrl,
-  VITE_SPRINTNEX_PORT: process.env.VITE_SPRINTNEX_PORT ?? String(openworkPort),
-  VITE_SPRINTNEX_TOKEN: process.env.VITE_SPRINTNEX_TOKEN ?? openworkToken,
+  VITE_OPENWORK_URL: process.env.VITE_OPENWORK_URL ?? openworkUrl,
+  VITE_OPENWORK_PORT: process.env.VITE_OPENWORK_PORT ?? String(openworkPort),
+  VITE_OPENWORK_TOKEN: process.env.VITE_OPENWORK_TOKEN ?? openworkToken,
 };
 const headlessEnv = {
   ...process.env,
-  SPRINTNEX_WORKSPACE: workspace,
-  SPRINTNEX_HOST: host,
-  SPRINTNEX_REMOTE_ACCESS: remoteAccessEnabled ? "1" : "0",
-  SPRINTNEX_PORT: String(openworkPort),
-  SPRINTNEX_TOKEN: openworkToken,
-  SPRINTNEX_HOST_TOKEN: openworkHostToken,
-  SPRINTNEX_SERVER_BIN: openworkServerBin,
-  SPRINTNEX_SIDECAR_SOURCE: process.env.SPRINTNEX_SIDECAR_SOURCE ?? "external",
+  OPENWORK_WORKSPACE: workspace,
+  OPENWORK_HOST: host,
+  OPENWORK_REMOTE_ACCESS: remoteAccessEnabled ? "1" : "0",
+  OPENWORK_PORT: String(openworkPort),
+  OPENWORK_TOKEN: openworkToken,
+  OPENWORK_HOST_TOKEN: openworkHostToken,
+  OPENWORK_SERVER_BIN: openworkServerBin,
+  OPENWORK_SIDECAR_SOURCE: process.env.OPENWORK_SIDECAR_SOURCE ?? "external",
 };
 
 await ensureOpenworkServer();
@@ -199,8 +199,8 @@ logLine(`[dev:headless-web] OpenWork server: ${openworkUrl}`);
 logLine(`[dev:headless-web] Web host: ${viteHost}`);
 logLine(`[dev:headless-web] Web port: ${webPort}`);
 logLine(`[dev:headless-web] Web URL: ${webUrl}`);
-logLine("[dev:headless-web] SPRINTNEX_TOKEN: [REDACTED]");
-logLine("[dev:headless-web] SPRINTNEX_HOST_TOKEN: [REDACTED]");
+logLine("[dev:headless-web] OPENWORK_TOKEN: [REDACTED]");
+logLine("[dev:headless-web] OPENWORK_HOST_TOKEN: [REDACTED]");
 logLine(
   `[dev:headless-web] Web logs: ${path.relative(cwd, path.join(tmpDir, "dev-web.log"))}`,
 );
@@ -229,7 +229,7 @@ const headlessProcess = spawnLogged(
   "pnpm",
   [
     "--filter",
-    "sprintnex-orchestrator",
+    "openwork-orchestrator",
     "dev",
     "--",
     "start",

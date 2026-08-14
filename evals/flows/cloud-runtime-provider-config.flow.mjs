@@ -21,8 +21,8 @@
  * assertions lived in the reverted #2414 and return with its re-land.)
  *
  * Required env:
- * - SPRINTNEX_EVAL_DEN_API_URL  Den API base
- * - SPRINTNEX_EVAL_DEN_TOKEN    Bearer session token for a seeded org owner
+ * - OPENWORK_EVAL_DEN_API_URL  Den API base
+ * - OPENWORK_EVAL_DEN_TOKEN    Bearer session token for a seeded org owner
  */
 
 const PROVIDER_NAME = "Runtime Config Eval";
@@ -66,11 +66,11 @@ const engineProviderModelsExpr = (workspaceId, cloudProviderId) => `(async () =>
 })()`;
 
 async function denRequest(ctx, path, init = {}) {
-  const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${apiBase}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
+      authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
       "content-type": "application/json",
       ...(init.headers ?? {}),
     },
@@ -165,7 +165,7 @@ export default {
   id: "cloud-runtime-provider-config",
   title: "Cloud provider import/sync lives in runtime config, not opencode.jsonc",
   spec: "evals/cloud-provider-sync-flows.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "App booted",

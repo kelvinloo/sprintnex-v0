@@ -219,7 +219,7 @@ export default {
             ctx.assert(typeof bundleString === "string" && bundleString.includes('"tokenPresent"'), "Bundle does not record tokenPresent");
             const bundle = JSON.parse(bundleString);
             const secrets = await ctx.eval(`(async () => {
-              const invoke = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
+              const invoke = window.__OPENWORK_ELECTRON__?.invokeDesktop;
               const serverInfo = invoke ? await invoke('openworkServerInfo').catch(() => null) : null;
               const engineInfo = invoke ? await invoke('engineInfo').catch(() => null) : null;
               return {

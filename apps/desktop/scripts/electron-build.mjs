@@ -79,12 +79,12 @@ run(
   desktopRoot,
 );
 // Build the server TS → JS so Electron can import it in-process
-run(pnpmCmd, ["--filter", "sprintnex-server", "build"], repoRoot);
-// SPRINTNEX_ELECTRON_BUILD tells Vite to emit relative asset paths so
+run(pnpmCmd, ["--filter", "openwork-server", "build"], repoRoot);
+// OPENWORK_ELECTRON_BUILD tells Vite to emit relative asset paths so
 // index.html resolves /assets/* correctly when loaded via file:// from
 // inside the packaged .app bundle.
 run(pnpmCmd, ["--filter", "@openwork/app", "build"], repoRoot, {
-  SPRINTNEX_ELECTRON_BUILD: "1",
+  OPENWORK_ELECTRON_BUILD: "1",
 });
 // Copy constants.json next to server dist so the packaged asar can resolve it.
 // Also patch the compiled import path so it works from both dev and packaged layouts.

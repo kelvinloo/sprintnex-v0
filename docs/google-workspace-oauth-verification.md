@@ -66,7 +66,7 @@ The default desktop flow uses a Google Desktop OAuth client with PKCE and a loop
 
 For installed desktop apps, Google may provide both a `client_id` and `client_secret`. In this context, the `client_secret` is client metadata, not a confidential backend secret, because any value shipped in a desktop binary can be extracted. It is acceptable for official OpenWork desktop builds to include the OpenWork-owned Google Desktop OAuth client metadata, while user access tokens and refresh tokens must remain protected and must never be committed.
 
-For local development, pass `SPRINTNEX_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET` from the Google Cloud desktop client metadata instead of committing it to source. This keeps source checkouts and forks from accidentally reusing the official OpenWork OAuth client metadata unless they opt in explicitly.
+For local development, pass `OPENWORK_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET` from the Google Cloud desktop client metadata instead of committing it to source. This keeps source checkouts and forks from accidentally reusing the official OpenWork OAuth client metadata unless they opt in explicitly.
 
 ## Demo Video Script
 
@@ -75,8 +75,8 @@ Google's verification video should show the OAuth consent flow and each requeste
 1. Start OpenWork Desktop with the Google Workspace desktop OAuth client metadata:
 
    ```bash
-   SPRINTNEX_GOOGLE_WORKSPACE_OAUTH_CLIENT_ID="929071212606-pmkqimjhm2tnp68kbklnout0irllj99h.apps.googleusercontent.com" \
-   SPRINTNEX_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET="<desktop-client-secret-from-google-cloud>" \
+   OPENWORK_GOOGLE_WORKSPACE_OAUTH_CLIENT_ID="929071212606-pmkqimjhm2tnp68kbklnout0irllj99h.apps.googleusercontent.com" \
+   OPENWORK_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET="<desktop-client-secret-from-google-cloud>" \
    pnpm dev
    ```
 
@@ -121,8 +121,8 @@ Then open the noVNC URL printed by the script, sign in to the Google test accoun
 If the sandbox does not have the Google OAuth client metadata in the environment, restart Electron with:
 
 ```bash
-SPRINTNEX_GOOGLE_WORKSPACE_OAUTH_CLIENT_ID="929071212606-pmkqimjhm2tnp68kbklnout0irllj99h.apps.googleusercontent.com" \
-SPRINTNEX_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET="<desktop-client-secret-from-google-cloud>" \
+OPENWORK_GOOGLE_WORKSPACE_OAUTH_CLIENT_ID="929071212606-pmkqimjhm2tnp68kbklnout0irllj99h.apps.googleusercontent.com" \
+OPENWORK_GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET="<desktop-client-secret-from-google-cloud>" \
 bash /opt/openwork-daytona/start-daytona-electron.sh --detach
 ```
 

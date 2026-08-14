@@ -4,7 +4,7 @@ import {
   applyMaterializedBlueprintSessions,
   normalizeBlueprintSessionTemplates,
   readMaterializedBlueprintSessions,
-  sanitizeSprintnexTemplateConfig,
+  sanitizeOpenworkTemplateConfig,
 } from "./blueprint-sessions.js";
 
 describe("blueprint sessions", () => {
@@ -39,7 +39,7 @@ describe("blueprint sessions", () => {
   });
 
   test("sanitizes materialized session state from exported template config", () => {
-    const sanitized = sanitizeSprintnexTemplateConfig({
+    const sanitized = sanitizeOpenworkTemplateConfig({
       blueprint: {
         sessions: [{ id: "welcome", title: "Welcome", messages: [{ role: "assistant", text: "Hello" }] }],
         materialized: {

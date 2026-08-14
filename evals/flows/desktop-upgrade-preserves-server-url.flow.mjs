@@ -20,19 +20,19 @@ const FIREWALL_RULE = "OpenWork Upgrade URL Airgap Eval";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function sandboxId(ctx) {
-  return (ctx.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX_ID || ctx.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX).trim();
+  return (ctx.env.OPENWORK_EVAL_DAYTONA_SANDBOX_ID || ctx.env.OPENWORK_EVAL_DAYTONA_SANDBOX).trim();
 }
 
 function windowsAppPath(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_WINDOWS_APP_PATH.trim();
+  return ctx.env.OPENWORK_EVAL_WINDOWS_APP_PATH.trim();
 }
 
 function windowsInstallerPath(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_WINDOWS_INSTALLER_PATH.trim();
+  return ctx.env.OPENWORK_EVAL_WINDOWS_INSTALLER_PATH.trim();
 }
 
 function standardInstallerPath(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_WINDOWS_STANDARD_INSTALLER_PATH.trim();
+  return ctx.env.OPENWORK_EVAL_WINDOWS_STANDARD_INSTALLER_PATH.trim();
 }
 
 function computerUseScreenshot(name, options = {}) {
@@ -131,7 +131,7 @@ async function launchViaRun(ctx, command) {
 }
 
 async function launchBranchApp(ctx) {
-  const launcher = `@echo off\r\nset "XDG_CONFIG_HOME="\r\nset "LOCALAPPDATA=C:\\Users\\Administrator\\AppData\\Local"\r\nset "SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT=9825"\r\nstart "" "${windowsAppPath(ctx)}"\r\n`;
+  const launcher = `@echo off\r\nset "XDG_CONFIG_HOME="\r\nset "LOCALAPPDATA=C:\\Users\\Administrator\\AppData\\Local"\r\nset "OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=9825"\r\nstart "" "${windowsAppPath(ctx)}"\r\n`;
   const launcherBase64 = Buffer.from(launcher, "utf8").toString("base64");
   await windowsExec(ctx, "write branch app launcher", `
 [IO.File]::WriteAllBytes('${BRANCH_LAUNCHER}', [Convert]::FromBase64String('${launcherBase64}'))
@@ -140,7 +140,7 @@ Write-Output 'branch app launcher ready'
   await launchViaRun(ctx, BRANCH_LAUNCHER);
   await sleep(1_000);
   await ctx.reconnect({ timeoutMs: 120_000 });
-  await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__)", {
+  await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__)", {
     timeoutMs: 60_000,
     label: "Windows Electron bridge",
   });
@@ -250,10 +250,10 @@ export default {
   preserveTheme: true,
   requiredEnv: [
     "DAYTONA_API_KEY",
-    "SPRINTNEX_EVAL_DAYTONA_SANDBOX",
-    "SPRINTNEX_EVAL_WINDOWS_APP_PATH",
-    "SPRINTNEX_EVAL_WINDOWS_INSTALLER_PATH",
-    "SPRINTNEX_EVAL_WINDOWS_STANDARD_INSTALLER_PATH",
+    "OPENWORK_EVAL_DAYTONA_SANDBOX",
+    "OPENWORK_EVAL_WINDOWS_APP_PATH",
+    "OPENWORK_EVAL_WINDOWS_INSTALLER_PATH",
+    "OPENWORK_EVAL_WINDOWS_STANDARD_INSTALLER_PATH",
   ],
   steps: [
     {
@@ -274,7 +274,7 @@ export default {
             await showAdvancedServer(ctx);
           },
           assert: async () => {
-            const runtime = await ctx.eval("window.__SPRINTNEX_ELECTRON__?.system?.getArchitectureInfo?.()", { awaitPromise: true });
+            const runtime = await ctx.eval("window.__OPENWORK_ELECTRON__?.system?.getArchitectureInfo?.()", { awaitPromise: true });
             ctx.assert(runtime?.platform === "windows", `Expected Windows Electron, got ${JSON.stringify(runtime)}`);
             await ctx.expectText("From bootstrap file");
             await ctx.expectText(ORG_URL);
@@ -360,13 +360,13 @@ if (Test-Path -LiteralPath '${INSTALLED_DESKTOP_DIR}\\OpenWork.exe') { Write-Out
           voiceover: vo[3],
           action: async () => {
             try {
-              await ctx.eval("window.__SPRINTNEX_ELECTRON__.shell.relaunch()", { awaitPromise: true });
+              await ctx.eval("window.__OPENWORK_ELECTRON__.shell.relaunch()", { awaitPromise: true });
             } catch (error) {
               ctx.log(`Expected relaunch disconnect: ${error instanceof Error ? error.message : String(error)}`);
             }
             await sleep(1_000);
             await ctx.reconnect({ timeoutMs: 120_000 });
-            await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__)", { timeoutMs: 60_000, label: "Electron bridge after restart" });
+            await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__)", { timeoutMs: 60_000, label: "Electron bridge after restart" });
             await showBootstrapDebug(ctx);
           },
           assert: async () => {

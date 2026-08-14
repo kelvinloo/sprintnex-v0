@@ -4,8 +4,8 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 const FLOW_ID = "email-invites-remove-download-link";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
 
-const DEN_API_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_API_URL);
-const DEN_TOKEN = process.env.SPRINTNEX_EVAL_DEN_TOKEN?.trim() ?? "";
+const DEN_API_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_API_URL);
+const DEN_TOKEN = process.env.OPENWORK_EVAL_DEN_TOKEN?.trim() ?? "";
 const RUN_TAG = Date.now().toString(36);
 const INVITEE_EMAIL = `maya.invite+${RUN_TAG}@acme.test`;
 
@@ -144,8 +144,8 @@ async function navigateTo(ctx, url) {
 }
 
 async function withGenericBrowser(ctx, fn) {
-  const cdpBaseUrl = cleanBaseUrl(ctx.cdpBaseUrl ?? process.env.SPRINTNEX_EVAL_CDP_URL);
-  witness(ctx, cdpBaseUrl.length > 0, "A generic CDP browser endpoint is available for rendered-email screenshots", cdpBaseUrl || "missing --cdp-url/SPRINTNEX_EVAL_CDP_URL");
+  const cdpBaseUrl = cleanBaseUrl(ctx.cdpBaseUrl ?? process.env.OPENWORK_EVAL_CDP_URL);
+  witness(ctx, cdpBaseUrl.length > 0, "A generic CDP browser endpoint is available for rendered-email screenshots", cdpBaseUrl || "missing --cdp-url/OPENWORK_EVAL_CDP_URL");
   const previous = ctx.client;
   const target = await firstPageTarget(cdpBaseUrl);
   const client = await connect(debuggerUrlFor(cdpBaseUrl, target));
@@ -360,8 +360,8 @@ export default {
   requiresApp: false,
   preserveTheme: true,
   requiredEnv: [
-    "SPRINTNEX_EVAL_DEN_API_URL",
-    "SPRINTNEX_EVAL_DEN_TOKEN",
+    "OPENWORK_EVAL_DEN_API_URL",
+    "OPENWORK_EVAL_DEN_TOKEN",
   ],
   steps: [
     {

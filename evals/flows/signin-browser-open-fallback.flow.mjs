@@ -2,7 +2,7 @@ export default {
   id: "signin-browser-open-fallback",
   title: "Cloud sign-in surfaces browser open failure with copy-link fallback",
   kind: "user-facing",
-  requiredEnv: ["SPRINTNEX_SIMULATE_OPEN_EXTERNAL_FAILURE"],
+  requiredEnv: ["OPENWORK_SIMULATE_OPEN_EXTERNAL_FAILURE"],
   steps: [
     {
       name: "App booted",

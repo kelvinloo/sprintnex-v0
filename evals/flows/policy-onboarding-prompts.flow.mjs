@@ -1,11 +1,11 @@
 import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 
 const vo = await loadVoiceoverParagraphs("policy-onboarding-prompts");
-const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
-const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? "http://localhost:3005").trim().replace(/\/+$/, "");
-const DESKTOP_URL = (process.env.SPRINTNEX_EVAL_DESKTOP_URL ?? "http://localhost:5173").trim().replace(/\/+$/, "");
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? "http://localhost:3005").trim().replace(/\/+$/, "");
+const DESKTOP_URL = (process.env.OPENWORK_EVAL_DESKTOP_URL ?? "http://localhost:5173").trim().replace(/\/+$/, "");
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const POLICY_NAME = "Product onboarding prompts";
 const ORG_PROMPTS = [
   "Summarize the latest customer feedback and identify the top three product opportunities.",
@@ -82,13 +82,13 @@ export default {
   id: "policy-onboarding-prompts",
   title: "Desktop policies replace OpenWork starter suggestions for assigned teams",
   kind: "user-facing",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "Setup",
       run: async (ctx) => {
         state.desktopUrl = DESKTOP_URL;
-        state.token = ctx.env.SPRINTNEX_EVAL_DEN_TOKEN;
+        state.token = ctx.env.OPENWORK_EVAL_DEN_TOKEN;
         await resetDemoPolicy();
         await openEmptyDesktopSession(ctx);
       },

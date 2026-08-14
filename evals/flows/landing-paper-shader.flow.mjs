@@ -8,7 +8,7 @@ const ROUTES_WITHOUT_SHADER = [
 ];
 
 function routeUrl(ctx, path) {
-  return new URL(path, ctx.env.SPRINTNEX_EVAL_LANDING_URL).toString();
+  return new URL(path, ctx.env.OPENWORK_EVAL_LANDING_URL).toString();
 }
 
 async function navigateTo(ctx, path, text) {
@@ -41,7 +41,7 @@ export default {
   id: "landing-paper-shader",
   title: "Landing Paper shader is scoped to the root page",
   spec: "evals/README.md",
-  requiredEnv: ["SPRINTNEX_EVAL_LANDING_URL"],
+  requiredEnv: ["OPENWORK_EVAL_LANDING_URL"],
   steps: [
     {
       name: "Root route renders the Paper shader",

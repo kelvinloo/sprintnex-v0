@@ -151,7 +151,7 @@ pnpm install
 **Electron shows blank window:**
 Vite might not be running. Check `tail /tmp/vite.log`. Restart with:
 ```bash
-cd /workspace/apps/app && SPRINTNEX_DEV_MODE=1 nohup npx vite --host 0.0.0.0 --port 5173 > /tmp/vite.log 2>&1 &
+cd /workspace/apps/app && OPENWORK_DEV_MODE=1 nohup npx vite --host 0.0.0.0 --port 5173 > /tmp/vite.log 2>&1 &
 ```
 
 **noVNC shows black screen:**

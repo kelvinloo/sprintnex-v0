@@ -29,7 +29,7 @@ let firstIconBytes = null;
 let adminPanelTargetId = null;
 
 function orgSettingsUrl(ctx) {
-  return `${ctx.env.SPRINTNEX_EVAL_DEN_WEB_URL.replace(/\/$/, "")}${ORG_SETTINGS_PATH}`;
+  return `${ctx.env.OPENWORK_EVAL_DEN_WEB_URL.replace(/\/$/, "")}${ORG_SETTINGS_PATH}`;
 }
 
 function parseMetadata(value) {
@@ -66,14 +66,14 @@ async function ensureDesktopSession(ctx) {
   });
 
   await ctx.eval(`(() => {
-    localStorage.setItem('openwork.den.baseUrl', ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_WEB_URL)});
-    localStorage.setItem('openwork.den.apiBaseUrl', ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_API_URL)});
-    localStorage.setItem('openwork.den.authToken', ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_TOKEN)});
+    localStorage.setItem('openwork.den.baseUrl', ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_WEB_URL)});
+    localStorage.setItem('openwork.den.apiBaseUrl', ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_API_URL)});
+    localStorage.setItem('openwork.den.authToken', ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_TOKEN)});
     localStorage.setItem('openwork.den.activeOrgId', ${JSON.stringify(activeOrg.id)});
     localStorage.setItem('openwork.den.activeOrgSlug', ${JSON.stringify(activeOrg.slug ?? "example-corp")});
     localStorage.setItem('openwork.den.activeOrgName', 'Example Corp');
     window.dispatchEvent(new CustomEvent('openwork-den-settings-changed', { detail: {} }));
-    window.dispatchEvent(new CustomEvent('openwork-den-session-updated', { detail: { token: ${JSON.stringify(process.env.SPRINTNEX_EVAL_DEN_TOKEN)} } }));
+    window.dispatchEvent(new CustomEvent('openwork-den-session-updated', { detail: { token: ${JSON.stringify(process.env.OPENWORK_EVAL_DEN_TOKEN)} } }));
     return true;
   })()`);
 
@@ -218,7 +218,7 @@ export default {
   title: "Owners upload durable, versioned brand assets that member desktops load from their Den",
   kind: "user-facing",
   spec: "evals/voiceovers/managed-brand-asset-uploads.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "setup",
@@ -380,7 +380,7 @@ export default {
             ctx.assert(firstAssets?.iconUrl === firstAssets?.icon?.url, "Icon URL and managed metadata diverged.");
             for (const asset of [firstAssets.logo, firstAssets.icon]) {
               const assetUrl = new URL(asset.url);
-              ctx.assert(assetUrl.origin === new URL(ctx.env.SPRINTNEX_EVAL_DEN_API_URL).origin, `Asset escaped the Den origin: ${asset.url}`);
+              ctx.assert(assetUrl.origin === new URL(ctx.env.OPENWORK_EVAL_DEN_API_URL).origin, `Asset escaped the Den origin: ${asset.url}`);
               ctx.assert(Boolean(assetUrl.searchParams.get("signature")), `Asset URL is not capability-signed: ${asset.url}`);
               const fetched = await fetchAsset(asset.url);
               ctx.assert(fetched.status === 200, `Signed asset returned ${fetched.status}`);
@@ -446,8 +446,8 @@ export default {
                 brandResources: performance.getEntriesByType('resource').map((entry) => entry.name).filter((url) => url.includes('/v1/brand-assets/')),
               };
             })()`);
-            const iconState = await ctx.eval("window.__SPRINTNEX_ELECTRON__?.brandIcon?.getState?.()", { awaitPromise: true });
-            const denOrigin = new URL(ctx.env.SPRINTNEX_EVAL_DEN_API_URL).origin;
+            const iconState = await ctx.eval("window.__OPENWORK_ELECTRON__?.brandIcon?.getState?.()", { awaitPromise: true });
+            const denOrigin = new URL(ctx.env.OPENWORK_EVAL_DEN_API_URL).origin;
             ctx.assert(new URL(desktop.src).origin === denOrigin, `Wordmark did not load from Den: ${desktop.src}`);
             ctx.assert(desktop.width > 0, `Wordmark did not decode: ${JSON.stringify(desktop)}`);
             ctx.assert(iconState?.sourceUrl === firstAssets.icon.url && iconState?.applied === true, `Native icon did not load from Den: ${JSON.stringify(iconState)}`);
@@ -531,7 +531,7 @@ export default {
           },
           assert: async () => {
             const config = await denFetch(ctx, "/v1/me/desktop-config");
-            const iconState = await ctx.eval("window.__SPRINTNEX_ELECTRON__?.brandIcon?.getState?.()", { awaitPromise: true });
+            const iconState = await ctx.eval("window.__OPENWORK_ELECTRON__?.brandIcon?.getState?.()", { awaitPromise: true });
             const logoPresent = await ctx.eval("Boolean(document.querySelector('[data-testid=\"brand-logo\"]'))");
             ctx.assert(!config.body.brandLogoUrl && !config.body.brandIconUrl, `Managed URLs were not cleared: ${JSON.stringify(config.body)}`);
             ctx.assert(iconState?.applied === false, `Native default icon was not restored: ${JSON.stringify(iconState)}`);

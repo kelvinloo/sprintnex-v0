@@ -3,10 +3,10 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 
 const FLOW_ID = "den-ui-consistency";
 const vo = await loadVoiceoverParagraphs(FLOW_ID);
-const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
-const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? "").trim().replace(/\/+$/, "");
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? "").trim().replace(/\/+$/, "");
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const MEMBER_EMAIL = "riley.ui-consistency@acme.test";
 const MEMBER_PASSWORD = "OpenWorkDemo123!";
 const CATALOG_PREFIX = "UI Catalog";
@@ -179,7 +179,7 @@ async function ensureLargeCatalog(ctx) {
 }
 
 function mysqlContainer() {
-  return process.env.SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER?.trim() || "openwork-web-local-mysql";
+  return process.env.OPENWORK_EVAL_DEN_MYSQL_CONTAINER?.trim() || "openwork-web-local-mysql";
 }
 
 function runMysql(sql) {
@@ -279,8 +279,8 @@ export default {
   kind: "user-facing",
   preserveTheme: true,
   requiredEnv: [
-    "SPRINTNEX_EVAL_DEN_API_URL",
-    "SPRINTNEX_EVAL_DEN_WEB_URL",
+    "OPENWORK_EVAL_DEN_API_URL",
+    "OPENWORK_EVAL_DEN_WEB_URL",
   ],
   steps: [
     {

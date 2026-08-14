@@ -28,7 +28,7 @@ import {
   removeMcpFromConfig,
   validateMcpServerName,
 } from "../../../app/mcp";
-import { buildOpenworkWorkspaceBaseUrl } from "../../../app/lib/sprintnex-server";
+import { buildOpenworkWorkspaceBaseUrl } from "../../../app/lib/openwork-server";
 import type {
   Client,
   McpServerEntry,
@@ -38,7 +38,7 @@ import type {
 } from "../../../app/types";
 import { isDesktopRuntime, normalizeDirectoryPath, safeStringify } from "../../../app/utils";
 
-import type { OpenworkServerStore } from "./sprintnex-server-store";
+import type { OpenworkServerStore } from "./openwork-server-store";
 import { attemptSilentMcpReauth } from "./mcp-silent-reauth";
 import {
   CLOUD_MCP_SERVER_NAME,
@@ -327,7 +327,7 @@ export function createConnectionsStore(options: {
 
   const resolveDesktopCommand = async (commandName: "getComputerUseMcpCommand" | "getOpenworkUiMcpCommand", fallbackOnError = true) => {
     try {
-      const command = await window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.(commandName);
+      const command = await window.__OPENWORK_ELECTRON__?.invokeDesktop?.(commandName);
       if (Array.isArray(command) && command.every((part) => typeof part === "string") && command.length > 0) {
         return command;
       }
@@ -358,7 +358,7 @@ export function createConnectionsStore(options: {
   const resolveLocalMcpEnvironment = async (entry: McpDirectoryInfo) => {
     if (entry.serverName !== "openwork-ui") return undefined;
     try {
-      const environment = await window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.("getOpenworkUiMcpEnvironment");
+      const environment = await window.__OPENWORK_ELECTRON__?.invokeDesktop?.("getOpenworkUiMcpEnvironment");
       if (environment && typeof environment === "object" && !Array.isArray(environment)) {
         return Object.fromEntries(
           Object.entries(environment).filter((entry): entry is [string, string] =>
@@ -578,7 +578,7 @@ export function createConnectionsStore(options: {
     if (isRemoteWorkspace && !canUseOpenworkServer) {
       setStateField("mcpStatus", "OpenWork server unavailable. MCP config is read-only.");
       finishPerf(options.developerMode(), "mcp.connect", "blocked", startedAt, {
-        reason: "sprintnex-server-unavailable",
+        reason: "openwork-server-unavailable",
       });
       return false;
     }
@@ -586,7 +586,7 @@ export function createConnectionsStore(options: {
     if (hasOpenworkTarget && !canUseOpenworkServer) {
       setStateField("mcpStatus", "OpenWork server MCP config is read-only.");
       finishPerf(options.developerMode(), "mcp.connect", "blocked", startedAt, {
-        reason: "sprintnex-server-read-only",
+        reason: "openwork-server-read-only",
       });
       return false;
     }
@@ -636,7 +636,7 @@ export function createConnectionsStore(options: {
       let resolvedHeaders: Record<string, string> | undefined;
       if (!resolvedUrl && entry.serverName === "openwork-ui") {
         try {
-          const bridgeInfo = await window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.("getUiControlBridgeInfo");
+          const bridgeInfo = await window.__OPENWORK_ELECTRON__?.invokeDesktop?.("getUiControlBridgeInfo");
           if (bridgeInfo?.baseUrl) {
             resolvedUrl = `${bridgeInfo.baseUrl}/mcp`;
             if (bridgeInfo.token) {

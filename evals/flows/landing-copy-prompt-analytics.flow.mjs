@@ -13,11 +13,11 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function routeUrl(ctx, path) {
-  return new URL(path, ctx.env.SPRINTNEX_EVAL_LANDING_URL).toString();
+  return new URL(path, ctx.env.OPENWORK_EVAL_LANDING_URL).toString();
 }
 
 function mockUrl(ctx, path) {
-  return new URL(path, ctx.env.SPRINTNEX_EVAL_POSTHOG_MOCK_URL).toString();
+  return new URL(path, ctx.env.OPENWORK_EVAL_POSTHOG_MOCK_URL).toString();
 }
 
 function recordAssertion(ctx, assertion, passed, actual) {
@@ -54,7 +54,7 @@ async function grantClipboardPermissions(ctx) {
     return;
   }
 
-  const origin = new URL(ctx.env.SPRINTNEX_EVAL_LANDING_URL).origin;
+  const origin = new URL(ctx.env.OPENWORK_EVAL_LANDING_URL).origin;
   await ctx.client.send("Browser.grantPermissions", {
     origin,
     permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"],
@@ -129,7 +129,7 @@ export default {
   // The landing website has no theme system or __openworkControl API; skip the
   // desktop-app light-mode bootstrap instead of waiting for it to time out.
   preserveTheme: true,
-  requiredEnv: ["SPRINTNEX_EVAL_LANDING_URL", "SPRINTNEX_EVAL_POSTHOG_MOCK_URL"],
+  requiredEnv: ["OPENWORK_EVAL_LANDING_URL", "OPENWORK_EVAL_POSTHOG_MOCK_URL"],
   steps: [
     {
       name: "Hero prompt copy captures the analytics event",

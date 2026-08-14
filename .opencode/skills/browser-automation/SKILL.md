@@ -16,7 +16,7 @@ description: Local OpenWork Electron browser automation with CDP. Use when drivi
 `pnpm dev` enables Electron CDP by default:
 
 ```sh
-SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT=${SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT:-9823}
+OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=${OPENWORK_ELECTRON_REMOTE_DEBUG_PORT:-9823}
 ```
 
 The default browser URL for OpenCode browser tools is:
@@ -34,13 +34,13 @@ http://localhost:5173/
 To use a different CDP port, launch with an override:
 
 ```sh
-SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT=9830 pnpm dev
+OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=9830 pnpm dev
 ```
 
 To disable Electron CDP for a run:
 
 ```sh
-SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT=0 pnpm dev
+OPENWORK_ELECTRON_REMOTE_DEBUG_PORT=0 pnpm dev
 ```
 
 ## Background Launch

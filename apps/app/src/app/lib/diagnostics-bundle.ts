@@ -13,7 +13,7 @@ import {
   readOpenworkServerSettings,
   type OpenworkServerSettings,
   type OpenworkServerStatus,
-} from "./sprintnex-server";
+} from "./openwork-server";
 import { isDesktopRuntime } from "../utils";
 
 export type DiagnosticsBundleContext = {

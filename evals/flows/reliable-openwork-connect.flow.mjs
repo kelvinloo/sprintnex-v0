@@ -15,9 +15,9 @@ const MCP_PATH = "/mcp/agent";
 const PUBLIC_MCP_SERVER_URL = "https://api.openworklabs.com/mcp/agent";
 const CLIENT_SCOPE = "mcp:read mcp:write offline_access";
 const CLIENT_NAME = "OpenWork reliable connect eval client";
-const OPENCODE_BIN = process.env.SPRINTNEX_EVAL_OPENCODE_BIN?.trim() || "opencode";
-const DEMO_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const DEMO_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const OPENCODE_BIN = process.env.OPENWORK_EVAL_OPENCODE_BIN?.trim() || "opencode";
+const DEMO_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const DEMO_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const SECTION_SELECTOR = "#connect-mcp";
 const INSTALL_SELECTOR = "#connect-mcp-install";
 const ACTIVE_PANEL_SELECTOR = `${INSTALL_SELECTOR} [role="tabpanel"]:not([hidden])`;
@@ -350,7 +350,7 @@ async function navigateBrowser(ctx, url, label) {
 }
 
 async function ensureLandingConnect(ctx) {
-  const url = `${baseUrlFromEnv(ctx, "SPRINTNEX_EVAL_LANDING_URL")}/#connect-mcp`;
+  const url = `${baseUrlFromEnv(ctx, "OPENWORK_EVAL_LANDING_URL")}/#connect-mcp`;
   await applyDesktopViewport(ctx);
   await navigateBrowser(ctx, url, "landing OpenWork Connect section");
   await ctx.waitFor(
@@ -743,7 +743,7 @@ async function prepareNativeOpenCodeEnvironment() {
     XDG_CACHE_HOME: xdgCacheHome,
     PATH: [captureBinDir, process.env.PATH ?? ""].filter(Boolean).join(path.delimiter),
     BROWSER: state.nativeBrowserCaptureScript,
-    SPRINTNEX_EVAL_BROWSER_CAPTURE_ENDPOINT: state.nativeBrowserCaptureEndpoint,
+    OPENWORK_EVAL_BROWSER_CAPTURE_ENDPOINT: state.nativeBrowserCaptureEndpoint,
     NO_COLOR: "1",
   };
 
@@ -760,8 +760,8 @@ async function prepareNativeOpenCodeEnvironment() {
   };
   const browserCaptureScript = `#!/usr/bin/env node
 const http = require("node:http");
-const endpoint = process.env.SPRINTNEX_EVAL_BROWSER_CAPTURE_ENDPOINT || "";
-const launcher = process.env.SPRINTNEX_EVAL_BROWSER_LAUNCHER || "BROWSER";
+const endpoint = process.env.OPENWORK_EVAL_BROWSER_CAPTURE_ENDPOINT || "";
+const launcher = process.env.OPENWORK_EVAL_BROWSER_LAUNCHER || "BROWSER";
 const argv = process.argv.slice(2);
 function unquote(value) {
   let output = String(value || "").trim();
@@ -835,7 +835,7 @@ try {
     "safari",
   ];
   const browserShimScript = (launcherName) => `#!/bin/sh
-SPRINTNEX_EVAL_BROWSER_LAUNCHER=${JSON.stringify(launcherName)} exec ${JSON.stringify(state.nativeBrowserCaptureScript)} "$@"
+OPENWORK_EVAL_BROWSER_LAUNCHER=${JSON.stringify(launcherName)} exec ${JSON.stringify(state.nativeBrowserCaptureScript)} "$@"
 `;
   await Promise.all([
     writeFile(state.nativeConfigPath, `${JSON.stringify(config, null, 2)}\n`, "utf8"),
@@ -1665,9 +1665,9 @@ function sqlString(value) {
 }
 
 async function runMysql(ctx, sql) {
-  const container = ctx.env.SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER.trim();
-  const database = ctx.env.SPRINTNEX_EVAL_DEN_MYSQL_DATABASE.trim();
-  const password = process.env.SPRINTNEX_EVAL_DEN_MYSQL_ROOT_PASSWORD?.trim() || "password";
+  const container = ctx.env.OPENWORK_EVAL_DEN_MYSQL_CONTAINER.trim();
+  const database = ctx.env.OPENWORK_EVAL_DEN_MYSQL_DATABASE.trim();
+  const password = process.env.OPENWORK_EVAL_DEN_MYSQL_ROOT_PASSWORD?.trim() || "password";
   try {
     const { stdout, stderr } = await execFileAsync("docker", [
       "exec",
@@ -1718,8 +1718,8 @@ const BETTER_AUTH_EVAL_RATE_LIMIT_PATHS = [
 
 async function cleanupEvalRateLimits(ctx, phase) {
   ctx.assert(
-    ctx.env.SPRINTNEX_EVAL_ISOLATED_DATABASE.trim() === "1",
-    "Rate-limit cleanup requires SPRINTNEX_EVAL_ISOLATED_DATABASE=1 and must never run against a shared database.",
+    ctx.env.OPENWORK_EVAL_ISOLATED_DATABASE.trim() === "1",
+    "Rate-limit cleanup requires OPENWORK_EVAL_ISOLATED_DATABASE=1 and must never run against a shared database.",
   );
   const predicates = BETTER_AUTH_EVAL_RATE_LIMIT_PATHS
     .map((path) => `\`key\` LIKE ${sqlString(`%|${path}`)}`)
@@ -1733,7 +1733,7 @@ async function cleanupEvalRateLimits(ctx, phase) {
 }
 
 async function generateLiveRateLimit(ctx) {
-  const maxAttempts = Number(process.env.SPRINTNEX_EVAL_OAUTH_RATE_LIMIT_MAX_ATTEMPTS?.trim() || "80");
+  const maxAttempts = Number(process.env.OPENWORK_EVAL_OAUTH_RATE_LIMIT_MAX_ATTEMPTS?.trim() || "80");
   const tokenEndpoint = readString(state.authorizationServerMetadata, "token_endpoint");
   const tokenEndpointUrl = new URL(tokenEndpoint);
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -1843,7 +1843,7 @@ function matrixRow(scenario, response, contract) {
 }
 
 async function navigateDocsPage(ctx) {
-  const url = `${baseUrlFromEnv(ctx, "SPRINTNEX_EVAL_DOCS_URL")}/cloud/run-in-the-cloud/cloud-mcp`;
+  const url = `${baseUrlFromEnv(ctx, "OPENWORK_EVAL_DOCS_URL")}/cloud/run-in-the-cloud/cloud-mcp`;
   await navigateBrowser(ctx, url, "OpenWork Connect docs page");
   await ctx.waitFor(
     `(() => {
@@ -1862,13 +1862,13 @@ export default {
   kind: "user-facing",
   preserveTheme: true,
   requiredEnv: [
-    "SPRINTNEX_EVAL_LANDING_URL",
-    "SPRINTNEX_EVAL_DOCS_URL",
-    "SPRINTNEX_EVAL_DEN_API_URL",
-    "SPRINTNEX_EVAL_DEN_WEB_URL",
-    "SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER",
-    "SPRINTNEX_EVAL_DEN_MYSQL_DATABASE",
-    "SPRINTNEX_EVAL_ISOLATED_DATABASE",
+    "OPENWORK_EVAL_LANDING_URL",
+    "OPENWORK_EVAL_DOCS_URL",
+    "OPENWORK_EVAL_DEN_API_URL",
+    "OPENWORK_EVAL_DEN_WEB_URL",
+    "OPENWORK_EVAL_DEN_MYSQL_CONTAINER",
+    "OPENWORK_EVAL_DEN_MYSQL_DATABASE",
+    "OPENWORK_EVAL_ISOLATED_DATABASE",
   ],
   steps: [
     {

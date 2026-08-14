@@ -22,7 +22,7 @@ import {
   type OpenworkServerError,
   type OpenworkServerSettings,
   type OpenworkServerStatus,
-} from "../../../app/lib/sprintnex-server";
+} from "../../../app/lib/openwork-server";
 
 type SetStateAction<T> = T | ((current: T) => T);
 

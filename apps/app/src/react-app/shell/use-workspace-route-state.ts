@@ -16,7 +16,7 @@ import {
   type WorkspaceList,
 } from "@/app/lib/desktop";
 import { createClient } from "@/app/lib/opencode";
-import { createOpenworkServerClient, type OpenworkServerClient } from "@/app/lib/sprintnex-server";
+import { createOpenworkServerClient, type OpenworkServerClient } from "@/app/lib/openwork-server";
 import { isDesktopRuntime } from "@/app/lib/runtime-env";
 import {
   resolveWorkspaceEndpoint,
@@ -51,9 +51,9 @@ import {
 import { legacySessionRoute, workspaceSessionRoute } from "./workspace-routes";
 
 export type UseWorkspaceRouteStateInput = {
-  /** Invoked when the sprintnex-server settings-changed event fires (the route bumps its settings version). */
+  /** Invoked when the openwork-server settings-changed event fires (the route bumps its settings version). */
   onServerSettingsChanged: () => void;
-  /** Receives the local sprintnex-server host info discovered during refresh. */
+  /** Receives the local openwork-server host info discovered during refresh. */
   onHostInfo: (info: OpenworkServerInfo | null) => void;
 };
 
@@ -554,7 +554,7 @@ export function useWorkspaceRouteState(input: UseWorkspaceRouteStateInput) {
       refreshInFlightRef.current = false;
       void refreshRouteState();
     };
-    window.addEventListener("sprintnex-server-settings-changed", handleSettingsChange);
+    window.addEventListener("openwork-server-settings-changed", handleSettingsChange);
 
     // Also retry on visibility flip independently — even when nobody else
     // dispatches the settings event.
@@ -574,7 +574,7 @@ export function useWorkspaceRouteState(input: UseWorkspaceRouteStateInput) {
         window.clearTimeout(startupRetryTimerRef.current);
         startupRetryTimerRef.current = null;
       }
-      window.removeEventListener("sprintnex-server-settings-changed", handleSettingsChange);
+      window.removeEventListener("openwork-server-settings-changed", handleSettingsChange);
       if (typeof document !== "undefined") {
         document.removeEventListener("visibilitychange", handleVisibility);
       }

@@ -5,7 +5,7 @@ import {
   normalizeOpenworkServerUrl,
   parseOpenworkWorkspaceIdFromUrl,
   type OpenworkServerClient,
-} from "../../../app/lib/sprintnex-server";
+} from "../../../app/lib/openwork-server";
 import { redactTokenLikeText } from "../../../app/utils";
 
 export type RemoteWorkspaceConnectionTarget = {

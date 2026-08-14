@@ -6,14 +6,14 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 // The runner fails this flow if the narration drifts from that script.
 const vo = await loadVoiceoverParagraphs("invite-to-desktop");
 
-const DEN_API_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_API_URL);
-const DEN_WEB_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_DEN_WEB_URL);
-const ADMIN_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_ADMIN);
-const INVITEE_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_INVITEE);
-const MOBILE_CDP_URL = cleanBaseUrl(process.env.SPRINTNEX_EVAL_WEB_CDP_MOBILE);
-const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_API_URL);
+const DEN_WEB_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_DEN_WEB_URL);
+const ADMIN_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_ADMIN);
+const INVITEE_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_INVITEE);
+const MOBILE_CDP_URL = cleanBaseUrl(process.env.OPENWORK_EVAL_WEB_CDP_MOBILE);
+const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const MEMBER_PASSWORD = "OpenWorkDemo123!";
 const DOWNLOAD_URL = "https://openworklabs.com/download";
 const REMOVED_INVITE_EMAIL_TEXT = [
@@ -45,13 +45,13 @@ export default {
   title: "Invited teammates join Acme, get a desktop handoff, and receive mobile-safe download guidance",
   kind: "user-facing",
   requiredEnv: [
-    "SPRINTNEX_EVAL_DEN_API_URL",
-    "SPRINTNEX_EVAL_DEN_WEB_URL",
-    "SPRINTNEX_EVAL_DEN_TOKEN",
-    "SPRINTNEX_EVAL_WEB_CDP_ADMIN",
-    "SPRINTNEX_EVAL_WEB_CDP_INVITEE",
-    "SPRINTNEX_EVAL_WEB_CDP_MOBILE",
-    "SPRINTNEX_EVAL_MARK_VERIFIED_CMD",
+    "OPENWORK_EVAL_DEN_API_URL",
+    "OPENWORK_EVAL_DEN_WEB_URL",
+    "OPENWORK_EVAL_DEN_TOKEN",
+    "OPENWORK_EVAL_WEB_CDP_ADMIN",
+    "OPENWORK_EVAL_WEB_CDP_INVITEE",
+    "OPENWORK_EVAL_WEB_CDP_MOBILE",
+    "OPENWORK_EVAL_MARK_VERIFIED_CMD",
   ],
   steps: [
     {
@@ -501,8 +501,8 @@ async function ensureAdminToken(ctx) {
     state.adminToken = signedIn.body.token;
     return state.adminToken;
   }
-  const token = process.env.SPRINTNEX_EVAL_DEN_TOKEN?.trim() ?? "";
-  ctx.assert(token.length > 0, `Admin sign-in failed and SPRINTNEX_EVAL_DEN_TOKEN is missing: ${signedIn.response.status}`);
+  const token = process.env.OPENWORK_EVAL_DEN_TOKEN?.trim() ?? "";
+  ctx.assert(token.length > 0, `Admin sign-in failed and OPENWORK_EVAL_DEN_TOKEN is missing: ${signedIn.response.status}`);
   state.adminToken = token;
   return token;
 }
@@ -632,7 +632,7 @@ async function completeInviteSignup(ctx, email, password) {
 function markEmailVerified(ctx, email) {
   ctx.assert(
     MARK_VERIFIED_CMD.length > 0,
-    "Invitation acceptance requires a verified email; set SPRINTNEX_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
+    "Invitation acceptance requires a verified email; set OPENWORK_EVAL_MARK_VERIFIED_CMD (shell template with {email}).",
   );
   execSync(MARK_VERIFIED_CMD.replaceAll("{email}", email), { stdio: "ignore" });
 }
@@ -740,7 +740,7 @@ async function redactInviteCredentialInPage(ctx, inviteToken) {
 function rewriteInviteLink(inviteLink) {
   // The local stack's trusted-origin used to render email links can differ from
   // the den-web origin the eval browser drives, so keep the path/search and
-  // explicitly trust SPRINTNEX_EVAL_DEN_WEB_URL for the browser navigation.
+  // explicitly trust OPENWORK_EVAL_DEN_WEB_URL for the browser navigation.
   const parsed = new URL(inviteLink, DEN_WEB_URL);
   return new URL(`${parsed.pathname}${parsed.search}${parsed.hash}`, DEN_WEB_URL).toString();
 }
@@ -783,9 +783,9 @@ async function stubClipboardCapture(ctx) {
 async function deliverDeepLinkToDesktop(ctx, openworkUrl) {
   await ctx.eval(`(() => {
     const url = ${JSON.stringify(openworkUrl)};
-    window.__SPRINTNEX__ = window.__SPRINTNEX__ || {};
-    const pending = window.__SPRINTNEX__.deepLinks || [];
-    window.__SPRINTNEX__.deepLinks = [...pending, url];
+    window.__OPENWORK__ = window.__OPENWORK__ || {};
+    const pending = window.__OPENWORK__.deepLinks || [];
+    window.__OPENWORK__.deepLinks = [...pending, url];
     window.dispatchEvent(new CustomEvent("openwork:deep-link", { detail: { urls: [url] } }));
     return true;
   })()`);

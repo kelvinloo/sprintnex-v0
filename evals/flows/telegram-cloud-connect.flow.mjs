@@ -7,11 +7,11 @@
  *   DEN_API_PUBLIC_URL=<Den API URL reachable by this flow runner>
  *
  * Seed the deterministic healthy worker before running the flow:
- *   SPRINTNEX_EVAL_CLOUD_CONNECT_WORKER_URL=http://127.0.0.1:3979/worker \
+ *   OPENWORK_EVAL_CLOUD_CONNECT_WORKER_URL=http://127.0.0.1:3979/worker \
  *     pnpm --filter @openwork-ee/den-api exec tsx ../../../evals/drivers/seed-cloud-connect-worker.ts
  *
  * The seed uses mock-worker-host-token and mock-worker-client-token unless
- * SPRINTNEX_EVAL_CLOUD_CONNECT_HOST_TOKEN / CLIENT_TOKEN override them.
+ * OPENWORK_EVAL_CLOUD_CONNECT_HOST_TOKEN / CLIENT_TOKEN override them.
  */
 
 import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
@@ -26,15 +26,15 @@ import {
 
 const vo = await loadVoiceoverParagraphs("telegram-cloud-connect");
 
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MOCK_SERVER_URL = (process.env.SPRINTNEX_EVAL_CLOUD_CONNECT_MOCK_URL ?? "http://127.0.0.1:3979")
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MOCK_SERVER_URL = (process.env.OPENWORK_EVAL_CLOUD_CONNECT_MOCK_URL ?? "http://127.0.0.1:3979")
   .trim()
   .replace(/\/+$/, "");
-const BOT_TOKEN = process.env.SPRINTNEX_EVAL_CLOUD_CONNECT_TELEGRAM_TOKEN?.trim() || "900100:SPRINTNEX_TEST_TOKEN";
-const WORKER_NAME = process.env.SPRINTNEX_EVAL_CLOUD_CONNECT_WORKER_NAME?.trim() || "Cloud Connect Test Worker";
-const WORKER_HOST_TOKEN = process.env.SPRINTNEX_EVAL_CLOUD_CONNECT_HOST_TOKEN?.trim() || "mock-worker-host-token";
-const WORKER_CLIENT_TOKEN = process.env.SPRINTNEX_EVAL_CLOUD_CONNECT_CLIENT_TOKEN?.trim() || "mock-worker-client-token";
+const BOT_TOKEN = process.env.OPENWORK_EVAL_CLOUD_CONNECT_TELEGRAM_TOKEN?.trim() || "900100:OPENWORK_TEST_TOKEN";
+const WORKER_NAME = process.env.OPENWORK_EVAL_CLOUD_CONNECT_WORKER_NAME?.trim() || "Cloud Connect Test Worker";
+const WORKER_HOST_TOKEN = process.env.OPENWORK_EVAL_CLOUD_CONNECT_HOST_TOKEN?.trim() || "mock-worker-host-token";
+const WORKER_CLIENT_TOKEN = process.env.OPENWORK_EVAL_CLOUD_CONNECT_CLIENT_TOKEN?.trim() || "mock-worker-client-token";
 const BOT_USERNAME = "openwork_test_bot";
 const TELEGRAM_CHAT_ID = 42001;
 const PAIRING_UPDATE_ID = 81_001;
@@ -202,7 +202,7 @@ export default {
   title: "An admin securely pairs one private Telegram chat to one healthy OpenWork Cloud worker and can disconnect it fail-closed",
   kind: "user-facing",
   preserveTheme: true,
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_WEB_URL"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_WEB_URL"],
   steps: [
     {
       name: "Setup: mock services are healthy and Telegram starts disconnected",
@@ -222,8 +222,8 @@ export default {
         witness(ctx, firstReset.ok, "The Cloud Connect mock accepts a clean-state reset.", { status: firstReset.status });
 
         state.adminSession = await signInApi(ADMIN_EMAIL, ADMIN_PASSWORD);
-        if (!state.adminSession && ctx.env.SPRINTNEX_EVAL_DEN_TOKEN?.trim()) {
-          state.adminSession = ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim();
+        if (!state.adminSession && ctx.env.OPENWORK_EVAL_DEN_TOKEN?.trim()) {
+          state.adminSession = ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim();
         }
         witness(ctx, Boolean(state.adminSession), `The demo owner can sign in as ${ADMIN_EMAIL}.`);
 

@@ -2,16 +2,16 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import {
   composeOpenWorkExtensionDiscoveryInstruction,
-  SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION,
-  SPRINTNEX_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION,
-  SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION,
+  OPENWORK_CLOUD_CONNECTION_INSTRUCTION,
+  OPENWORK_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION,
+  OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION,
   resetOpenWorkExtensionDiscoveryInstructionCacheForTests,
   resolveOpenWorkExtensionDiscoveryInstruction,
   type OpenWorkExtensionConnectState,
-} from "./sprintnex-extensions-preview.js";
+} from "./openwork-extensions-preview.js";
 
-const originalServerUrl = process.env.SPRINTNEX_SERVER_URL;
-const originalServerToken = process.env.SPRINTNEX_SERVER_TOKEN;
+const originalServerUrl = process.env.OPENWORK_SERVER_URL;
+const originalServerToken = process.env.OPENWORK_SERVER_TOKEN;
 
 const UNCHANGED_EXTENSION_DISCOVERY_INSTRUCTION =
   "If the user asks for something you cannot do with obvious built-in tools, check OpenWork extensions before saying the capability is unavailable. Use openwork_extension_list_actions to inspect available extension actions, then call the matching action with openwork_extension_call.";
@@ -28,15 +28,15 @@ beforeEach(() => {
 
 afterEach(() => {
   resetOpenWorkExtensionDiscoveryInstructionCacheForTests();
-  if (originalServerUrl === undefined) delete process.env.SPRINTNEX_SERVER_URL;
-  else process.env.SPRINTNEX_SERVER_URL = originalServerUrl;
-  if (originalServerToken === undefined) delete process.env.SPRINTNEX_SERVER_TOKEN;
-  else process.env.SPRINTNEX_SERVER_TOKEN = originalServerToken;
+  if (originalServerUrl === undefined) delete process.env.OPENWORK_SERVER_URL;
+  else process.env.OPENWORK_SERVER_URL = originalServerUrl;
+  if (originalServerToken === undefined) delete process.env.OPENWORK_SERVER_TOKEN;
+  else process.env.OPENWORK_SERVER_TOKEN = originalServerToken;
 });
 
 describe("composeOpenWorkExtensionDiscoveryInstruction", () => {
   test("keeps the fallback instruction byte-identical when state is unavailable", () => {
-    expect(SPRINTNEX_EXTENSION_DISCOVERY_INSTRUCTION).toBe(UNCHANGED_EXTENSION_DISCOVERY_INSTRUCTION);
+    expect(OPENWORK_EXTENSION_DISCOVERY_INSTRUCTION).toBe(UNCHANGED_EXTENSION_DISCOVERY_INSTRUCTION);
     expect(composeOpenWorkExtensionDiscoveryInstruction(null)).toBe(UNCHANGED_EXTENSION_DISCOVERY_INSTRUCTION);
   });
 
@@ -67,12 +67,12 @@ describe("composeOpenWorkExtensionDiscoveryInstruction", () => {
       googleWorkspace: { legacyConfigured: false },
     };
 
-    expect(SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION).toBe(CLOUD_CONNECTION_INSTRUCTION);
-    expect(SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION).toContain("relay connectionStatus.action exactly");
-    expect(SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION).toContain("never tell the user to reconnect OpenWork Cloud");
-    expect(SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION).toContain("connectionStatus.connectionName");
-    expect(SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION).toContain("browser_* or openwork_ui_* workarounds");
-    expect(SPRINTNEX_CLOUD_CONNECTION_INSTRUCTION).toContain("results are live, not cached");
+    expect(OPENWORK_CLOUD_CONNECTION_INSTRUCTION).toBe(CLOUD_CONNECTION_INSTRUCTION);
+    expect(OPENWORK_CLOUD_CONNECTION_INSTRUCTION).toContain("relay connectionStatus.action exactly");
+    expect(OPENWORK_CLOUD_CONNECTION_INSTRUCTION).toContain("never tell the user to reconnect OpenWork Cloud");
+    expect(OPENWORK_CLOUD_CONNECTION_INSTRUCTION).toContain("connectionStatus.connectionName");
+    expect(OPENWORK_CLOUD_CONNECTION_INSTRUCTION).toContain("browser_* or openwork_ui_* workarounds");
+    expect(OPENWORK_CLOUD_CONNECTION_INSTRUCTION).toContain("results are live, not cached");
     expect(composeOpenWorkExtensionDiscoveryInstruction(state)).toBe(CLOUD_CONNECTION_INSTRUCTION);
   });
 
@@ -83,15 +83,15 @@ describe("composeOpenWorkExtensionDiscoveryInstruction", () => {
       googleWorkspace: { legacyConfigured: false },
     };
 
-    expect(SPRINTNEX_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION).toBe(GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION);
+    expect(OPENWORK_CONNECT_GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION).toBe(GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION);
     expect(composeOpenWorkExtensionDiscoveryInstruction(state)).toBe(GOOGLE_WORKSPACE_DISCONNECTED_INSTRUCTION);
   });
 });
 
 describe("resolveOpenWorkExtensionDiscoveryInstruction", () => {
   test("fetches connect state with bearer auth and caches the instruction for 15 seconds", async () => {
-    process.env.SPRINTNEX_SERVER_URL = "http://openwork.test/";
-    process.env.SPRINTNEX_SERVER_TOKEN = "test-token";
+    process.env.OPENWORK_SERVER_URL = "http://openwork.test/";
+    process.env.OPENWORK_SERVER_TOKEN = "test-token";
     let now = 1_000;
     let calls = 0;
     const urls: string[] = [];
@@ -125,8 +125,8 @@ describe("resolveOpenWorkExtensionDiscoveryInstruction", () => {
   });
 
   test("fails open and caches the fallback instruction when fetching throws", async () => {
-    process.env.SPRINTNEX_SERVER_URL = "http://openwork.test";
-    process.env.SPRINTNEX_SERVER_TOKEN = "test-token";
+    process.env.OPENWORK_SERVER_URL = "http://openwork.test";
+    process.env.OPENWORK_SERVER_TOKEN = "test-token";
     let now = 2_000;
     let calls = 0;
     const failingFetch = async (): Promise<Response> => {
@@ -141,8 +141,8 @@ describe("resolveOpenWorkExtensionDiscoveryInstruction", () => {
   });
 
   test("fails open when connect state parsing fails", async () => {
-    process.env.SPRINTNEX_SERVER_URL = "http://openwork.test";
-    process.env.SPRINTNEX_SERVER_TOKEN = "test-token";
+    process.env.OPENWORK_SERVER_URL = "http://openwork.test";
+    process.env.OPENWORK_SERVER_TOKEN = "test-token";
     const invalidFetch = async (): Promise<Response> => Response.json({ ok: true });
 
     expect(await resolveOpenWorkExtensionDiscoveryInstruction(invalidFetch, () => 3_000)).toBe(UNCHANGED_EXTENSION_DISCOVERY_INSTRUCTION);

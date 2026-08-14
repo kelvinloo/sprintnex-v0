@@ -38,8 +38,8 @@ type ElectronMigrationBridge = {
 function electronMigrationBridge(): ElectronMigrationBridge | null {
   if (typeof window === "undefined") return null;
   const bridge = (window as unknown as {
-    __SPRINTNEX_ELECTRON__?: { migration?: ElectronMigrationBridge };
-  }).__SPRINTNEX_ELECTRON__;
+    __OPENWORK_ELECTRON__?: { migration?: ElectronMigrationBridge };
+  }).__OPENWORK_ELECTRON__;
   return bridge?.migration ?? null;
 }
 

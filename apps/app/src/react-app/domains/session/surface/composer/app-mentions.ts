@@ -1,4 +1,4 @@
-import { SPRINTNEX_EXTENSION_CATALOG } from "@/app/constants";
+import { OPENWORK_EXTENSION_CATALOG } from "@/app/constants";
 import { desktopBridge } from "@/app/lib/desktop";
 import { isMacPlatform } from "@/app/utils";
 import { isOpenWorkExtensionEnabled, isOpenWorkExtensionHidden } from "@/react-app/domains/settings/extension-state";
@@ -10,9 +10,9 @@ import { isOpenWorkExtensionEnabled, isOpenWorkExtensionHidden } from "@/react-a
  * - the Computer Use extension is enabled (it is macOS-only and opt-in).
  */
 export function isAppMentionAvailable(): boolean {
-  if (typeof window === "undefined" || !window.__SPRINTNEX_ELECTRON__?.invokeDesktop) return false;
+  if (typeof window === "undefined" || !window.__OPENWORK_ELECTRON__?.invokeDesktop) return false;
   if (!isMacPlatform()) return false;
-  const entry = SPRINTNEX_EXTENSION_CATALOG.find((candidate) => candidate.id === "computer-use");
+  const entry = OPENWORK_EXTENSION_CATALOG.find((candidate) => candidate.id === "computer-use");
   if (!entry) return false;
   return isOpenWorkExtensionEnabled(entry) && !isOpenWorkExtensionHidden(entry);
 }

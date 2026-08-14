@@ -9,7 +9,7 @@ function runInSandbox(ctx, script) {
   const encoded = Buffer.from(script, "utf8").toString("base64");
   const result = spawnSync(
     "daytona",
-    ["exec", ctx.env.SPRINTNEX_EVAL_DAYTONA_SANDBOX, "--", "echo", encoded, "|", "base64", "-d", "|", "bash"],
+    ["exec", ctx.env.OPENWORK_EVAL_DAYTONA_SANDBOX, "--", "echo", encoded, "|", "base64", "-d", "|", "bash"],
     { encoding: "utf8", timeout: 120_000 },
   );
   ctx.assert(result.status === 0, `Daytona command failed: ${result.stderr || result.stdout}`);
@@ -30,7 +30,7 @@ export default {
   id: FLOW_ID,
   title: "OpenWork AppImage runs without FUSE2 and remains updateable",
   kind: "internal",
-  requiredEnv: ["SPRINTNEX_EVAL_DAYTONA_SANDBOX"],
+  requiredEnv: ["OPENWORK_EVAL_DAYTONA_SANDBOX"],
   steps: [
     {
       name: "The host has FUSE3 without FUSE2",
@@ -66,7 +66,7 @@ printf 'DEV_FUSE=present\\n'
         await ctx.prove("The static-runtime AppImage starts and serves the packaged OpenWork UI", {
           voiceover: vo[1],
           assert: async () => {
-            const appImage = ctx.env.SPRINTNEX_EVAL_APPIMAGE_PATH || DEFAULT_APPIMAGE;
+            const appImage = ctx.env.OPENWORK_EVAL_APPIMAGE_PATH || DEFAULT_APPIMAGE;
             const output = runInSandbox(ctx, `
 set -euo pipefail
 APPIMAGE_PATTERN=${JSON.stringify(appImage)}
@@ -99,7 +99,7 @@ grep 'GET /workspaces 200' /tmp/appimage-fix-launch.log
         await ctx.prove("The updater manifest matches the static-runtime AppImage", {
           voiceover: vo[2],
           assert: async () => {
-            const appImage = ctx.env.SPRINTNEX_EVAL_APPIMAGE_PATH || DEFAULT_APPIMAGE;
+            const appImage = ctx.env.OPENWORK_EVAL_APPIMAGE_PATH || DEFAULT_APPIMAGE;
             const output = runInSandbox(ctx, `
 set -euo pipefail
 APPIMAGE_PATTERN=${JSON.stringify(appImage)}

@@ -16,8 +16,8 @@ const CLIENT_TOKEN = "owt_runtime_migrate_client";
 const HOST_TOKEN = "owt_runtime_migrate_host";
 const stops: Array<() => void | Promise<void>> = [];
 const roots: string[] = [];
-const priorDataDir = process.env.SPRINTNEX_DATA_DIR;
-const priorTokenStore = process.env.SPRINTNEX_TOKEN_STORE;
+const priorDataDir = process.env.OPENWORK_DATA_DIR;
+const priorTokenStore = process.env.OPENWORK_TOKEN_STORE;
 
 function asRecord(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -59,8 +59,8 @@ async function startOpenworkServer(workspaceRoot: string) {
 
 beforeEach(async () => {
   const envRoot = await createTempRoot("openwork-runtime-migrate-env-");
-  process.env.SPRINTNEX_DATA_DIR = join(envRoot, "data");
-  process.env.SPRINTNEX_TOKEN_STORE = join(envRoot, "tokens.json");
+  process.env.OPENWORK_DATA_DIR = join(envRoot, "data");
+  process.env.OPENWORK_TOKEN_STORE = join(envRoot, "tokens.json");
 });
 
 afterEach(async () => {
@@ -71,14 +71,14 @@ afterEach(async () => {
     await rm(roots.pop()!, { recursive: true, force: true });
   }
   if (priorDataDir === undefined) {
-    delete process.env.SPRINTNEX_DATA_DIR;
+    delete process.env.OPENWORK_DATA_DIR;
   } else {
-    process.env.SPRINTNEX_DATA_DIR = priorDataDir;
+    process.env.OPENWORK_DATA_DIR = priorDataDir;
   }
   if (priorTokenStore === undefined) {
-    delete process.env.SPRINTNEX_TOKEN_STORE;
+    delete process.env.OPENWORK_TOKEN_STORE;
   } else {
-    process.env.SPRINTNEX_TOKEN_STORE = priorTokenStore;
+    process.env.OPENWORK_TOKEN_STORE = priorTokenStore;
   }
 });
 

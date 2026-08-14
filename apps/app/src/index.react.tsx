@@ -21,7 +21,7 @@ import { AppRoot } from "./react-app/shell/app-root";
 import { startDeepLinkBridge } from "./react-app/shell/startup-deep-links";
 import "./app/index.css";
 
-// SPRINTNEX_DESKTOP_DISABLE_WORKSPACE_RECOVERY resets backend workspace state
+// OPENWORK_DESKTOP_DISABLE_WORKSPACE_RECOVERY resets backend workspace state
 // but not the renderer's localStorage; wipe the renderer's first-run memory
 // here (before any provider/component reads it) so the flag actually produces a
 // fresh first run — loader, auto session, provider step — on every launch.

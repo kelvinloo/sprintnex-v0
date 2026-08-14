@@ -1,5 +1,5 @@
 {
-  "name": "@sprintnex/email",
+  "name": "@openwork/email",
   "private": true,
   "type": "module",
   "exports": {

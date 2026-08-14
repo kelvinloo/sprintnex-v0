@@ -1,5 +1,5 @@
 {
-  "name": "@sprintnex/installer",
+  "name": "@openwork/installer",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -10,10 +10,10 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "test": "bun test",
-    "compile": "bun build --compile --minify src/index.ts src/server-worker.ts --outfile dist/sprintnex-installer"
+    "compile": "bun build --compile --minify src/index.ts src/server-worker.ts --outfile dist/openwork-installer"
   },
   "dependencies": {
-    "@sprintnex/install-config": "workspace:*",
+    "@openwork/install-config": "workspace:*",
     "webview-bun": "2.4.0"
   }
 }

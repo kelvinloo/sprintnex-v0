@@ -11,13 +11,13 @@ const DEFAULT_DEN_API_BASE_URL = "https://app.openworklabs.com/api/den";
 const PROJECT_DIR = process.cwd();
 
 async function setDesktopBootstrapConfig(ctx, config) {
-  await ctx.waitFor(`Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)`, {
+  await ctx.waitFor(`Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)`, {
     timeoutMs: 60_000,
     label: "desktop bridge",
   });
   await ctx.eval(`(async () => {
     const config = ${JSON.stringify(config)};
-    const persisted = await window.__SPRINTNEX_ELECTRON__.invokeDesktop("setDesktopBootstrapConfig", config);
+    const persisted = await window.__OPENWORK_ELECTRON__.invokeDesktop("setDesktopBootstrapConfig", config);
     const baseUrl = persisted?.baseUrl || config.baseUrl;
     const apiBaseUrl = persisted?.apiBaseUrl || config.apiBaseUrl;
     localStorage.setItem("openwork.den.baseUrl", baseUrl);
@@ -81,7 +81,7 @@ async function resetToDefaultWelcome(ctx) {
 async function finishOnboardingEnoughForSettings(ctx) {
   const onWelcome = await ctx.hasText("Pick a folder to get started");
   const existingWorkspaceId = await ctx.eval(`(async () => {
-    const invokeDesktop = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
+    const invokeDesktop = window.__OPENWORK_ELECTRON__?.invokeDesktop;
     if (!invokeDesktop) return "";
     const list = await invokeDesktop("workspaceBootstrap").catch(() => null);
     return list?.selectedId || list?.activeId || list?.workspaces?.[0]?.id || "";
@@ -315,7 +315,7 @@ export default {
               const stored = await ctx.eval(`localStorage.getItem("openwork.den.baseUrl")`);
               ctx.assert(stored === ORG_URL, `Expected forced sign-in control plane URL to be ${ORG_URL}, got ${stored}`);
               const bootstrap = await ctx.eval(`(async () => {
-                const config = await window.__SPRINTNEX_ELECTRON__.invokeDesktop("getDesktopBootstrapConfig");
+                const config = await window.__OPENWORK_ELECTRON__.invokeDesktop("getDesktopBootstrapConfig");
                 return { baseUrl: config.baseUrl, requireSignin: config.requireSignin === true };
               })()`, { awaitPromise: true });
               ctx.assert(bootstrap.requireSignin === true, "Expected forced sign-in to remain enabled while proving the gate.");

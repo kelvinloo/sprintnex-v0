@@ -31,7 +31,7 @@ import {
   runtimeStorageDir,
 } from "./runtime-opencode-config-store.js";
 
-const SPRINTNEX_AGENT_PROMPT = `You are Sprintnex.
+const OPENWORK_AGENT_PROMPT = `You are Sprintnex.
 
 When the user refers to "you", they mean the Sprintnex app and the current workspace.
 
@@ -99,7 +99,7 @@ export async function buildOpenworkRuntimeConfigObject(
         description: "Sprintnex default agent",
         mode: "primary",
         temperature: 0.2,
-        prompt: SPRINTNEX_AGENT_PROMPT,
+        prompt: OPENWORK_AGENT_PROMPT,
       },
     },
     plugin: [

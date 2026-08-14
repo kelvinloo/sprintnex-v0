@@ -1,12 +1,12 @@
 {
-  "name": "sprintnex-ui-mcp",
+  "name": "openwork-ui-mcp",
   "version": "0.1.0",
   "description": "MCP server for OpenWork UI control — exposes snapshot, actions, and execute as MCP tools",
-  "author": "OpenWork <support@sprintnexlabs.com>",
+  "author": "OpenWork <support@openworklabs.com>",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "sprintnex-ui-mcp": "index.mjs"
+    "openwork-ui-mcp": "index.mjs"
   },
   "files": [
     "index.mjs"
@@ -18,7 +18,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/different-ai/openwork.git",
-    "directory": "packages/sprintnex-ui-mcp"
+    "directory": "packages/openwork-ui-mcp"
   },
   "publishConfig": {
     "access": "public"

@@ -18,7 +18,7 @@
  * Pairs with oauth-mcp-install.flow.mjs (member installs on a second app).
  *
  * Required env:
- * - SPRINTNEX_EVAL_DEN_API_URL  local Den API (e.g. http://127.0.0.1:8790)
+ * - OPENWORK_EVAL_DEN_API_URL  local Den API (e.g. http://127.0.0.1:8790)
  * Prereqs: mock OAuth MCP on :3979 (scripts/mock-oauth-mcp-server.mjs),
  * seeded demo org (alex@acme.test / OpenWorkDemo123!).
  */
@@ -45,8 +45,8 @@ const SKILL_CONTENT = `---\nname: ${SHARED.SKILL_NAME}\ndescription: ${SHARED.SK
 const CLICK_ANY = "button, [role=button], a, div, article, li, label";
 
 async function denFetch(ctx, path, init = {}) {
-  const base = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
-  const origin = ctx.env.SPRINTNEX_EVAL_DEN_ORIGIN?.trim() || base.replace("127.0.0.1", "localhost");
+  const base = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const origin = ctx.env.OPENWORK_EVAL_DEN_ORIGIN?.trim() || base.replace("127.0.0.1", "localhost");
   const response = await fetch(`${base}${path}`, {
     ...init,
     headers: { "content-type": "application/json", origin, ...(init.headers ?? {}) },
@@ -148,7 +148,7 @@ export default {
   id: "oauth-mcp-publish",
   title: "Owner exports skill + OAuth MCP (secret redacted) and publishes to a marketplace",
   spec: "apps/server/src/extensions-export.ts",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL"],
   steps: [
     {
       name: "App A boots; owner signs in via desktop handoff",

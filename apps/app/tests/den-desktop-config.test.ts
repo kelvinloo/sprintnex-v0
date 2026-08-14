@@ -4,7 +4,7 @@ import {
   normalizeDesktopPolicyDocumentWrite,
   resolveDesktopPolicyDocumentWrite,
   selectEffectiveOnboardingPrompts,
-} from "@sprintnex/types/den/desktop-policies";
+} from "@openwork/types/den/desktop-policies";
 import { createDenClient, normalizeDenDesktopConfig } from "../src/app/lib/den";
 
 const originalFetch = globalThis.fetch;

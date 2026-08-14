@@ -33,7 +33,7 @@ function runEndToEndSuite() {
       BETTER_AUTH_URL: process.env.BETTER_AUTH_URL ?? "http://127.0.0.1:3005",
       CORS_ORIGINS: process.env.CORS_ORIGINS ?? "http://127.0.0.1:3005",
       DEN_ALLOW_PRIVATE_MCP_URLS: "1",
-      SPRINTNEX_EVAL_VERBOSE: "1",
+      OPENWORK_EVAL_VERBOSE: "1",
     },
     timeout: 120_000,
   });

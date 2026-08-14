@@ -24,23 +24,23 @@
  * Prerequisites:
  * - Desktop app from this worktree running with CDP (fresh userdata is
  *   fine; the flow handles onboarding) — pass --cdp-url.
- * - den-api at SPRINTNEX_EVAL_DEN_API_URL with the seeded demo org.
+ * - den-api at OPENWORK_EVAL_DEN_API_URL with the seeded demo org.
  * - Mock OAuth+MCP server at MOCK_OAUTH_MCP_URL (reachable from den-api).
  * - Member account per mcp-connections-member-scoped.flow.mjs (bootstrapped
- *   automatically with SPRINTNEX_EVAL_MARK_VERIFIED_CMD if missing).
+ *   automatically with OPENWORK_EVAL_MARK_VERIFIED_CMD if missing).
  * - A working default model in the app (OpenCode Zen "Big Pickle" works
  *   with zero keys) — this flow drives a REAL agent turn.
  */
 
 import { execSync } from "node:child_process";
 
-const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
-const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? DEN_API_URL).trim().replace(/\/+$/, "");
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MEMBER_EMAIL = process.env.SPRINTNEX_EVAL_MEMBER_EMAIL?.trim() || "jordan.demo@acme.test";
-const MEMBER_PASSWORD = process.env.SPRINTNEX_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
-const MARK_VERIFIED_CMD = process.env.SPRINTNEX_EVAL_MARK_VERIFIED_CMD?.trim() || "";
+const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? DEN_API_URL).trim().replace(/\/+$/, "");
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MEMBER_EMAIL = process.env.OPENWORK_EVAL_MEMBER_EMAIL?.trim() || "jordan.demo@acme.test";
+const MEMBER_PASSWORD = process.env.OPENWORK_EVAL_MEMBER_PASSWORD?.trim() || "OpenWorkDemo123!";
+const MARK_VERIFIED_CMD = process.env.OPENWORK_EVAL_MARK_VERIFIED_CMD?.trim() || "";
 const MOCK_SERVER_URL = (process.env.MOCK_OAUTH_MCP_URL ?? "http://127.0.0.1:3978").trim().replace(/\/+$/, "");
 const RUN_TAG = Date.now();
 const CONNECTION_NAME = `team-tool-${RUN_TAG}`;
@@ -87,7 +87,7 @@ export default {
   id: "mcp-connections-desktop-e2e",
   title: "Desktop app: the member's agent finds and executes an org MCP connection as them, in real chat",
   spec: "evals/cloud-mcp-agent-flows.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL"],
   steps: [
     {
       name: "Setup: admin publishes per-member connection; member's account is connected (real HTTP round trips)",
@@ -112,7 +112,7 @@ export default {
             body: JSON.stringify({ email: MEMBER_EMAIL, name: "Jordan Demo", password: MEMBER_PASSWORD }),
           });
           ctx.assert(signUp.response.ok, `Member sign-up failed: ${signUp.response.status}`);
-          ctx.assert(MARK_VERIFIED_CMD.length > 0, "Set SPRINTNEX_EVAL_MARK_VERIFIED_CMD to verify the member's email.");
+          ctx.assert(MARK_VERIFIED_CMD.length > 0, "Set OPENWORK_EVAL_MARK_VERIFIED_CMD to verify the member's email.");
           execSync(MARK_VERIFIED_CMD.replaceAll("{email}", MEMBER_EMAIL), { stdio: "ignore" });
           state.memberSession = await signIn(MEMBER_EMAIL, MEMBER_PASSWORD);
           ctx.assert(Boolean(state.memberSession), "Member sign-in still failing after sign-up.");
@@ -186,7 +186,7 @@ export default {
           // desktop-bootstrap.json (via the desktop bridge). Everything
           // derives from it — including getDenMcpUrl(), which the cloud MCP
           // auto-config uses; localStorage overrides alone are not enough.
-          await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
+          await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
           const bootstrap = {
             baseUrl: DEN_API_URL,
             apiBaseUrl: DEN_API_URL,
@@ -194,7 +194,7 @@ export default {
             handoff: null,
           };
           const written = await ctx.eval(`(async () => {
-            const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
+            const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
             if (!bridge) return { ok: false };
             await bridge("setDesktopBootstrapConfig", ${JSON.stringify(bootstrap)});
             return { ok: true };

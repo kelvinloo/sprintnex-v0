@@ -18,13 +18,13 @@
  * payload) regressions.
  *
  * Required env:
- * - SPRINTNEX_EVAL_DEN_API_URL    Den API base (e.g. http://127.0.0.1:8788)
- * - SPRINTNEX_EVAL_DEN_TOKEN      Bearer session token for the demo owner
- * - SPRINTNEX_EVAL_WORKSPACE_PATH A folder to use as the workspace
+ * - OPENWORK_EVAL_DEN_API_URL    Den API base (e.g. http://127.0.0.1:8788)
+ * - OPENWORK_EVAL_DEN_TOKEN      Bearer session token for the demo owner
+ * - OPENWORK_EVAL_WORKSPACE_PATH A folder to use as the workspace
  */
 
 async function denFetch(ctx, path, options = {}) {
-  const base = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const base = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${base}${path}`, {
     ...options,
     headers: { "content-type": "application/json", ...(options.headers || {}) },
@@ -44,7 +44,7 @@ async function denFetch(ctx, path, options = {}) {
 
 /** JSON-RPC over MCP streamable-HTTP; each request is a fresh server instance. */
 async function mcpAgentCall(ctx, mcpToken, method, params) {
-  const base = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const base = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${base}/mcp/agent`, {
     method: "POST",
     headers: {
@@ -74,7 +74,7 @@ export default {
   id: "memory-save-recall",
   title: "Agent discovers the memory capability, saves a memory, and recalls it in a fresh session via natural language",
   spec: "docs/memory-bank-architecture.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN", "SPRINTNEX_EVAL_WORKSPACE_PATH"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN", "OPENWORK_EVAL_WORKSPACE_PATH"],
   steps: [
     {
       name: "App booted",
@@ -90,10 +90,10 @@ export default {
           ctx.log("Already signed in; reusing session.");
           return;
         }
-        const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+        const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
         const response = await fetch(`${apiBase}/v1/auth/desktop-handoff`, {
           method: "POST",
-          headers: { authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`, "content-type": "application/json" },
+          headers: { authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`, "content-type": "application/json" },
           body: JSON.stringify({}),
         });
         ctx.assert(response.ok, `Handoff create failed: ${response.status}`);
@@ -114,7 +114,7 @@ export default {
         });
         const onWelcome = await ctx.eval("location.hash.includes('/welcome')");
         if (onWelcome) {
-          await ctx.fill("input", ctx.env.SPRINTNEX_EVAL_WORKSPACE_PATH.trim());
+          await ctx.fill("input", ctx.env.OPENWORK_EVAL_WORKSPACE_PATH.trim());
           await ctx.clickText("Use this folder", { timeoutMs: 10_000 });
           await ctx.waitFor("location.hash.includes('/workspace/')", { timeoutMs: 30_000, label: "workspace route" });
         }
@@ -138,7 +138,7 @@ export default {
       run: async (ctx) => {
         const minted = await denFetch(ctx, "/v1/mcp/token", {
           method: "POST",
-          headers: { authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}` },
+          headers: { authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}` },
           body: JSON.stringify({ scopes: ["mcp:read", "mcp:write"] }),
         });
         ctx.assert(typeof minted.token === "string" && minted.token.startsWith("ow_mcp_at_"), "Expected a real opaque MCP token.");

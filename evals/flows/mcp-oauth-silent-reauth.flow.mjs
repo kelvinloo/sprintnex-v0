@@ -140,7 +140,7 @@ async function refreshStatuses(ctx) {
 
 async function restartEngine(ctx) {
   await ctx.eval(
-    'window.__SPRINTNEX_ELECTRON__.invokeDesktop("engineRestart", {})',
+    'window.__OPENWORK_ELECTRON__.invokeDesktop("engineRestart", {})',
     { awaitPromise: true },
   );
   ctx.log("Engine restarted (simulates quitting and reopening OpenWork).");

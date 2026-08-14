@@ -1,20 +1,20 @@
 # OpenWork Server
 
-Filesystem-backed API for OpenWork remote clients. This package provides the OpenWork server layer described in `apps/app/pr/sprintnex-server.md` and is intentionally independent from the desktop app.
+Filesystem-backed API for OpenWork remote clients. This package provides the OpenWork server layer described in `apps/app/pr/openwork-server.md` and is intentionally independent from the desktop app.
 
 ## Quick start
 
 ```bash
-npm install -g sprintnex-server
-sprintnex-server --workspace /path/to/workspace --approval auto
+npm install -g openwork-server
+openwork-server --workspace /path/to/workspace --approval auto
 ```
 
-`sprintnex-server` ships as a compiled binary, so Bun is not required at runtime.
+`openwork-server` ships as a compiled binary, so Bun is not required at runtime.
 
 Or from source:
 
 ```bash
-pnpm --filter sprintnex-server dev -- \
+pnpm --filter openwork-server dev -- \
   --workspace /path/to/workspace \
   --approval auto
 ```
@@ -25,7 +25,7 @@ Add `--verbose` to print resolved config details on startup. Use `--version` to 
 
 ## Config file
 
-Defaults to `~/.config/openwork/server.json` (override with `SPRINTNEX_SERVER_CONFIG` or `--config`).
+Defaults to `~/.config/openwork/server.json` (override with `OPENWORK_SERVER_CONFIG` or `--config`).
 
 ```json
 {
@@ -47,33 +47,33 @@ Defaults to `~/.config/openwork/server.json` (override with `SPRINTNEX_SERVER_CO
 
 ## Environment variables
 
-- `SPRINTNEX_SERVER_CONFIG` path to config JSON
-- `SPRINTNEX_HOST` / `SPRINTNEX_PORT`
-- `SPRINTNEX_TOKEN` client bearer token
-- `SPRINTNEX_HOST_TOKEN` host approval token
-- `SPRINTNEX_APPROVAL_MODE` (`manual` | `auto`)
-- `SPRINTNEX_APPROVAL_TIMEOUT_MS`
-- `SPRINTNEX_WORKSPACES` (JSON array or comma-separated list of paths)
-- `SPRINTNEX_CORS_ORIGINS` (comma-separated list or `*`)
-- `SPRINTNEX_OPENCODE_BASE_URL`
-- `SPRINTNEX_OPENCODE_DIRECTORY`
-- `SPRINTNEX_OPENCODE_USERNAME`
-- `SPRINTNEX_OPENCODE_PASSWORD`
+- `OPENWORK_SERVER_CONFIG` path to config JSON
+- `OPENWORK_HOST` / `OPENWORK_PORT`
+- `OPENWORK_TOKEN` client bearer token
+- `OPENWORK_HOST_TOKEN` host approval token
+- `OPENWORK_APPROVAL_MODE` (`manual` | `auto`)
+- `OPENWORK_APPROVAL_TIMEOUT_MS`
+- `OPENWORK_WORKSPACES` (JSON array or comma-separated list of paths)
+- `OPENWORK_CORS_ORIGINS` (comma-separated list or `*`)
+- `OPENWORK_OPENCODE_BASE_URL`
+- `OPENWORK_OPENCODE_DIRECTORY`
+- `OPENWORK_OPENCODE_USERNAME`
+- `OPENWORK_OPENCODE_PASSWORD`
 
 Token management (scoped tokens):
 
-- `SPRINTNEX_TOKEN_STORE` path to token store JSON (default: alongside `server.json`)
+- `OPENWORK_TOKEN_STORE` path to token store JSON (default: alongside `server.json`)
 
 File injection / artifacts:
 
-- `SPRINTNEX_INBOX_ENABLED` (`1` | `0`)
-- `SPRINTNEX_INBOX_MAX_BYTES` (default: 50MB, capped)
-- `SPRINTNEX_OUTBOX_ENABLED` (`1` | `0`)
+- `OPENWORK_INBOX_ENABLED` (`1` | `0`)
+- `OPENWORK_INBOX_MAX_BYTES` (default: 50MB, capped)
+- `OPENWORK_OUTBOX_ENABLED` (`1` | `0`)
 
 Sandbox advertisement (for capability discovery):
 
-- `SPRINTNEX_SANDBOX_ENABLED` (`1` | `0`)
-- `SPRINTNEX_SANDBOX_BACKEND` (`docker` | `container` | `none`)
+- `OPENWORK_SANDBOX_ENABLED` (`1` | `0`)
+- `OPENWORK_SANDBOX_BACKEND` (`docker` | `container` | `none`)
 
 ## Endpoints
 
@@ -147,4 +147,4 @@ Approvals endpoints:
 - `GET /approvals`
 - `POST /approvals/:id` with `{ "reply": "allow" | "deny" }`
 
-Set `SPRINTNEX_APPROVAL_MODE=auto` to auto-approve during local development.
+Set `OPENWORK_APPROVAL_MODE=auto` to auto-approve during local development.

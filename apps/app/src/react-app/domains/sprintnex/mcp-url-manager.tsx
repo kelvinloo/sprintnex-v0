@@ -17,7 +17,7 @@ import {
   readSprintnexAicoeScope,
   getMappedWorkspaceForSprintnexProject,
 } from "@/app/lib/sprintnex-aicoe-api";
-import { createOpenworkServerClient } from "@/app/lib/sprintnex-server";
+import { createOpenworkServerClient } from "@/app/lib/openwork-server";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
 
 /**

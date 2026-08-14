@@ -34,7 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  SPRINTNEX_EXTENSION_CATALOG,
+  OPENWORK_EXTENSION_CATALOG,
   type McpDirectoryInfo,
 } from "@/app/constants";
 import type {
@@ -54,7 +54,7 @@ import { t } from "@/i18n";
 import {
   isOpenWorkExtensionEnabled,
   isOpenWorkExtensionHidden,
-  SPRINTNEX_EXTENSION_STATE_CHANGED,
+  OPENWORK_EXTENSION_STATE_CHANGED,
 } from "@/react-app/domains/settings/extension-state";
 import { useDesktopRestriction } from "@/react-app/domains/cloud/desktop-config-provider";
 import { resolveExtensionIconUrl } from "@/react-app/design-system/extension-icon-src";
@@ -631,10 +631,10 @@ export function ReactSessionComposer(props: ComposerProps) {
 
   useEffect(() => {
     const refresh = () => setExtensionStateVersion((value) => value + 1);
-    window.addEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
+    window.addEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
     window.addEventListener("storage", refresh);
     return () => {
-      window.removeEventListener(SPRINTNEX_EXTENSION_STATE_CHANGED, refresh);
+      window.removeEventListener(OPENWORK_EXTENSION_STATE_CHANGED, refresh);
       window.removeEventListener("storage", refresh);
     };
   }, []);
@@ -936,7 +936,7 @@ export function ReactSessionComposer(props: ComposerProps) {
     ? (pluginSections.find((entry) => entry.section === toolMenuSection)
         ?.plugin ?? null)
     : null;
-  const composerExtensions = SPRINTNEX_EXTENSION_CATALOG.filter(
+  const composerExtensions = OPENWORK_EXTENSION_CATALOG.filter(
     (entry) =>
       !builtInExtensionsDisabled &&
       !isOpenWorkExtensionHidden(entry) &&

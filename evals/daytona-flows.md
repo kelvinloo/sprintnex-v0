@@ -511,7 +511,7 @@ variables.
 
 ### Verified run: 2026-06-02
 
-- Server sandbox: `sprintnex-server-20260602-154721`
+- Server sandbox: `openwork-server-20260602-154721`
 - Electron sandbox: `openwork-test-20260602-155000`
 - Workspace: `ws_d3840983187b`, `/tmp/llm-den-provisioning-workspace`
 - Den org: `acme-robotics-demo`, `org_01kt58ejd1extvd0p7nqagxaky`

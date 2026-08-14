@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type {
   OpenworkRuntimeConfigStatus,
   OpenworkServerStatus,
-} from "@/app/lib/sprintnex-server";
+} from "@/app/lib/openwork-server";
 import {
   DEFAULT_DEN_API_BASE_URL,
   DEFAULT_DEN_BASE_URL,

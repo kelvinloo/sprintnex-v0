@@ -71,9 +71,9 @@ jobs:
       - name: Start Electron app under Xvfb
         shell: bash
         env:
-          SPRINTNEX_DEV_MODE: "1"
+          OPENWORK_DEV_MODE: "1"
           ELECTRON_DISABLE_SANDBOX: "1"
-          SPRINTNEX_ELECTRON_REMOTE_DEBUG_PORT: "9823"
+          OPENWORK_ELECTRON_REMOTE_DEBUG_PORT: "9823"
           DAYTONA_ELECTRON_EXTRA_LAUNCH_ARGS: "--no-sandbox --disable-gpu --disable-dev-shm-usage --enable-unsafe-swiftshader"
         run: |
           set -euo pipefail
@@ -95,10 +95,10 @@ jobs:
       - name: Run eval flows
         shell: bash
         env:
-          SPRINTNEX_EVAL_CDP_URL: "http://127.0.0.1:9823"
+          OPENWORK_EVAL_CDP_URL: "http://127.0.0.1:9823"
           # Optional cloud coverage: flows skip cleanly when unset.
-          SPRINTNEX_EVAL_DEN_API_URL: ${{ secrets.SPRINTNEX_EVAL_DEN_API_URL }}
-          SPRINTNEX_EVAL_DEN_TOKEN: ${{ secrets.SPRINTNEX_EVAL_DEN_TOKEN }}
+          OPENWORK_EVAL_DEN_API_URL: ${{ secrets.OPENWORK_EVAL_DEN_API_URL }}
+          OPENWORK_EVAL_DEN_TOKEN: ${{ secrets.OPENWORK_EVAL_DEN_TOKEN }}
         run: pnpm evals --all
 
       - name: Upload eval reports

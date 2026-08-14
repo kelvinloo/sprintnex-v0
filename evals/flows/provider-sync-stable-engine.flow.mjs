@@ -10,11 +10,11 @@ const RELOAD_TEXT = "Reloading OpenCode config";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function denRequest(ctx, path, init = {}) {
-  const apiBase = ctx.env.SPRINTNEX_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
+  const apiBase = ctx.env.OPENWORK_EVAL_DEN_API_URL.trim().replace(/\/+$/, "");
   const response = await fetch(`${apiBase}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${ctx.env.SPRINTNEX_EVAL_DEN_TOKEN.trim()}`,
+      authorization: `Bearer ${ctx.env.OPENWORK_EVAL_DEN_TOKEN.trim()}`,
       "content-type": "application/json",
       ...(init.headers ?? {}),
     },
@@ -150,7 +150,7 @@ export default {
   id: "provider-sync-stable-engine",
   title: "Org cloud providers import once and the engine connection stays stable",
   kind: "user-facing",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL", "SPRINTNEX_EVAL_DEN_TOKEN"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL", "OPENWORK_EVAL_DEN_TOKEN"],
   steps: [
     {
       name: "Frame 1",

@@ -53,7 +53,7 @@ daytona preview-url "$SERVER_SANDBOX" -p 8090
 For local and Daytona cloud testing, run Den API with:
 
 ```bash
-SPRINTNEX_DEV_MODE=1
+OPENWORK_DEV_MODE=1
 ```
 
 In dev mode, email verification is disabled by default so seeded/demo users can sign in without a real inbox. Override explicitly when needed:

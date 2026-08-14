@@ -45,7 +45,7 @@ function userAppDataDir() {
 
 function discoveryPaths() {
   return [
-    process.env.SPRINTNEX_UI_CONTROL_DISCOVERY?.trim(),
+    process.env.OPENWORK_UI_CONTROL_DISCOVERY?.trim(),
     join(userAppDataDir(), "com.differentai.openwork", DISCOVERY_FILE),
     join(userAppDataDir(), "com.differentai.openwork.dev", DISCOVERY_FILE),
   ].filter(Boolean);

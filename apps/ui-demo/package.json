@@ -1,5 +1,5 @@
 {
-  "name": "@sprintnex/ui-demo",
+  "name": "@openwork/ui-demo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@sprintnex/ui": "workspace:*",
+    "@openwork/ui": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

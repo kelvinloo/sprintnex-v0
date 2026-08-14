@@ -145,7 +145,7 @@ export function createUiControlServer({ appName, appIdentifier, getWindow }) {
       "utf8",
     );
     // Make the discovery path available to child processes (server → managed OpenCode → plugin).
-    process.env.SPRINTNEX_UI_CONTROL_DISCOVERY = uiControlDiscoveryPath;
+    process.env.OPENWORK_UI_CONTROL_DISCOVERY = uiControlDiscoveryPath;
   }
 
   async function stop() {

@@ -2,10 +2,10 @@ import { loadVoiceoverParagraphs } from "../runner/voiceover.mjs";
 
 const vo = await loadVoiceoverParagraphs("connections-beta-desktop");
 
-const DEN_API_URL = (process.env.SPRINTNEX_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
-const DEN_WEB_URL = (process.env.SPRINTNEX_EVAL_DEN_WEB_URL ?? DEN_API_URL).trim().replace(/\/+$/, "");
-const ADMIN_EMAIL = process.env.SPRINTNEX_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
-const ADMIN_PASSWORD = process.env.SPRINTNEX_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
+const DEN_API_URL = (process.env.OPENWORK_EVAL_DEN_API_URL ?? "").trim().replace(/\/+$/, "");
+const DEN_WEB_URL = (process.env.OPENWORK_EVAL_DEN_WEB_URL ?? DEN_API_URL).trim().replace(/\/+$/, "");
+const ADMIN_EMAIL = process.env.OPENWORK_EVAL_DEMO_EMAIL?.trim() || "alex@acme.test";
+const ADMIN_PASSWORD = process.env.OPENWORK_EVAL_DEMO_PASSWORD?.trim() || "OpenWorkDemo123!";
 const RUN_TAG = Date.now();
 const CONNECTION_NAME = `beta-proof-desktop-${RUN_TAG}`;
 const CONNECTION_URL = "https://beta-proof.example.com/mcp";
@@ -104,7 +104,7 @@ async function signDesktopIntoCloud(ctx) {
     // desktop-bootstrap.json (via the desktop bridge). Everything derives
     // from it — including getDenMcpUrl(), which the cloud MCP auto-config
     // uses; localStorage overrides alone are not enough.
-    await ctx.waitFor("Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
+    await ctx.waitFor("Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)", { timeoutMs: 30_000, label: "desktop bridge" });
     const bootstrap = {
       baseUrl: DEN_API_URL,
       apiBaseUrl: DEN_API_URL,
@@ -112,7 +112,7 @@ async function signDesktopIntoCloud(ctx) {
       handoff: null,
     };
     const written = await ctx.eval(`(async () => {
-      const bridge = window.__SPRINTNEX_ELECTRON__?.invokeDesktop;
+      const bridge = window.__OPENWORK_ELECTRON__?.invokeDesktop;
       if (!bridge) return { ok: false };
       await bridge("setDesktopBootstrapConfig", ${JSON.stringify(bootstrap)});
       return { ok: true };
@@ -227,7 +227,7 @@ export default {
   title: "Desktop Marketplace: alpha org connections are labeled and last",
   kind: "user-facing",
   spec: "evals/voiceovers/connections-beta-desktop.md",
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_API_URL"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_API_URL"],
   steps: [
     {
       name: "Frame 1",

@@ -1,4 +1,4 @@
-import type { OpenworkServerClient } from "../../../../app/lib/sprintnex-server";
+import type { OpenworkServerClient } from "../../../../app/lib/openwork-server";
 import { readOpenworkEnvPendingChanges } from "../../../../app/lib/openwork-env-runtime";
 
 const DEFAULT_CACHE_KEY = "__openwork_env_default__";

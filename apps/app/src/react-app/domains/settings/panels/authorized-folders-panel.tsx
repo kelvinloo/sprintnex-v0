@@ -17,7 +17,7 @@ import type {
   OpenworkServerCapabilities,
   OpenworkServerClient,
   OpenworkServerStatus,
-} from "../../../../app/lib/sprintnex-server";
+} from "../../../../app/lib/openwork-server";
 import { pickDirectory } from "../../../../app/lib/desktop";
 import {
   isDesktopRuntime,

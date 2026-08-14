@@ -1,6 +1,6 @@
 import type { UIMessage } from "ai";
 
-import type { OpenworkSessionSnapshot } from "../../../../app/lib/sprintnex-server";
+import type { OpenworkSessionSnapshot } from "../../../../app/lib/openwork-server";
 import { mergeSnapshotAndLiveMessages } from "../sync/message-merge";
 import { applyRevertCursor } from "../sync/transcript-reconcile";
 import { snapshotToUIMessages } from "../sync/usechat-adapter";

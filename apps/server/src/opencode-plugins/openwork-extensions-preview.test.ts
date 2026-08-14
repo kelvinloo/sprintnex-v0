@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { z } from "zod";
 
-import { OpenWorkExtensionsPreview } from "./sprintnex-extensions-preview.js";
+import { OpenWorkExtensionsPreview } from "./openwork-extensions-preview.js";
 
-const originalServerUrl = process.env.SPRINTNEX_SERVER_URL;
-const originalServerToken = process.env.SPRINTNEX_SERVER_TOKEN;
-const originalUiControlTools = process.env.SPRINTNEX_UI_CONTROL_TOOLS;
+const originalServerUrl = process.env.OPENWORK_SERVER_URL;
+const originalServerToken = process.env.OPENWORK_SERVER_TOKEN;
+const originalUiControlTools = process.env.OPENWORK_UI_CONTROL_TOOLS;
 const stops: Array<() => void> = [];
 
 const searchResultSchema = z.object({
@@ -33,12 +33,12 @@ const readResultSchema = z.object({
 
 afterEach(() => {
   while (stops.length) stops.pop()?.();
-  if (originalServerUrl === undefined) delete process.env.SPRINTNEX_SERVER_URL;
-  else process.env.SPRINTNEX_SERVER_URL = originalServerUrl;
-  if (originalServerToken === undefined) delete process.env.SPRINTNEX_SERVER_TOKEN;
-  else process.env.SPRINTNEX_SERVER_TOKEN = originalServerToken;
-  if (originalUiControlTools === undefined) delete process.env.SPRINTNEX_UI_CONTROL_TOOLS;
-  else process.env.SPRINTNEX_UI_CONTROL_TOOLS = originalUiControlTools;
+  if (originalServerUrl === undefined) delete process.env.OPENWORK_SERVER_URL;
+  else process.env.OPENWORK_SERVER_URL = originalServerUrl;
+  if (originalServerToken === undefined) delete process.env.OPENWORK_SERVER_TOKEN;
+  else process.env.OPENWORK_SERVER_TOKEN = originalServerToken;
+  if (originalUiControlTools === undefined) delete process.env.OPENWORK_UI_CONTROL_TOOLS;
+  else process.env.OPENWORK_UI_CONTROL_TOOLS = originalUiControlTools;
 });
 
 async function transformedSystem(plugin: Awaited<ReturnType<typeof OpenWorkExtensionsPreview>>): Promise<string> {
@@ -122,8 +122,8 @@ function startFakeOpenWorkServer() {
     },
   });
   stops.push(() => server.stop(true));
-  process.env.SPRINTNEX_SERVER_URL = `http://127.0.0.1:${server.port}`;
-  process.env.SPRINTNEX_SERVER_TOKEN = "test-token";
+  process.env.OPENWORK_SERVER_URL = `http://127.0.0.1:${server.port}`;
+  process.env.OPENWORK_SERVER_TOKEN = "test-token";
   return { requests };
 }
 
@@ -178,7 +178,7 @@ describe("OpenWorkExtensionsPreview session tools", () => {
 
 describe("OpenWorkExtensionsPreview UI control tools", () => {
   test("omits UI-control tools and steering by default", async () => {
-    delete process.env.SPRINTNEX_UI_CONTROL_TOOLS;
+    delete process.env.OPENWORK_UI_CONTROL_TOOLS;
     const plugin = await OpenWorkExtensionsPreview();
     const tools = Object.keys(plugin.tool);
 
@@ -194,7 +194,7 @@ describe("OpenWorkExtensionsPreview UI control tools", () => {
   });
 
   test("registers UI-control tools and steering when opted in", async () => {
-    process.env.SPRINTNEX_UI_CONTROL_TOOLS = "1";
+    process.env.OPENWORK_UI_CONTROL_TOOLS = "1";
     const plugin = await OpenWorkExtensionsPreview();
     const tools = Object.keys(plugin.tool);
 

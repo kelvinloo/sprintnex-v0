@@ -18,11 +18,11 @@ const state = {
 };
 
 function routeUrl(ctx, path) {
-  return new URL(path, ctx.env.SPRINTNEX_EVAL_DEN_WEB_URL).toString();
+  return new URL(path, ctx.env.OPENWORK_EVAL_DEN_WEB_URL).toString();
 }
 
 function mysqlContainer(ctx) {
-  return ctx.env.SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER || "openwork-web-local-mysql";
+  return ctx.env.OPENWORK_EVAL_DEN_MYSQL_CONTAINER || "openwork-web-local-mysql";
 }
 
 function recordAssertion(ctx, assertion, passed, actual) {
@@ -76,7 +76,7 @@ async function grantClipboardPermissions(ctx) {
     return;
   }
 
-  const origin = new URL(ctx.env.SPRINTNEX_EVAL_DEN_WEB_URL).origin;
+  const origin = new URL(ctx.env.OPENWORK_EVAL_DEN_WEB_URL).origin;
   await ctx.client.send("Browser.grantPermissions", {
     origin,
     permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"],
@@ -91,7 +91,7 @@ async function denyClipboardPermissions(ctx) {
     return;
   }
 
-  const origin = new URL(ctx.env.SPRINTNEX_EVAL_DEN_WEB_URL).origin;
+  const origin = new URL(ctx.env.OPENWORK_EVAL_DEN_WEB_URL).origin;
   const permissions = [
     { name: "clipboard-write", allowWithoutSanitization: false },
     { name: "clipboard-read" },
@@ -256,7 +256,7 @@ export default {
   kind: "user-facing",
   spec: "evals/README.md",
   preserveTheme: true,
-  requiredEnv: ["SPRINTNEX_EVAL_DEN_WEB_URL", "SPRINTNEX_EVAL_DEN_MYSQL_CONTAINER"],
+  requiredEnv: ["OPENWORK_EVAL_DEN_WEB_URL", "OPENWORK_EVAL_DEN_MYSQL_CONTAINER"],
   steps: [
     {
       name: "Signing in and staging a stale session",

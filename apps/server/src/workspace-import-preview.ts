@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
-import { sanitizeSprintnexTemplateConfig } from "./blueprint-sessions.js";
+import { sanitizeOpenworkTemplateConfig } from "./blueprint-sessions.js";
 import { buildCommandContent } from "./commands.js";
 import { ApiError } from "./errors.js";
 import { parseFrontmatter } from "./frontmatter.js";
@@ -184,7 +184,7 @@ export function normalizeWorkspaceImportPayload(
       ? { opencode: sanitizePortableOpencodeConfig(readRecord(payload.opencode)) }
       : {}),
     ...(payload.openwork !== undefined
-      ? { openwork: sanitizeSprintnexTemplateConfig(readRecord(payload.openwork)) }
+      ? { openwork: sanitizeOpenworkTemplateConfig(readRecord(payload.openwork)) }
       : {}),
     skills: normalizeSkills(payload.skills),
     commands: normalizeCommands(payload.commands),

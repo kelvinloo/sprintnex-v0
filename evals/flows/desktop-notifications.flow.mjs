@@ -75,14 +75,14 @@ export default {
         await ctx.prove("Attention notifications use text that reflects the triggering event", {
           voiceover: vo[2],
           action: async () => {
-            await ctx.eval(`window.__SPRINTNEX_ELECTRON__?.invokeDesktop?.("desktopNotificationShow", {
+            await ctx.eval(`window.__OPENWORK_ELECTRON__?.invokeDesktop?.("desktopNotificationShow", {
               title: "Question needs your answer",
               body: "Question: Continue?"
             })`);
             await ctx.navigateHash("/settings/general");
           },
           assert: async () => {
-            const bridgeAvailable = await ctx.eval(`Boolean(window.__SPRINTNEX_ELECTRON__?.invokeDesktop)`);
+            const bridgeAvailable = await ctx.eval(`Boolean(window.__OPENWORK_ELECTRON__?.invokeDesktop)`);
             ctx.assert(bridgeAvailable === true, "Expected the Electron notification bridge to be available.");
             await ctx.expectText("Workspace", { timeoutMs: 30_000 });
             await ctx.expectText("Global");

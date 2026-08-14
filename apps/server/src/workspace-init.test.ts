@@ -48,7 +48,7 @@ describe("ensureWorkspaceFiles", () => {
   test("uses shipped extension preview plugin", async () => {
     const pluginPath = openworkExtensionsPreviewPluginPath();
     const plugin = await readFile(pluginPath, "utf8");
-    expect(pluginPath).toContain(join("opencode-plugins", "sprintnex-extensions-preview.ts"));
+    expect(pluginPath).toContain(join("opencode-plugins", "openwork-extensions-preview.ts"));
     expect(plugin).toContain("openwork_extension_call");
   });
 
@@ -58,11 +58,11 @@ describe("ensureWorkspaceFiles", () => {
     process.resourcesPath = resourcesPath;
     try {
       const pluginPath = openworkPluginPath(
-        "sprintnex-extensions-preview",
+        "openwork-extensions-preview",
         join(resourcesPath, "app.asar", "server", "dist"),
       );
 
-      expect(pluginPath).toBe(join(resourcesPath, "opencode-plugins", "sprintnex-extensions-preview.js"));
+      expect(pluginPath).toBe(join(resourcesPath, "opencode-plugins", "openwork-extensions-preview.js"));
       expect(pluginPath).not.toContain("app.asar");
     } finally {
       if (previousResourcesPath) {
@@ -76,7 +76,7 @@ describe("ensureWorkspaceFiles", () => {
   test("does not create workspace extension preview plugin", async () => {
     await withWorkspace(async (root) => {
       await ensureWorkspaceFiles(root, "starter");
-      await expect(stat(join(root, ".opencode", "plugins", "sprintnex-extensions-preview.ts"))).rejects.toThrow();
+      await expect(stat(join(root, ".opencode", "plugins", "openwork-extensions-preview.ts"))).rejects.toThrow();
     });
   });
 
