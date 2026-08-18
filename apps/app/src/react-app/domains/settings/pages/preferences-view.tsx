@@ -43,7 +43,9 @@ export type PreferencesViewProps = {
   onToggleMemory: () => void;
 };
 
-function desktopNotificationPreferenceLabel(value: DesktopNotificationPreference) {
+function desktopNotificationPreferenceLabel(
+  value: DesktopNotificationPreference,
+) {
   switch (value) {
     case "important":
       return t("settings.desktop_notifications.important");
@@ -55,24 +57,32 @@ function desktopNotificationPreferenceLabel(value: DesktopNotificationPreference
 }
 
 export function PreferencesView(props: PreferencesViewProps) {
-  const desktopNotificationItems = DESKTOP_NOTIFICATION_PREFERENCE_VALUES.map((value) => ({
-    value,
-    label: desktopNotificationPreferenceLabel(value),
-  }));
+  const desktopNotificationItems = DESKTOP_NOTIFICATION_PREFERENCE_VALUES.map(
+    (value) => ({
+      value,
+      label: desktopNotificationPreferenceLabel(value),
+    }),
+  );
 
   return (
     <LayoutStack>
       <LayoutSection>
         <LayoutSectionHeader>
           <LayoutSectionTitle>{t("settings.model_title")}</LayoutSectionTitle>
-          <LayoutSectionDescription>{t("settings.model_section_desc")}</LayoutSectionDescription>
+          <LayoutSectionDescription>
+            {t("settings.model_section_desc")}
+          </LayoutSectionDescription>
         </LayoutSectionHeader>
 
         {/* Show reasoning */}
         <LayoutSectionItem>
           <LayoutSectionItemHeader>
-            <LayoutSectionItemTitle>{t("settings.show_model_reasoning")}</LayoutSectionItemTitle>
-            <LayoutSectionItemDescription>{t("settings.show_model_reasoning_desc")}</LayoutSectionItemDescription>
+            <LayoutSectionItemTitle>
+              {t("settings.show_model_reasoning")}
+            </LayoutSectionItemTitle>
+            <LayoutSectionItemDescription>
+              {t("settings.show_model_reasoning_desc")}
+            </LayoutSectionItemDescription>
             <LayoutSectionItemHeaderActions>
               <Switch
                 aria-label={t("settings.show_model_reasoning")}
@@ -87,8 +97,12 @@ export function PreferencesView(props: PreferencesViewProps) {
         {/* Auto context compaction */}
         <LayoutSectionItem>
           <LayoutSectionItemHeader>
-            <LayoutSectionItemTitle>{t("settings.auto_compact")}</LayoutSectionItemTitle>
-            <LayoutSectionItemDescription>{t("settings.auto_compact_desc")}</LayoutSectionItemDescription>
+            <LayoutSectionItemTitle>
+              {t("settings.auto_compact")}
+            </LayoutSectionItemTitle>
+            <LayoutSectionItemDescription>
+              {t("settings.auto_compact_desc")}
+            </LayoutSectionItemDescription>
             <LayoutSectionItemHeaderActions>
               <Switch
                 aria-label={t("settings.auto_compact")}
@@ -101,16 +115,24 @@ export function PreferencesView(props: PreferencesViewProps) {
         </LayoutSectionItem>
       </LayoutSection>
 
-      <LayoutSection>
+      {/* <LayoutSection>
         <LayoutSectionHeader>
-          <LayoutSectionTitle>{t("settings.desktop_notifications.title")}</LayoutSectionTitle>
-          <LayoutSectionDescription>{t("settings.desktop_notifications.section_desc")}</LayoutSectionDescription>
+          <LayoutSectionTitle>
+            {t("settings.desktop_notifications.title")}
+          </LayoutSectionTitle>
+          <LayoutSectionDescription>
+            {t("settings.desktop_notifications.section_desc")}
+          </LayoutSectionDescription>
         </LayoutSectionHeader>
 
         <LayoutSectionItem>
           <LayoutSectionItemHeader>
-            <LayoutSectionItemTitle>{t("settings.desktop_notifications.mode")}</LayoutSectionItemTitle>
-            <LayoutSectionItemDescription>{t("settings.desktop_notifications.mode_desc")}</LayoutSectionItemDescription>
+            <LayoutSectionItemTitle>
+              {t("settings.desktop_notifications.mode")}
+            </LayoutSectionItemTitle>
+            <LayoutSectionItemDescription>
+              {t("settings.desktop_notifications.mode_desc")}
+            </LayoutSectionItemDescription>
             <LayoutSectionItemHeaderActions>
               <div className="w-44 max-w-full">
                 <Select
@@ -123,8 +145,13 @@ export function PreferencesView(props: PreferencesViewProps) {
                   }}
                   disabled={props.busy}
                 >
-                  <SelectTrigger className="w-full" aria-label={t("settings.desktop_notifications.mode")}>
-                    <SelectValue placeholder={t("settings.desktop_notifications.off")} />
+                  <SelectTrigger
+                    className="w-full"
+                    aria-label={t("settings.desktop_notifications.mode")}
+                  >
+                    <SelectValue
+                      placeholder={t("settings.desktop_notifications.off")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -140,9 +167,9 @@ export function PreferencesView(props: PreferencesViewProps) {
             </LayoutSectionItemHeaderActions>
           </LayoutSectionItemHeader>
         </LayoutSectionItem>
-      </LayoutSection>
+      </LayoutSection> */}
 
-      <LayoutSection>
+      {/* <LayoutSection>
         <LayoutSectionHeader>
           <LayoutSectionTitle>{t("settings.privacy_title")}</LayoutSectionTitle>
           <LayoutSectionDescription>{t("settings.privacy_section_desc")}</LayoutSectionDescription>
@@ -162,18 +189,26 @@ export function PreferencesView(props: PreferencesViewProps) {
             </LayoutSectionItemHeaderActions>
           </LayoutSectionItemHeader>
         </LayoutSectionItem>
-      </LayoutSection>
+      </LayoutSection> */}
 
       <LayoutSection>
         <LayoutSectionHeader>
-          <LayoutSectionTitle>{t("memory.preferences_title")}</LayoutSectionTitle>
-          <LayoutSectionDescription>{t("memory.preferences_section_desc")}</LayoutSectionDescription>
+          <LayoutSectionTitle>
+            {t("memory.preferences_title")}
+          </LayoutSectionTitle>
+          <LayoutSectionDescription>
+            {t("memory.preferences_section_desc")}
+          </LayoutSectionDescription>
         </LayoutSectionHeader>
 
         <LayoutSectionItem>
           <LayoutSectionItemHeader>
-            <LayoutSectionItemTitle>{t("memory.preferences_toggle")}</LayoutSectionItemTitle>
-            <LayoutSectionItemDescription>{t("memory.preferences_toggle_desc")}</LayoutSectionItemDescription>
+            <LayoutSectionItemTitle>
+              {t("memory.preferences_toggle")}
+            </LayoutSectionItemTitle>
+            <LayoutSectionItemDescription>
+              {t("memory.preferences_toggle_desc")}
+            </LayoutSectionItemDescription>
             <LayoutSectionItemHeaderActions>
               <Switch
                 aria-label={t("memory.preferences_toggle")}

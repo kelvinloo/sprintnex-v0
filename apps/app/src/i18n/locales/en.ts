@@ -1486,7 +1486,7 @@ export default {
   "settings.tab_description_advanced":
     "Inspect runtime health, connection state, and developer-facing controls.",
   "settings.tab_description_appearance":
-    "Adjust how OpenWork looks across desktop, system theme, and app frame.",
+    "Adjust how Sprintnex looks across desktop, system theme, and app frame.",
   "settings.tab_description_cloud_account":
     "Sign in, manage your organization, and configure your cloud connection.",
   "settings.tab_description_connect":
@@ -1500,7 +1500,7 @@ export default {
   "settings.tab_description_extensions":
     "Manage MCP apps and OpenCode plugins for this workspace.",
   "settings.tab_description_general":
-    "Connect providers, choose the default model, authorize folders, and control the selected OpenWork workspace plus its runtime connection.",
+    "Connect providers, choose the default model, authorize folders, and control the selected Sprintnex workspace plus its runtime connection.",
   "settings.environment.add_button": "Add variable",
   "settings.environment.add_title": "Add environment variable",
   "settings.environment.cancel": "Cancel",

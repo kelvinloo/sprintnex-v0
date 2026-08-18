@@ -1,11 +1,5 @@
 /** @jsxImportSource react */
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronRight, Search, Star } from "lucide-react";
 
 import {
@@ -24,7 +18,8 @@ import { isRecommendedModel } from "../../../../app/defaults";
 import { ProviderIcon } from "../../../design-system/provider-icon";
 
 export const MODEL_PICKER_DEFAULT_SUBTITLE = "Select a model for this session.";
-export const MODEL_PICKER_UNAVAILABLE_SUBTITLE = "The model you were using is no longer available, please select a different model for this session.";
+export const MODEL_PICKER_UNAVAILABLE_SUBTITLE =
+  "The model you were using is no longer available, please select a different model for this session.";
 
 export function resolveModelPickerSubtitle(subtitle: string | undefined) {
   return subtitle ?? MODEL_PICKER_DEFAULT_SUBTITLE;
@@ -58,8 +53,11 @@ type ProviderGroup = {
 };
 
 export function ModelPickerModal(props: ModelPickerModalProps) {
+  console.log("ModelPickerModal props", props);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
-  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set());
+  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(
+    new Set(),
+  );
 
   const disabledSet = useMemo(
     () => new Set(props.disabledProviders ?? []),
@@ -116,7 +114,12 @@ export function ModelPickerModal(props: ModelPickerModalProps) {
       } else {
         group.other.push(opt);
       }
-      if (modelEquals(props.current, { providerID: opt.providerID, modelID: opt.modelID })) {
+      if (
+        modelEquals(props.current, {
+          providerID: opt.providerID,
+          modelID: opt.modelID,
+        })
+      ) {
         group.hasCurrent = true;
       }
     }
@@ -150,13 +153,15 @@ export function ModelPickerModal(props: ModelPickerModalProps) {
   const toggleProvider = useCallback((id: string) => {
     setExpandedProviders((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
 
   const handleSelect = useCallback(
-    (opt: ModelOption) => props.onSelect({ providerID: opt.providerID, modelID: opt.modelID }),
+    (opt: ModelOption) =>
+      props.onSelect({ providerID: opt.providerID, modelID: opt.modelID }),
     [props.onSelect],
   );
 
@@ -164,7 +169,11 @@ export function ModelPickerModal(props: ModelPickerModalProps) {
   useEffect(() => {
     if (!props.open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); props.onClose(); }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        props.onClose();
+      }
     };
     window.addEventListener("keydown", onKeyDown, true);
     return () => window.removeEventListener("keydown", onKeyDown, true);
@@ -188,7 +197,10 @@ export function ModelPickerModal(props: ModelPickerModalProps) {
         <div className="flex min-h-0 flex-1 flex-col">
           {/* Search */}
           <div className="relative mb-4 shrink-0">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-dls-secondary" />
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-dls-secondary"
+            />
             <input
               ref={searchInputRef}
               type="text"
@@ -204,7 +216,9 @@ export function ModelPickerModal(props: ModelPickerModalProps) {
             {providerGroups.length === 0 ? (
               <div className="space-y-3 rounded-2xl border border-dls-border bg-dls-hover/30 px-4 py-6 text-center">
                 <div className="text-sm text-dls-secondary">
-                  {props.query.trim() ? "No models match your search." : "No models available. Connect a provider to get started."}
+                  {props.query.trim()
+                    ? "No models match your search."
+                    : "No models available. Connect a provider to get started."}
                 </div>
                 {!props.query.trim() ? (
                   <Button variant="outline" onClick={props.onOpenSettings}>
@@ -231,9 +245,7 @@ export function ModelPickerModal(props: ModelPickerModalProps) {
 
         {/* Footer */}
         <DialogFooter className="shrink-0">
-          <DialogClose render={<Button variant="outline" />}>
-            Done
-          </DialogClose>
+          <DialogClose render={<Button variant="outline" />}>Done</DialogClose>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -274,22 +286,34 @@ function ProviderAccordion({
           onClick={onToggleExpand}
         >
           <Chevron size={14} className="shrink-0 text-dls-secondary" />
-          <ProviderIcon providerId={group.id} size={18} className="shrink-0 text-dls-text" />
+          <ProviderIcon
+            providerId={group.id}
+            size={18}
+            className="shrink-0 text-dls-text"
+          />
           <div className="min-w-0 flex-1">
-            <span className="text-[13px] font-medium text-dls-text">{group.name}</span>
+            <span className="text-[13px] font-medium text-dls-text">
+              {group.name}
+            </span>
             <span className="ml-2 text-[11px] text-dls-secondary">
               {totalModels} model{totalModels === 1 ? "" : "s"}
             </span>
           </div>
           <span className="flex shrink-0 items-center gap-1.5">
             {group.isNew ? (
-              <span className="rounded-md bg-blue-3 px-1.5 py-0.5 text-[10px] font-medium text-blue-11">New</span>
+              <span className="rounded-md bg-blue-3 px-1.5 py-0.5 text-[10px] font-medium text-blue-11">
+                New
+              </span>
             ) : null}
             {group.isCloud ? (
-              <span className="rounded-md bg-blue-3/50 px-1.5 py-0.5 text-[10px] font-medium text-blue-11/70">Cloud</span>
+              <span className="rounded-md bg-blue-3/50 px-1.5 py-0.5 text-[10px] font-medium text-blue-11/70">
+                Cloud
+              </span>
             ) : null}
             {group.hasCurrent ? (
-              <span className="rounded-md bg-green-3 px-1.5 py-0.5 text-[10px] font-medium text-green-11">Current</span>
+              <span className="rounded-md bg-green-3 px-1.5 py-0.5 text-[10px] font-medium text-green-11">
+                Current
+              </span>
             ) : null}
           </span>
         </button>
@@ -302,8 +326,15 @@ function ProviderAccordion({
                 ? "border border-dls-border text-dls-secondary hover:bg-dls-hover hover:text-dls-text"
                 : "bg-green-3 text-green-11 hover:bg-green-4",
             ].join(" ")}
-            onClick={(e) => { e.stopPropagation(); onToggleProvider?.(group.id, group.isDisabled); }}
-            title={group.isDisabled ? "Enable this provider" : "Disable this provider"}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleProvider?.(group.id, group.isDisabled);
+            }}
+            title={
+              group.isDisabled
+                ? "Enable this provider"
+                : "Disable this provider"
+            }
           >
             {group.isDisabled ? "Enable" : "Enabled"}
           </button>
@@ -319,7 +350,13 @@ function ProviderAccordion({
                 Recommended
               </div>
               {group.recommended.map((opt) => (
-                <DefaultModelRow key={opt.modelID} opt={opt} current={current} onSelect={onSelect} recommended />
+                <DefaultModelRow
+                  key={opt.modelID}
+                  opt={opt}
+                  current={current}
+                  onSelect={onSelect}
+                  recommended
+                />
               ))}
             </>
           ) : null}
@@ -331,7 +368,12 @@ function ProviderAccordion({
                 </div>
               ) : null}
               {group.other.map((opt) => (
-                <DefaultModelRow key={opt.modelID} opt={opt} current={current} onSelect={onSelect} />
+                <DefaultModelRow
+                  key={opt.modelID}
+                  opt={opt}
+                  current={current}
+                  onSelect={onSelect}
+                />
               ))}
             </>
           ) : null}
@@ -346,11 +388,20 @@ function ProviderAccordion({
 /* ------------------------------------------------------------------ */
 
 function DefaultModelRow({
-  opt, current, onSelect, recommended,
+  opt,
+  current,
+  onSelect,
+  recommended,
 }: {
-  opt: ModelOption; current: ModelRef; onSelect: (opt: ModelOption) => void; recommended?: boolean;
+  opt: ModelOption;
+  current: ModelRef;
+  onSelect: (opt: ModelOption) => void;
+  recommended?: boolean;
 }) {
-  const active = modelEquals(current, { providerID: opt.providerID, modelID: opt.modelID });
+  const active = modelEquals(current, {
+    providerID: opt.providerID,
+    modelID: opt.modelID,
+  });
 
   return (
     <button
@@ -361,10 +412,23 @@ function DefaultModelRow({
       ].join(" ")}
       onClick={() => onSelect(opt)}
     >
-      {recommended ? <Star size={12} className="shrink-0 text-amber-9" /> : <div className="w-3 shrink-0" />}
+      {recommended ? (
+        <Star size={12} className="shrink-0 text-amber-9" />
+      ) : (
+        <div className="w-3 shrink-0" />
+      )}
       <div className="min-w-0 flex-1">
-        <span className={["text-[12px]", active ? "font-medium text-dls-text" : "text-dls-text"].join(" ")}>{opt.title}</span>
-        <span className="ml-2 font-mono text-[10px] text-dls-secondary/60">{opt.modelID}</span>
+        <span
+          className={[
+            "text-[12px]",
+            active ? "font-medium text-dls-text" : "text-dls-text",
+          ].join(" ")}
+        >
+          {opt.title}
+        </span>
+        <span className="ml-2 font-mono text-[10px] text-dls-secondary/60">
+          {opt.modelID}
+        </span>
       </div>
       {active ? <Check size={14} className="shrink-0 text-green-11" /> : null}
     </button>

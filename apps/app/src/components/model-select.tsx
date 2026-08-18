@@ -30,7 +30,10 @@ import {
   OPENWORK_MODELS_PROVIDER_NAME,
   openWorkModelsPromoChangedEvent,
 } from "@/react-app/domains/cloud/openwork-models-promo";
-import { getConnectedProviderItems, useProviderListQuery } from "@/react-app/infra/provider-list-query";
+import {
+  getConnectedProviderItems,
+  useProviderListQuery,
+} from "@/react-app/infra/provider-list-query";
 import {
   Command,
   CommandCollection,
@@ -89,21 +92,20 @@ function useModelOptions(open: boolean) {
       restriction: "allowCustomProviders",
     });
 
-    const options = getConnectedProviderItems(data)
-      .flatMap((provider) =>
-        Object.entries(provider.models).map(([id, model]) => ({
-          providerID: provider.id,
-          modelID: id,
-          title: model.name,
-          description: provider.name,
-          behaviorTitle: "Reasoning",
-          behaviorLabel: "Default",
-          behaviorDescription: "",
-          behaviorValue: null,
-          isFree: false,
-          isConnected: true,
-        })),
-      );
+    const options = getConnectedProviderItems(data).flatMap((provider) =>
+      Object.entries(provider.models).map(([id, model]) => ({
+        providerID: provider.id,
+        modelID: id,
+        title: model.name,
+        description: provider.name,
+        behaviorTitle: "Reasoning",
+        behaviorLabel: "Default",
+        behaviorDescription: "",
+        behaviorValue: null,
+        isFree: false,
+        isConnected: true,
+      })),
+    );
 
     return options.filter((option) => {
       if (
@@ -149,7 +151,8 @@ function groupByProvider(modelOptions: ModelOption[]): ModelSelectGroup[] {
   const groups = new Map<string, ModelSelectModelItem[]>();
 
   for (const option of modelOptions) {
-    const providerLabel = option.description ?? getProviderDisplayName(option.providerID);
+    const providerLabel =
+      option.description ?? getProviderDisplayName(option.providerID);
     const item: ModelSelectModelItem = {
       kind: "model",
       id: `${option.providerID}:${option.modelID}`,
@@ -168,7 +171,9 @@ function groupByProvider(modelOptions: ModelOption[]): ModelSelectGroup[] {
   return [...groups.entries()]
     .map(([providerLabel, options]) => ({
       value: providerLabel,
-      items: [...options].sort((a, b) => a.option.title.localeCompare(b.option.title)),
+      items: [...options].sort((a, b) =>
+        a.option.title.localeCompare(b.option.title),
+      ),
       promo: false,
     }))
     .sort((a, b) => a.value.localeCompare(b.value));
@@ -207,7 +212,9 @@ export function ModelSelect({
   disabled = false,
 }: ModelSelectProps) {
   const [search, setSearch] = React.useState("");
-  const [promoHidden, setPromoHidden] = React.useState(isOpenWorkModelsPromoHidden);
+  const [promoHidden, setPromoHidden] = React.useState(
+    isOpenWorkModelsPromoHidden,
+  );
   const searchInputRef = React.useRef<HTMLInputElement>(null);
   const modelOptions = useModelOptions(open);
   const denAuth = useDenAuth();
@@ -215,9 +222,17 @@ export function ModelSelect({
   const platform = usePlatform();
 
   React.useEffect(() => {
-    const handlePromoChanged = () => setPromoHidden(isOpenWorkModelsPromoHidden());
-    window.addEventListener(openWorkModelsPromoChangedEvent, handlePromoChanged);
-    return () => window.removeEventListener(openWorkModelsPromoChangedEvent, handlePromoChanged);
+    const handlePromoChanged = () =>
+      setPromoHidden(isOpenWorkModelsPromoHidden());
+    window.addEventListener(
+      openWorkModelsPromoChangedEvent,
+      handlePromoChanged,
+    );
+    return () =>
+      window.removeEventListener(
+        openWorkModelsPromoChangedEvent,
+        handlePromoChanged,
+      );
   }, []);
 
   const focusSearchInput = React.useCallback(() => {
@@ -249,7 +264,11 @@ export function ModelSelect({
   );
 
   const showOpenWorkModelsPromo = React.useMemo(
-    () => !promoHidden && !hasOpenWorkModelsProvider(modelOptions.map((option) => option.providerID)),
+    () =>
+      !promoHidden &&
+      !hasOpenWorkModelsProvider(
+        modelOptions.map((option) => option.providerID),
+      ),
     [modelOptions, promoHidden],
   );
 
@@ -310,9 +329,7 @@ export function ModelSelect({
           </span>
           <ChevronDown className="h-3 w-3" />
         </TooltipTrigger>
-        <TooltipContent>
-          Change model
-        </TooltipContent>
+        <TooltipContent>Change model</TooltipContent>
       </Tooltip>
       <PopoverContent
         className="h-80 max-h-(--available-height) w-72 gap-0 overflow-hidden p-px **:data-[slot=scroll-area-viewport]:data-has-overflow-y:pe-0.5"
@@ -321,20 +338,22 @@ export function ModelSelect({
       >
         <Command items={groups} value={search} onValueChange={setSearch}>
           <CommandHeader>
-            <CommandInput
-              ref={searchInputRef}
-              placeholder="Search models..."
-            />
+            <CommandInput ref={searchInputRef} placeholder="Search models..." />
           </CommandHeader>
           <CommandEmpty>No models found.</CommandEmpty>
           <CommandList>
             {(group: ModelSelectGroup) => (
-              <CommandGroup
-                key={group.value}
-                items={group.items}
-              >
-                <CommandGroupLabel className={group.promo ? "flex items-center gap-1.5 text-foreground" : undefined}>
-                  {group.promo ? <Sparkles className="size-3 text-blue-11" /> : null}
+              <CommandGroup key={group.value} items={group.items}>
+                <CommandGroupLabel
+                  className={
+                    group.promo
+                      ? "flex items-center gap-1.5 text-foreground"
+                      : undefined
+                  }
+                >
+                  {group.promo ? (
+                    <Sparkles className="size-3 text-blue-11" />
+                  ) : null}
                   {group.value}
                 </CommandGroupLabel>
                 <CommandCollection>
@@ -358,7 +377,10 @@ export function ModelSelect({
                               {item.title}
                             </span>
                             <span className="block truncate text-xs text-muted-foreground">
-                              {item.subtitle} - {denAuth.isSignedIn ? "Subscribe to add this model" : "Sign in to unlock"}
+                              {item.subtitle} -{" "}
+                              {denAuth.isSignedIn
+                                ? "Subscribe to add this model"
+                                : "Sign in to unlock"}
                             </span>
                           </span>
                           <span className="shrink-0 rounded-full border border-blue-6 bg-blue-3 px-1.5 py-0.5 text-[10px] font-medium text-blue-11">

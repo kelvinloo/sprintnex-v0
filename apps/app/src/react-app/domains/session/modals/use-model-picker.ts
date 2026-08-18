@@ -37,7 +37,9 @@ export function useModelPicker(input: UseModelPickerInput) {
   // Provider IDs that were just added — used to highlight them as
   // "Recently added" in the model picker even after they've been
   // marked as seen in localStorage.
-  const [recentProviderIds, setRecentProviderIds] = useState<Set<string>>(new Set());
+  const [recentProviderIds, setRecentProviderIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Open model picker when the global toast's "Pick a new default?" is clicked
   useEffect(() => {
@@ -45,7 +47,12 @@ export function useModelPicker(input: UseModelPickerInput) {
       try {
         window.localStorage.removeItem(pendingModelPickerProviderIdsKey);
       } catch {}
-      const detail = (event as CustomEvent<{ newProviderIds?: string[]; initialTab?: "default" | "available" }>).detail;
+      const detail = (
+        event as CustomEvent<{
+          newProviderIds?: string[];
+          initialTab?: "default" | "available";
+        }>
+      ).detail;
       const ids = detail?.newProviderIds;
       if (ids && ids.length > 0) {
         setRecentProviderIds(new Set(ids));
@@ -99,7 +106,8 @@ export function useModelPicker(input: UseModelPickerInput) {
         const options: ModelOption[] = [];
         for (const provider of getConnectedProviderItems(data)) {
           const modelIds = Object.keys(provider.models);
-          const isNew = !seenIds.has(provider.id) || recentProviderIds.has(provider.id);
+          const isNew =
+            !seenIds.has(provider.id) || recentProviderIds.has(provider.id);
           for (const id of modelIds) {
             const model = provider.models[id];
             options.push({
@@ -114,10 +122,13 @@ export function useModelPicker(input: UseModelPickerInput) {
               isFree: false,
               isConnected: true,
               isRecommended: isNew,
-              source: /^lpr_/i.test(provider.id) ? "cloud" as const : undefined,
+              source: /^lpr_/i.test(provider.id)
+                ? ("cloud" as const)
+                : undefined,
             });
           }
         }
+        console.log("loaded model options", options);
         setModelOptions(options);
       } catch (error) {
         // Default: silent — the picker surfaces an empty list rather than

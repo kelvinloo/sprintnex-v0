@@ -2519,14 +2519,16 @@ function SettingsRouteContent(props: SettingsSurfaceProps = {}) {
             autoCompactContext={autoCompactContext}
             autoCompactContextBusy={autoCompactContextBusy}
             onToggleAutoCompactContext={toggleAutoCompactContext}
-            analyticsEnabled={local.prefs.analyticsEnabled}
+            // analyticsEnabled={local.prefs.analyticsEnabled}
+            analyticsEnabled={false}
             onToggleAnalytics={() => {
               local.setPrefs((previous) => ({
                 ...previous,
                 analyticsEnabled: !previous.analyticsEnabled,
               }));
             }}
-            desktopNotifications={local.prefs.desktopNotifications}
+            // desktopNotifications={local.prefs.desktopNotifications}
+            desktopNotifications={"off"}
             onDesktopNotificationsChange={(desktopNotifications) => {
               local.setPrefs((previous) => ({
                 ...previous,
