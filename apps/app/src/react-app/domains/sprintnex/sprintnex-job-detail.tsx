@@ -31,6 +31,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { t } from "@/i18n";
 import { AICOE_BASE } from "@/app/lib/api-config";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 
@@ -99,13 +100,13 @@ const TIER_COLORS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  open: "Open",
-  pending_approval: "Pending Approval",
-  assigned: "Assigned",
-  in_progress: "In Progress",
-  completed: "Completed",
-  cancelled: "Cancelled",
-  disputed: "Disputed",
+  open: "sprintnex.status.open",
+  pending_approval: "sprintnex.status.pending_approval",
+  assigned: "sprintnex.status.assigned",
+  in_progress: "sprintnex.status.in_progress",
+  completed: "sprintnex.status.completed",
+  cancelled: "sprintnex.status.cancelled",
+  disputed: "sprintnex.status.disputed",
 };
 
 async function fetchJob(id: string): Promise<JobDetail | null> {
@@ -269,10 +270,12 @@ export default function SprintnexJobDetailPage() {
         await loadApplications();
       } else {
         const data = await res.json().catch(() => null);
-        setActionError(data?.message ?? "Failed to approve application.");
+        setActionError(
+          data?.message ?? t("sprintnex.job.approve_application_failed"),
+        );
       }
     } catch {
-      setActionError("Network error.");
+      setActionError(t("sprintnex.common.network_error"));
     } finally {
       setActionLoading(null);
     }
@@ -295,10 +298,10 @@ export default function SprintnexJobDetailPage() {
         await loadApplications();
       } else {
         const data = await res.json().catch(() => null);
-        setActionError(data?.message ?? "Failed to reject application.");
+        setActionError(data?.message ?? t("sprintnex.job.reject_application_failed"));
       }
     } catch {
-      setActionError("Network error.");
+      setActionError(t("sprintnex.common.network_error"));
     } finally {
       setActionLoading(null);
     }
@@ -310,7 +313,9 @@ export default function SprintnexJobDetailPage() {
     const ok = await sendMessage(
       id,
       uid,
-      scope.userId || localStorage.getItem("userName") || "Anonymous",
+      scope.userId ||
+        localStorage.getItem("userName") ||
+        t("sprintnex.common.anonymous"),
       newMessage.trim(),
     );
     if (ok) {
@@ -334,10 +339,10 @@ export default function SprintnexJobDetailPage() {
         await loadJob();
       } else {
         const data = await res.json().catch(() => null);
-        setActionError(data?.message ?? "Failed to start execution.");
+        setActionError(data?.message ?? t("sprintnex.job.start_execution_failed"));
       }
     } catch {
-      setActionError("Network error.");
+      setActionError(t("sprintnex.common.network_error"));
     } finally {
       setActionLoading(null);
     }
@@ -357,10 +362,10 @@ export default function SprintnexJobDetailPage() {
         await loadJob();
       } else {
         const data = await res.json().catch(() => null);
-        setActionError(data?.message ?? "Failed to complete job.");
+        setActionError(data?.message ?? t("sprintnex.job.complete_failed"));
       }
     } catch {
-      setActionError("Network error.");
+      setActionError(t("sprintnex.common.network_error"));
     } finally {
       setActionLoading(null);
     }
@@ -380,10 +385,10 @@ export default function SprintnexJobDetailPage() {
         navigate("/sprintnex/jobs");
       } else {
         const data = await res.json().catch(() => null);
-        setActionError(data?.message ?? "Failed to cancel job.");
+        setActionError(data?.message ?? t("sprintnex.job.cancel_failed"));
       }
     } catch {
-      setActionError("Network error.");
+      setActionError(t("sprintnex.common.network_error"));
     } finally {
       setActionLoading(null);
     }
@@ -407,10 +412,10 @@ export default function SprintnexJobDetailPage() {
         await loadJob();
       } else {
         const data = await res.json().catch(() => null);
-        setActionError(data?.message ?? "Failed to file dispute.");
+        setActionError(data?.message ?? t("sprintnex.job.dispute_failed"));
       }
     } catch {
-      setActionError("Network error.");
+      setActionError(t("sprintnex.common.network_error"));
     } finally {
       setSubmittingDispute(false);
     }
@@ -437,10 +442,10 @@ export default function SprintnexJobDetailPage() {
         setRatingSubmitted(true);
       } else {
         const data = await res.json().catch(() => null);
-        setActionError(data?.message ?? "Failed to submit rating.");
+        setActionError(data?.message ?? t("sprintnex.job.rating_failed"));
       }
     } catch {
-      setActionError("Network error.");
+      setActionError(t("sprintnex.common.network_error"));
     } finally {
       setSubmittingRating(false);
     }
@@ -493,7 +498,9 @@ export default function SprintnexJobDetailPage() {
                 {job.title}
               </h1>
               <p className="text-xs text-dls-secondary">
-                {STATUS_LABELS[job.status] ?? job.status}
+                {STATUS_LABELS[job.status]
+                  ? t(STATUS_LABELS[job.status])
+                  : job.status}
                 {job.tier ? ` · ${job.tier}-Tier` : ""}
               </p>
             </div>
@@ -645,7 +652,7 @@ export default function SprintnexJobDetailPage() {
           className="flex min-h-0 flex-1 flex-col"
         >
           <TabsList className="shrink-0">
-            <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="details">{t("sprintnex.job.details")}</TabsTrigger>
             {showApplicants && (
               <TabsTrigger value="applicants">
                 Applicants
@@ -656,8 +663,12 @@ export default function SprintnexJobDetailPage() {
                 )}
               </TabsTrigger>
             )}
-            {showChat && <TabsTrigger value="chat">Chat</TabsTrigger>}
-            {showRating && <TabsTrigger value="rating">Rating</TabsTrigger>}
+          {showChat && (
+            <TabsTrigger value="chat">{t("sprintnex.job.chat")}</TabsTrigger>
+          )}
+          {showRating && (
+            <TabsTrigger value="rating">{t("sprintnex.job.rating")}</TabsTrigger>
+          )}
           </TabsList>
 
           <div className="min-h-0 flex-1 pt-2">
@@ -670,7 +681,9 @@ export default function SprintnexJobDetailPage() {
                     variant={job.status === "open" ? "default" : "secondary"}
                     className="text-[10px]"
                   >
-                    {STATUS_LABELS[job.status] ?? job.status}
+                    {STATUS_LABELS[job.status]
+                      ? t(STATUS_LABELS[job.status])
+                      : job.status}
                   </Badge>
                   <Badge
                     variant="outline"
@@ -691,7 +704,9 @@ export default function SprintnexJobDetailPage() {
                     <div className="flex items-center gap-1.5">
                       <DollarSign className="size-4 text-dls-secondary" />
                       <div>
-                        <p className="text-xs text-dls-secondary">Budget</p>
+                    <p className="text-xs text-dls-secondary">
+                      {t("sprintnex.job.budget")}
+                    </p>
                         <p className="text-sm font-semibold text-dls-text">
                           {job.budgetAmount?.toLocaleString() ?? "-"}{" "}
                           {job.budgetCurrency || ""}
@@ -712,7 +727,9 @@ export default function SprintnexJobDetailPage() {
                     <div className="flex items-center gap-1.5">
                       <User className="size-4 text-dls-secondary" />
                       <div>
-                        <p className="text-xs text-dls-secondary">Hours</p>
+                    <p className="text-xs text-dls-secondary">
+                      {t("sprintnex.job.hours")}
+                    </p>
                         <p className="text-sm font-semibold text-dls-text">
                           {job.estimatedHours ?? "-"}h
                         </p>
@@ -755,16 +772,16 @@ export default function SprintnexJobDetailPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <h3 className="text-xs font-medium text-dls-secondary uppercase tracking-wider">
-                      Posted by
+                      {t("sprintnex.job.posted_by")}
                     </h3>
                     <p className="text-sm text-dls-text">
-                      {job.posterName || "Unknown"}
+                      {job.posterName || t("common.unknown")}
                     </p>
                   </div>
                   {job.assigneeName && (
                     <div className="space-y-1">
                       <h3 className="text-xs font-medium text-dls-secondary uppercase tracking-wider">
-                        Assigned to
+                        {t("sprintnex.job.assigned_to")}
                       </h3>
                       <p className="text-sm text-dls-text">
                         {job.assigneeName}
@@ -783,7 +800,7 @@ export default function SprintnexJobDetailPage() {
               >
                 {applications.length === 0 ? (
                   <div className="flex items-center justify-center py-12 text-xs text-dls-secondary">
-                    No applications yet.
+                    {t("sprintnex.job.no_applications")}
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -793,7 +810,8 @@ export default function SprintnexJobDetailPage() {
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="text-sm font-medium text-dls-text">
-                                {app.applicantName || "Anonymous"}
+                                {app.applicantName ||
+                                  t("sprintnex.common.anonymous")}
                               </p>
                               {app.coverLetter && (
                                 <p className="mt-1 text-xs text-dls-secondary whitespace-pre-wrap">
@@ -801,8 +819,11 @@ export default function SprintnexJobDetailPage() {
                                 </p>
                               )}
                               <p className="mt-1 text-[10px] text-dls-muted">
-                                Applied{" "}
-                                {new Date(app.createdAt).toLocaleDateString()}
+                                {t("sprintnex.job.applied_date", {
+                                  date: new Date(
+                                    app.createdAt,
+                                  ).toLocaleDateString(),
+                                })}
                               </p>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0 ml-4">
@@ -815,7 +836,7 @@ export default function SprintnexJobDetailPage() {
                                 <ThumbsUp className="size-3" />{" "}
                                 {actionLoading === `approve-${app.id}`
                                   ? "..."
-                                  : "Approve"}
+                                  : t("sprintnex.action.approve")}
                               </Button>
                               <Button
                                 variant="outline"
@@ -824,7 +845,8 @@ export default function SprintnexJobDetailPage() {
                                 onClick={() => handleReject(app.id)}
                                 disabled={actionLoading === `reject-${app.id}`}
                               >
-                                <XCircle className="size-3" /> Reject
+                                <XCircle className="size-3" />{" "}
+                                {t("sprintnex.job.reject")}
                               </Button>
                             </div>
                           </div>
@@ -869,7 +891,8 @@ export default function SprintnexJobDetailPage() {
                                   : "text-dls-secondary"
                               }`}
                             >
-                              {msg.senderName || "Anonymous"}
+                              {msg.senderName ||
+                                t("sprintnex.common.anonymous")}
                             </p>
                             <p className="mt-0.5 text-sm whitespace-pre-wrap">
                               {msg.message}

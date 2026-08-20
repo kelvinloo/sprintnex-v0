@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n";
 import type { WorkspaceInfo } from "@/app/lib/desktop";
 import { workspaceLabel } from "@/react-app/shell/route-workspaces";
 import type {
@@ -32,15 +33,15 @@ import type {
 } from "./task-store";
 
 const priorityItems: { value: SprintnexTaskPriority; label: string }[] = [
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-  { value: "urgent", label: "Urgent" },
-  { value: "low", label: "Low" },
+  { value: "medium", label: t("sprintnex.priority.medium") },
+  { value: "high", label: t("sprintnex.priority.high") },
+  { value: "urgent", label: t("sprintnex.priority.urgent") },
+  { value: "low", label: t("sprintnex.priority.low") },
 ];
 
 const executionModeItems: { value: SprintnexTaskExecutionMode; label: string }[] = [
-  { value: "guided", label: "Guided" },
-  { value: "autonomous", label: "Autonomous" },
+  { value: "guided", label: t("sprintnex.execution.guided") },
+  { value: "autonomous", label: t("sprintnex.execution.autonomous") },
 ];
 
 type SprintnexTaskCreateModalProps = {
@@ -77,7 +78,10 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
   }, [props.initialPrompt, props.open]);
 
   const projectName = useMemo(
-    () => (props.workspace ? workspaceLabel(props.workspace) : "No project selected"),
+    () =>
+      props.workspace
+        ? workspaceLabel(props.workspace)
+        : t("sprintnex.task.no_project_selected"),
     [props.workspace],
   );
   const canSubmit = Boolean(props.workspace && title.trim() && !props.submitting);
@@ -102,7 +106,7 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
         <DialogHeader className="pr-8">
           <DialogTitle className="flex items-center gap-2">
             <ClipboardList className="size-4" />
-            Create Sprintnex task
+            {t("sprintnex.task.create_title")}
           </DialogTitle>
           <DialogDescription>
             {projectName}
@@ -111,30 +115,34 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="sprintnex-task-title">Task title</Label>
+            <Label htmlFor="sprintnex-task-title">
+              {t("sprintnex.task.title")}
+            </Label>
             <Input
               id="sprintnex-task-title"
               value={title}
               onChange={(event) => setTitle(event.currentTarget.value)}
-              placeholder="Implement customer onboarding flow"
+              placeholder={t("sprintnex.task.title_placeholder")}
               autoFocus
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="sprintnex-task-description">Description</Label>
+            <Label htmlFor="sprintnex-task-description">
+              {t("sprintnex.task.description")}
+            </Label>
             <Textarea
               id="sprintnex-task-description"
               value={description}
               onChange={(event) => setDescription(event.currentTarget.value)}
-              placeholder="What should the execution agent build, change, or verify?"
+              placeholder={t("sprintnex.task.description_placeholder")}
               className="min-h-28"
             />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="grid gap-2">
-              <Label>Priority</Label>
+              <Label>{t("sprintnex.task.priority")}</Label>
               <Select
                 value={priority}
                 items={priorityItems}
@@ -145,7 +153,7 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
                 </SelectTrigger>
                 <SelectContent align="start">
                   <SelectGroup>
-                    <SelectLabel>Priority</SelectLabel>
+                    <SelectLabel>{t("sprintnex.task.priority")}</SelectLabel>
                     {priorityItems.map((item) => (
                       <SelectItem key={item.value} value={item.value}>
                         {item.label}
@@ -157,7 +165,7 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
             </div>
 
             <div className="grid gap-2">
-              <Label>Execution mode</Label>
+              <Label>{t("sprintnex.task.execution_mode")}</Label>
               <Select
                 value={executionMode}
                 items={executionModeItems}
@@ -168,7 +176,9 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
                 </SelectTrigger>
                 <SelectContent align="start">
                   <SelectGroup>
-                    <SelectLabel>Execution mode</SelectLabel>
+                    <SelectLabel>
+                      {t("sprintnex.task.execution_mode")}
+                    </SelectLabel>
                     {executionModeItems.map((item) => (
                       <SelectItem key={item.value} value={item.value}>
                         {item.label}
@@ -181,23 +191,27 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="sprintnex-task-skills">Skills</Label>
+            <Label htmlFor="sprintnex-task-skills">
+              {t("sprintnex.task.skills")}
+            </Label>
             <Textarea
               id="sprintnex-task-skills"
               value={skills}
               onChange={(event) => setSkills(event.currentTarget.value)}
-              placeholder="React, auth flow, Playwright verification"
+              placeholder={t("sprintnex.task.skills_placeholder")}
               className="min-h-20"
             />
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="sprintnex-task-mcp-rules">MCP rules</Label>
+            <Label htmlFor="sprintnex-task-mcp-rules">
+              {t("sprintnex.task.mcp_rules")}
+            </Label>
             <Textarea
               id="sprintnex-task-mcp-rules"
               value={mcpRules}
               onChange={(event) => setMcpRules(event.currentTarget.value)}
-              placeholder="Use filesystem only. Ask before deployment. Do not touch billing routes."
+              placeholder={t("sprintnex.task.mcp_rules_placeholder")}
               className="min-h-20"
             />
           </div>
@@ -205,11 +219,11 @@ export function SprintnexTaskCreateModal(props: SprintnexTaskCreateModalProps) {
 
         <DialogFooter>
           <Button variant="outline" onClick={props.onClose} disabled={props.submitting}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button onClick={submit} disabled={!canSubmit}>
             {props.submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-            Create task
+            {t("sprintnex.action.create_task")}
           </Button>
         </DialogFooter>
       </DialogContent>

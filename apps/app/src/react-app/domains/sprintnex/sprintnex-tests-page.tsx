@@ -54,6 +54,7 @@ import { createClient } from "@/app/lib/opencode";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
 import { writeActiveWorkspaceId } from "@/react-app/shell/session-memory";
 import { ensureBrowserMcp, executeQaTask } from "@/app/lib/qa-agent";
+import { t } from "@/i18n";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import { McpUrlSelector } from "./mcp-url-manager";
 import { TargetUrlSelector } from "./target-url-manager";
@@ -396,7 +397,7 @@ Return ONLY valid JSON, no markdown, no explanation.`;
             <Input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Test plan name"
+              placeholder={t("sprintnex.form.test_plan_name")}
               className="h-8 text-xs"
               autoFocus
             />
@@ -413,10 +414,10 @@ Return ONLY valid JSON, no markdown, no explanation.`;
               }
               className="h-8 w-full rounded-md border border-dls-border bg-background px-2 text-xs text-foreground"
             >
-              <option value="functional">Functional</option>
-              <option value="regression">Regression</option>
-              <option value="smoke">Smoke</option>
-              <option value="e2e">End-to-End</option>
+              <option value="functional">{t("sprintnex.test.functional")}</option>
+              <option value="regression">{t("sprintnex.test.regression")}</option>
+              <option value="smoke">{t("sprintnex.test.smoke")}</option>
+              <option value="e2e">{t("sprintnex.test.e2e")}</option>
             </select>
             <div className="flex gap-2">
               <Button
@@ -455,7 +456,7 @@ Return ONLY valid JSON, no markdown, no explanation.`;
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search test plans..."
+          placeholder={t("sprintnex.test.search_plans")}
           className="h-8 pl-8 text-xs"
         />
       </div>
@@ -465,11 +466,13 @@ Return ONLY valid JSON, no markdown, no explanation.`;
         <div className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <FileText className="mx-auto size-8 text-dls-muted" />
-            <p className="mt-2 text-sm text-dls-secondary">No test plans yet</p>
+            <p className="mt-2 text-sm text-dls-secondary">
+              {t("sprintnex.test.no_plans")}
+            </p>
             <p className="text-xs text-dls-muted">
               {showCreate
-                ? "Fill in the form above to create your first plan"
-                : 'Click "New Plan" to get started'}
+                ? t("sprintnex.test.empty_create_hint")
+                : t("sprintnex.test.click_new_plan")}
             </p>
           </div>
         </div>
@@ -909,7 +912,7 @@ function ScenariosView() {
               value={createName}
               onChange={(e) => setCreateName(e.target.value)}
               className="h-7 w-full rounded border border-dls-border bg-background px-2 text-xs text-foreground"
-              placeholder="Scenario name"
+              placeholder={t("sprintnex.test.scenario_name")}
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleCreate();
@@ -980,20 +983,20 @@ function ScenariosView() {
                     value={editDesc}
                     onChange={(e) => setEditDesc(e.target.value)}
                     className="h-7 w-full rounded border border-dls-border bg-background px-2 text-xs text-foreground"
-                    placeholder="Description"
+                    placeholder={t("sprintnex.task.description")}
                   />
                   <div className="flex gap-1">
                     <button
                       onClick={saveEdit}
                       className="rounded bg-[#111827] px-2 py-0.5 text-[10px] text-white"
                     >
-                      Save
+                      {t("common.save")}
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
                       className="rounded px-2 py-0.5 text-[10px] text-dls-secondary"
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </button>
                   </div>
                 </div>
@@ -1009,7 +1012,9 @@ function ScenariosView() {
                       </p>
                     )}
                     <p className="text-[10px] text-dls-muted">
-                      {sc.steps.length} step{sc.steps.length !== 1 ? "s" : ""}
+                      {t("sprintnex.test.step_count", {
+                        count: sc.steps.length,
+                      })}
                     </p>
                   </div>
                   <div
@@ -1020,19 +1025,19 @@ function ScenariosView() {
                       onClick={() => startEdit(sc)}
                       className="rounded px-1.5 py-0.5 text-[10px] text-dls-secondary hover:text-dls-text"
                     >
-                      Edit
+                      {t("common.edit")}
                     </button>
                     <button
                       onClick={() => handleDuplicate(sc.id)}
                       className="rounded px-1.5 py-0.5 text-[10px] text-dls-secondary hover:text-dls-text"
                     >
-                      Dup
+                      {t("sprintnex.test.duplicate_short")}
                     </button>
                     <button
                       onClick={() => handleDelete(sc.id)}
                       className="rounded px-1.5 py-0.5 text-[10px] text-red-500 hover:text-red-600"
                     >
-                      Del
+                      {t("sprintnex.test.delete_short")}
                     </button>
                     <ChevronDown
                       className={`size-3 ml-1 text-dls-muted transition-transform ${expandedId === sc.id ? "rotate-0" : "-rotate-90"}`}
@@ -1047,7 +1052,7 @@ function ScenariosView() {
               <div className="border-t border-dls-border px-3 py-2 space-y-2">
                 {sc.steps.length === 0 ? (
                   <p className="py-1 text-center text-[10px] text-dls-secondary">
-                    No steps
+                    {t("sprintnex.test.no_steps")}
                   </p>
                 ) : (
                   <div className="space-y-1">
@@ -1064,7 +1069,7 @@ function ScenariosView() {
                                 setStepEditAction(e.target.value)
                               }
                               className="h-6 w-full rounded border border-dls-border bg-background px-1 text-[11px] text-foreground"
-                              placeholder="Action"
+                              placeholder={t("sprintnex.form.action")}
                             />
                             <input
                               value={stepEditExpected}
@@ -1072,7 +1077,7 @@ function ScenariosView() {
                                 setStepEditExpected(e.target.value)
                               }
                               className="h-6 w-full rounded border border-dls-border bg-background px-1 text-[11px] text-foreground"
-                              placeholder="Expected result"
+                              placeholder={t("sprintnex.common.expected_result")}
                             />
                             <div className="flex gap-1">
                               <button
@@ -1103,7 +1108,7 @@ function ScenariosView() {
                                     forceRefresh();
                                   }}
                                   className="text-dls-muted hover:text-dls-text"
-                                  title="Move up"
+                                  title={t("sprintnex.test.move_up")}
                                 >
                                   <ArrowUp className="size-2.5" />
                                 </button>
@@ -1119,7 +1124,7 @@ function ScenariosView() {
                                     forceRefresh();
                                   }}
                                   className="text-dls-muted hover:text-dls-text"
-                                  title="Move down"
+                                  title={t("sprintnex.test.move_down")}
                                 >
                                   <ArrowDown className="size-2.5" />
                                 </button>
@@ -1132,7 +1137,9 @@ function ScenariosView() {
                               <p className="text-dls-text">{step.action}</p>
                               {step.expectedResult && (
                                 <p className="text-dls-secondary">
-                                  <span className="font-medium">Expected:</span>{" "}
+                                  <span className="font-medium">
+                                    {t("sprintnex.common.expected")}
+                                  </span>{" "}
                                   {step.expectedResult}
                                 </p>
                               )}
@@ -1221,7 +1228,7 @@ export default function SprintnexTestsPage() {
     },
     {
       id: "scenarios",
-      label: "Scenarios",
+      label: t("sprintnex.tabs.scenarios"),
       icon: LayoutTemplate,
       onClick: () => setActiveTab("scenarios"),
     },
@@ -1237,7 +1244,9 @@ export default function SprintnexTestsPage() {
               <Bug size={16} />
             </div>
             <div>
-              <h1 className="text-base font-semibold text-dls-text">Tests</h1>
+              <h1 className="text-base font-semibold text-dls-text">
+                {t("sprintnex.tabs.tests")}
+              </h1>
               <p className="text-xs text-dls-secondary">
                 {activeTab === "chat"
                   ? "AI test plan assistant"

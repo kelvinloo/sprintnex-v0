@@ -33,6 +33,7 @@ import {
   DialogContent,
   DialogClose,
 } from "@/components/ui/dialog";
+import { pluralSuffix, t } from "@/i18n";
 import { AICOE_BASE } from "@/app/lib/api-config";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 
@@ -216,7 +217,7 @@ export default function SprintnexJobMarketplacePage() {
   const handleApply = async (jobId: string) => {
     if (!uid) return;
     const userName =
-      scope.userId || localStorage.getItem("userName") || "Anonymous";
+      scope.userId || localStorage.getItem("userName") || t("sprintnex.common.anonymous");
     setApplySubmitting(true);
     const ok = await applyToJob(jobId, uid, userName, coverLetter);
     if (ok) {
@@ -258,10 +259,13 @@ export default function SprintnexJobMarketplacePage() {
             </div>
             <div>
               <h1 className="text-base font-semibold text-dls-text">
-                Job Marketplace
+                {t("sprintnex.job.job_marketplace")}
               </h1>
               <p className="text-xs text-dls-secondary">
-                {filtered.length} open job{filtered.length !== 1 ? "s" : ""}
+                {t("sprintnex.job.open_jobs_count", {
+                  count: filtered.length,
+                  suffix: pluralSuffix("en", filtered.length),
+                })}
                 {scope.projectName ? ` · ${scope.projectName}` : ""}
               </p>
             </div>
@@ -282,7 +286,7 @@ export default function SprintnexJobMarketplacePage() {
               onClick={() => navigate("/session")}
             >
               <ArrowLeft className="size-4" />
-              Back
+              {t("common.back")}
             </Button>
           </div>
         </div>
@@ -293,21 +297,21 @@ export default function SprintnexJobMarketplacePage() {
             className="inline-flex h-7 items-center gap-1.5 rounded-md bg-dls-bg px-3 text-xs font-medium text-dls-text shadow-sm"
           >
             <Briefcase className="size-3.5" />
-            Pool
+            {t("sprintnex.job.pool")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/jobs/mine")}
           >
-            My Jobs
+            {t("sprintnex.job.my_jobs")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/jobs/post")}
           >
-            Post a Job
+            {t("sprintnex.job.post_a_job")}
           </button>
         </div>
       </div>
@@ -320,12 +324,12 @@ export default function SprintnexJobMarketplacePage() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search jobs..."
+              placeholder={t("sprintnex.job.search_placeholder")}
               className="h-7 w-[220px] pl-7 text-xs"
             />
           </div>
           <Button variant="ghost" size="sm" className="h-7" onClick={load}>
-            <RotateCw className="size-3.5" /> Refresh
+            <RotateCw className="size-3.5" /> {t("common.refresh")}
           </Button>
         </div>
       </div>
@@ -336,12 +340,12 @@ export default function SprintnexJobMarketplacePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Job</TableHead>
-                <TableHead className="w-20">Tier</TableHead>
-                <TableHead className="w-28">Budget</TableHead>
-                <TableHead className="w-20">Days</TableHead>
-                <TableHead className="w-28">Posted by</TableHead>
-                <TableHead className="w-28">Action</TableHead>
+                <TableHead>{t("sprintnex.job.job")}</TableHead>
+                <TableHead className="w-20">{t("sprintnex.common.tier")}</TableHead>
+                <TableHead className="w-28">{t("sprintnex.job.budget")}</TableHead>
+                <TableHead className="w-20">{t("sprintnex.common.days")}</TableHead>
+                <TableHead className="w-28">{t("sprintnex.job.posted_by")}</TableHead>
+                <TableHead className="w-28">{t("sprintnex.form.action")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -351,7 +355,7 @@ export default function SprintnexJobMarketplacePage() {
                     colSpan={6}
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
-                    Loading...
+                    {t("sprintnex.task.loading")}
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
@@ -360,7 +364,7 @@ export default function SprintnexJobMarketplacePage() {
                     colSpan={6}
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
-                    No open jobs found.
+                    {t("sprintnex.job.no_open_jobs")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -415,26 +419,29 @@ export default function SprintnexJobMarketplacePage() {
                       <TableCell className="text-xs text-dls-secondary">
                         <span className="flex items-center gap-1">
                           <User className="size-3" />
-                          {job.posterName || "Unknown"}
+                          {job.posterName || t("common.unknown")}
                         </span>
                       </TableCell>
                       <TableCell>
                         <div onClick={(e) => e.stopPropagation()}>
                           {isPoster ? (
                             <Badge variant="secondary" className="text-[10px]">
-                              Your job
+                              {t("sprintnex.job.your_job")}
                             </Badge>
                           ) : alreadyApplied ? (
-                            <Badge className="text-[10px]">Applied</Badge>
+                            <Badge className="text-[10px]">
+                              {t("sprintnex.job.applied")}
+                            </Badge>
                           ) : !meetsRating ? (
                             <div className="flex items-center gap-1 text-xs text-dls-secondary">
                               <Lock className="size-3 text-orange-500" />
                               <span>
-                                Requires{" "}
-                                {getTierInfo(job.tier)?.minimumRating.toFixed(
-                                  1,
-                                ) ?? "?"}{" "}
-                                rating
+                                {t("sprintnex.job.requires_rating", {
+                                  rating:
+                                    getTierInfo(job.tier)?.minimumRating.toFixed(
+                                      1,
+                                    ) ?? "?",
+                                })}
                               </span>
                             </div>
                           ) : (
@@ -455,14 +462,16 @@ export default function SprintnexJobMarketplacePage() {
                                   className="h-7 text-xs"
                                   type="button"
                                 >
-                                  Apply
+                                  {t("sprintnex.job.apply")}
                                 </Button>
                               </DialogTrigger>
                               <DialogContent className="sm:max-w-md">
                                 <div className="space-y-4">
                                   <div>
                                     <h2 className="text-base font-semibold text-dls-text">
-                                      Apply to "{job.title}"
+                                      {t("sprintnex.job.apply_to_title", {
+                                        title: job.title,
+                                      })}
                                     </h2>
                                     <p className="text-xs text-dls-secondary">
                                       {job.tier} ·{" "}
@@ -474,7 +483,7 @@ export default function SprintnexJobMarketplacePage() {
                                     <div className="flex flex-col items-center gap-2 py-6">
                                       <Send className="size-8 text-green-500" />
                                       <p className="text-sm font-medium text-dls-text">
-                                        Application sent!
+                                        {t("sprintnex.job.application_sent")}
                                       </p>
                                       <DialogClose>
                                         <Button
@@ -482,7 +491,7 @@ export default function SprintnexJobMarketplacePage() {
                                           size="sm"
                                           type="button"
                                         >
-                                          Close
+                                          {t("common.close")}
                                         </Button>
                                       </DialogClose>
                                     </div>
@@ -490,14 +499,14 @@ export default function SprintnexJobMarketplacePage() {
                                     <>
                                       <div className="space-y-1">
                                         <label className="text-xs font-medium text-dls-secondary">
-                                          Cover Letter (optional)
+                                          {t("sprintnex.job.cover_letter")}
                                         </label>
                                         <Textarea
                                           value={coverLetter}
                                           onChange={(e) =>
                                             setCoverLetter(e.target.value)
                                           }
-                                          placeholder="Tell the poster why you're a good fit..."
+                                          placeholder={t("sprintnex.job.cover_letter_placeholder")}
                                           rows={4}
                                         />
                                       </div>
@@ -508,7 +517,7 @@ export default function SprintnexJobMarketplacePage() {
                                             size="sm"
                                             type="button"
                                           >
-                                            Cancel
+                                            {t("common.cancel")}
                                           </Button>
                                         </DialogClose>
                                         <Button
@@ -517,8 +526,8 @@ export default function SprintnexJobMarketplacePage() {
                                           disabled={applySubmitting}
                                         >
                                           {applySubmitting
-                                            ? "Submitting..."
-                                            : "Submit Application"}
+                                            ? t("sprintnex.job.submitting")
+                                            : t("sprintnex.job.submit_application")}
                                         </Button>
                                       </div>
                                     </>

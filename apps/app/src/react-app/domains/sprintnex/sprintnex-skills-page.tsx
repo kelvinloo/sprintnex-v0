@@ -52,6 +52,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
+import { t } from "@/i18n";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 import { AICOE_BASE } from "@/app/lib/api-config";
 
@@ -242,9 +243,13 @@ export function SprintnexSkillsPage() {
               <Brain size={16} />
             </div>
             <div>
-              <h1 className="text-base font-semibold text-dls-text">Skills</h1>
+              <h1 className="text-base font-semibold text-dls-text">
+                {t("sprintnex.tabs.skills")}
+              </h1>
               <p className="text-xs text-dls-secondary">
-                {scope.projectName || scope.projectId || "No project selected"}
+                {scope.projectName ||
+                  scope.projectId ||
+                  t("sprintnex.task.no_project_selected")}
               </p>
             </div>
           </div>
@@ -253,7 +258,7 @@ export function SprintnexSkillsPage() {
             size="sm"
             onClick={() => navigate("/session")}
           >
-            <ArrowLeft className="size-4" /> Back
+            <ArrowLeft className="size-4" /> {t("common.back")}
           </Button>
         </div>
         <SprintnexTabBar activeTab="skills" />
@@ -271,7 +276,7 @@ export function SprintnexSkillsPage() {
             }`}
             onClick={() => setActiveTab("profile")}
           >
-            <Brain className="size-3.5" /> Profile
+            <Brain className="size-3.5" /> {t("sprintnex.skill.profile")}
           </button>
           <button
             type="button"
@@ -282,21 +287,21 @@ export function SprintnexSkillsPage() {
             }`}
             onClick={() => setActiveTab("extract")}
           >
-            <Sparkles className="size-3.5" /> Extract
+            <Sparkles className="size-3.5" /> {t("sprintnex.skill.extract")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/skills/marketplace")}
           >
-            <Download className="size-3.5" /> Marketplace
+            <Download className="size-3.5" /> {t("sprintnex.skill.marketplace")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/skills/active")}
           >
-            <CheckCircle className="size-3.5" /> Active
+            <CheckCircle className="size-3.5" /> {t("sprintnex.skill.active")}
           </button>
         </div>
       </div>
@@ -348,7 +353,7 @@ function ProfileTab() {
               name:
                 (item.skillName as string) ||
                 (item.name as string) ||
-                "Untitled Skill",
+                t("sprintnex.skill.untitled"),
               category: (item.category as string) || "",
               domain: (item.domain as string) || "",
               role: (item.role as string) || "",
@@ -516,7 +521,7 @@ function ProfileTab() {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search skills..."
+              placeholder={t("sprintnex.skill.search_placeholder")}
               className="h-7 w-[200px] pl-7 text-xs"
             />
           </div>
@@ -525,7 +530,9 @@ function ProfileTab() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all">All Categories</SelectItem>
+              <SelectItem value="__all">
+                {t("sprintnex.skill.all_categories")}
+              </SelectItem>
               {CATEGORIES.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
@@ -538,13 +545,25 @@ function ProfileTab() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all">All Statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="ai_extracted">AI Extracted</SelectItem>
-              <SelectItem value="pending_review">Pending Review</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="__all">
+                {t("sprintnex.status.all_statuses")}
+              </SelectItem>
+              <SelectItem value="draft">{t("sprintnex.status.draft")}</SelectItem>
+              <SelectItem value="ai_extracted">
+                {t("sprintnex.status.ai_extracted")}
+              </SelectItem>
+              <SelectItem value="pending_review">
+                {t("sprintnex.status.pending_review")}
+              </SelectItem>
+              <SelectItem value="approved">
+                {t("sprintnex.status.approved")}
+              </SelectItem>
+              <SelectItem value="published">
+                {t("sprintnex.status.published")}
+              </SelectItem>
+              <SelectItem value="rejected">
+                {t("sprintnex.status.rejected")}
+              </SelectItem>
             </SelectContent>
           </Select>
           <Separator orientation="vertical" className="h-5" />
@@ -555,7 +574,7 @@ function ProfileTab() {
             onClick={handleRefresh}
             disabled={refreshing}
           >
-            <RotateCw className="size-3.5" /> Fetch from n8n
+            <RotateCw className="size-3.5" /> {t("sprintnex.skill.fetch_from_n8n")}
           </Button>
           {selectedIds.size > 0 && (
             <Button
@@ -593,15 +612,31 @@ function ProfileTab() {
                     }
                   />
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-32">Category</TableHead>
-                <TableHead className="w-24">Confidence</TableHead>
-                <TableHead className="w-20">Exp.</TableHead>
-                <TableHead className="w-24">Source</TableHead>
-                <TableHead className="w-28">Status</TableHead>
-                <TableHead className="w-24">Published</TableHead>
-                <TableHead className="w-28">Updated</TableHead>
-                <TableHead className="w-20">Actions</TableHead>
+                <TableHead>{t("sprintnex.common.name")}</TableHead>
+                <TableHead className="w-32">
+                  {t("sprintnex.common.category")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.common.confidence")}
+                </TableHead>
+                <TableHead className="w-20">
+                  {t("sprintnex.skill.experience_abbrev")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.skill.source")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.common.status")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.skill.published")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.knowledge.updated")}
+                </TableHead>
+                <TableHead className="w-20">
+                  {t("sprintnex.knowledge.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -949,26 +984,34 @@ function InterviewPanel() {
       {extractedSkill && (
         <div className="shrink-0 border-t border-dls-border bg-dls-surface px-6 py-3">
           <h3 className="mb-2 text-xs font-semibold text-dls-text">
-            Extracted Skill
+            {t("sprintnex.skill.extracted_skill")}
           </h3>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
             <div>
-              <span className="text-dls-secondary">Name:</span>{" "}
+              <span className="text-dls-secondary">
+                {t("sprintnex.common.name")}:
+              </span>{" "}
               <span className="text-dls-text">{extractedSkill.name}</span>
             </div>
             <div>
-              <span className="text-dls-secondary">Category:</span>{" "}
+              <span className="text-dls-secondary">
+                {t("sprintnex.common.category")}:
+              </span>{" "}
               <span className="text-dls-text">{extractedSkill.category}</span>
             </div>
             <div>
-              <span className="text-dls-secondary">Confidence:</span>{" "}
+              <span className="text-dls-secondary">
+                {t("sprintnex.common.confidence")}:
+              </span>{" "}
               <span className="text-dls-text">
                 {extractedSkill.confidenceLevel} (
                 {Math.round((extractedSkill.confidenceScore || 0) * 100)}%)
               </span>
             </div>
             <div>
-              <span className="text-dls-secondary">Experience:</span>{" "}
+              <span className="text-dls-secondary">
+                {t("sprintnex.common.experience")}
+              </span>{" "}
               <span className="text-dls-text">
                 {extractedSkill.yearsOfExperience}y
               </span>
@@ -982,7 +1025,7 @@ function InterviewPanel() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={t("sprintnex.skill.message_placeholder")}
             className="h-8 text-sm"
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -1078,9 +1121,11 @@ function UploadPanel() {
         }}
       >
         <Upload className="size-8 text-dls-secondary" />
-        <p className="text-sm text-dls-text">Click or drag a document</p>
+        <p className="text-sm text-dls-text">
+          {t("sprintnex.knowledge.click_or_drag_document")}
+        </p>
         <p className="text-xs text-dls-secondary">
-          PDF, Word, Excel, Markdown, text, ZIP
+          {t("sprintnex.knowledge.file_types_hint")}
         </p>
         <input
           type="file"

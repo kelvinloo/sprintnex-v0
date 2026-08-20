@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { t } from "@/i18n";
 import { createScenario, getPlanScenarios } from "@/app/lib/scenario-store";
 import {
   useTestPlans,
@@ -62,20 +63,20 @@ export default function SprintnexTestPlansPage() {
   const testPlanTabs: TabDefinition[] = [
     {
       id: "plans",
-      label: "Plans",
+      label: t("sprintnex.tabs.plans"),
       icon: FileText,
       onClick: () => setActiveTab("plans"),
       count: plans.length,
     },
     {
       id: "templates",
-      label: "Templates",
+      label: t("sprintnex.tabs.templates"),
       icon: LayoutTemplate,
       onClick: () => setActiveTab("templates"),
     },
     {
       id: "reports",
-      label: "Reports",
+      label: t("sprintnex.tabs.reports"),
       icon: BarChart3,
       onClick: () => setActiveTab("reports"),
     },
@@ -211,7 +212,7 @@ Return ONLY valid JSON, no markdown, no explanation.`;
             steps?: { action: string; expectedResult: string }[];
           }) => {
             const sc = createScenario({
-              name: s.name || "Untitled",
+              name: s.name || t("sprintnex.common.untitled"),
               description: s.description || "",
               tags: s.tags || [],
               steps: (s.steps || []).map((step, j) => ({
@@ -287,20 +288,20 @@ Return ONLY valid JSON, no markdown, no explanation.`;
             {showCreate && (
               <div className="rounded-lg border border-dls-border bg-dls-surface p-4">
                 <h2 className="mb-3 text-sm font-semibold text-dls-text">
-                  Create Test Plan
+                  {t("sprintnex.test.create_plan")}
                 </h2>
                 <div className="space-y-3">
                   <Input
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Test plan name"
+                    placeholder={t("sprintnex.form.test_plan_name")}
                     className="h-8 text-xs"
                     autoFocus
                   />
                   <Input
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
-                    placeholder="Describe what this test plan covers..."
+                    placeholder={t("sprintnex.test.description_placeholder")}
                     className="h-8 text-xs"
                   />
                   <select
@@ -310,10 +311,10 @@ Return ONLY valid JSON, no markdown, no explanation.`;
                     }
                     className="h-8 w-full rounded-md border border-dls-border bg-background px-2 text-xs text-foreground"
                   >
-                    <option value="functional">Functional</option>
-                    <option value="regression">Regression</option>
-                    <option value="smoke">Smoke</option>
-                    <option value="e2e">End-to-End</option>
+                    <option value="functional">{t("sprintnex.test.functional")}</option>
+                    <option value="regression">{t("sprintnex.test.regression")}</option>
+                    <option value="smoke">{t("sprintnex.test.smoke")}</option>
+                    <option value="e2e">{t("sprintnex.test.e2e")}</option>
                   </select>
                   <div className="flex gap-2">
                     <Button
@@ -324,23 +325,24 @@ Return ONLY valid JSON, no markdown, no explanation.`;
                       {generating ? (
                         <>
                           <RotateCw className="size-3.5 animate-spin" />{" "}
-                          Generating...
+                          {t("sprintnex.test.generating")}
                         </>
                       ) : (
                         <>
-                          <Workflow className="size-3.5" /> Generate with AI
+                          <Workflow className="size-3.5" />{" "}
+                          {t("sprintnex.test.generate_with_ai")}
                         </>
                       )}
                     </Button>
                     <Button size="sm" variant="outline" onClick={handleCreate}>
-                      Create Empty
+                      {t("sprintnex.test.create_empty")}
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => setShowCreate(false)}
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                   </div>
                 </div>
@@ -443,10 +445,10 @@ Return ONLY valid JSON, no markdown, no explanation.`;
             <div className="text-center">
               <LayoutTemplate className="mx-auto size-8 text-dls-muted" />
               <p className="mt-2 text-sm text-dls-secondary">
-                Test Plan Templates
+                {t("sprintnex.test.templates")}
               </p>
               <p className="text-xs text-dls-muted">
-                Reusable templates for common test scenarios
+                {t("sprintnex.test.templates_hint")}
               </p>
             </div>
           </div>
@@ -456,9 +458,11 @@ Return ONLY valid JSON, no markdown, no explanation.`;
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
               <BarChart3 className="mx-auto size-8 text-dls-muted" />
-              <p className="mt-2 text-sm text-dls-secondary">Test Reports</p>
+              <p className="mt-2 text-sm text-dls-secondary">
+                {t("sprintnex.test.reports")}
+              </p>
               <p className="text-xs text-dls-muted">
-                Execution reports and analytics will appear here
+                {t("sprintnex.test.reports_hint")}
               </p>
             </div>
           </div>

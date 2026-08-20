@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Markdown } from "@/components/ui/markdown";
+import { t } from "@/i18n";
 
 interface KnowledgeRecord {
   id: string;
@@ -71,7 +72,7 @@ export function SprintnexKnowledgeDetailPage() {
         if (found) {
           setRecord({
             id: (found._id as string) || (found.id as string) || id,
-            name: (found.name as string) || "Untitled",
+            name: (found.name as string) || t("sprintnex.common.untitled"),
             fileName:
               (found.fileName as string) || (found.name as string) || "-",
             fileSize: (found.fileSize as number) || 0,
@@ -94,7 +95,7 @@ export function SprintnexKnowledgeDetailPage() {
     return (
       <div className="flex h-full min-h-0 flex-col bg-dls-bg">
         <div className="flex items-center justify-center py-20 text-sm text-dls-secondary">
-          Loading...
+          {t("sprintnex.task.loading")}
         </div>
       </div>
     );
@@ -104,7 +105,7 @@ export function SprintnexKnowledgeDetailPage() {
     return (
       <div className="flex h-full min-h-0 flex-col bg-dls-bg">
         <div className="flex items-center justify-center py-20 text-sm text-dls-secondary">
-          Knowledge not found.
+          {t("sprintnex.knowledge.not_found")}
         </div>
       </div>
     );
@@ -134,7 +135,7 @@ export function SprintnexKnowledgeDetailPage() {
             onClick={() => navigate("/sprintnex/knowledge")}
           >
             <ArrowLeft className="size-4" />
-            Back
+            {t("common.back")}
           </Button>
         </div>
       </div>
@@ -143,8 +144,12 @@ export function SprintnexKnowledgeDetailPage() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-4">
         <Tabs defaultValue="markdown" className="flex min-h-0 flex-1 flex-col">
           <TabsList>
-            <TabsTrigger value="markdown">Markdown View</TabsTrigger>
-            <TabsTrigger value="json">JSON View</TabsTrigger>
+            <TabsTrigger value="markdown">
+              {t("sprintnex.common.markdown_view")}
+            </TabsTrigger>
+            <TabsTrigger value="json">
+              {t("sprintnex.knowledge.json_view")}
+            </TabsTrigger>
           </TabsList>
           <div className="min-h-0 flex-1 pt-2">
             <TabsContent value="markdown" className="h-full overflow-y-auto">
@@ -153,7 +158,7 @@ export function SprintnexKnowledgeDetailPage() {
                   <Markdown>{record.markdown}</Markdown>
                 ) : (
                   <p className="text-sm text-dls-secondary">
-                    No markdown content available.
+                    {t("sprintnex.knowledge.no_markdown")}
                   </p>
                 )}
               </div>

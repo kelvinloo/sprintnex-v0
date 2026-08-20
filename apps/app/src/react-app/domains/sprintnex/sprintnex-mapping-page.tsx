@@ -4,6 +4,7 @@ import { KeyRound, Link as LinkIcon, Unlink, Workflow } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { t } from "@/i18n";
 import {
   Select,
   SelectContent,
@@ -87,7 +88,11 @@ export function SprintnexMappingPage() {
       }
       setWorkspaces(owWorkspaces);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load data");
+      setError(
+        err instanceof Error
+          ? err.message
+          : t("sprintnex.common.failed_to_load_data"),
+      );
     } finally {
       setLoading(false);
     }
@@ -118,14 +123,16 @@ export function SprintnexMappingPage() {
     const map = new Map<string, ProjectRow[]>();
     for (const row of rows) {
       const teamId = row.team?.id || row.project.teamSpaceId || "_ungrouped";
-      const teamName = row.team?.name || "Unknown team";
+      const teamName = row.team?.name || t("sprintnex.common.unknown_team");
       const existing = map.get(teamId) ?? [];
       existing.push(row);
       map.set(teamId, existing);
     }
     return Array.from(map.entries()).map(([teamId, teamRows]) => ({
       teamId,
-      teamName: teams.find((t) => t.id === teamId)?.name || "Unknown team",
+      teamName:
+        teams.find((t) => t.id === teamId)?.name ||
+        t("sprintnex.common.unknown_team"),
       rows: teamRows,
     }));
   }, [rows, teams]);
@@ -171,16 +178,16 @@ export function SprintnexMappingPage() {
             </div>
             <div>
               <h1 className="text-xl font-semibold text-dls-text">
-                Sprintnex settings
+                {t("sprintnex.mapping.settings_title")}
               </h1>
               <p className="mt-1 text-sm text-dls-secondary">
-                Configure project mappings and AI provider connections.
+                {t("sprintnex.mapping.configure_description")}
               </p>
             </div>
           </div>
         </div>
         <Button variant="outline" onClick={goToSession}>
-          Back to session
+          {t("sprintnex.mapping.back_to_session")}
         </Button>
       </div>
 
@@ -196,7 +203,7 @@ export function SprintnexMappingPage() {
           onClick={() => setActiveTab("mappings")}
         >
           <LinkIcon className="size-3.5" />
-          Mappings
+          {t("sprintnex.mapping.mappings")}
         </button>
         <button
           type="button"
@@ -204,7 +211,7 @@ export function SprintnexMappingPage() {
           onClick={() => navigate("/settings/ai")}
         >
           <KeyRound className="size-3.5" />
-          Providers
+          {t("sprintnex.mapping.providers")}
         </button>
       </div>
 
@@ -217,16 +224,16 @@ export function SprintnexMappingPage() {
       {loading ? (
         <div className="flex flex-1 items-center justify-center">
           <p className="text-sm text-dls-secondary">
-            Loading Sprintnex projects...
+            {t("sprintnex.mapping.loading_projects")}
           </p>
         </div>
       ) : grouped.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4">
           <p className="text-sm text-dls-secondary">
-            No Sprintnex projects found.
+            {t("sprintnex.mapping.no_projects")}
           </p>
           <p className="text-xs text-dls-tertiary">
-            Sign in and select a team in the sidebar to load projects.
+            {t("sprintnex.mapping.sign_in_hint")}
           </p>
         </div>
       ) : (
@@ -252,20 +259,22 @@ export function SprintnexMappingPage() {
                           {row.project.name}
                         </p>
                         <p className="mt-0.5 truncate text-xs text-dls-secondary">
-                          ID: {row.project.id}
+                          {t("sprintnex.mapping.id", { id: row.project.id })}
                         </p>
                         {isMapped ? (
                           <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border border-green-7/30 bg-green-2/40 px-2 py-0.5 text-xs text-green-11">
                             <LinkIcon className="size-3" />
-                            Workspace:{" "}
-                            {mappedWs?.displayName ||
-                              mappedWs?.name ||
-                              row.mappedWorkspaceId}
+                            {t("sprintnex.mapping.workspace", {
+                              name:
+                                mappedWs?.displayName ||
+                                mappedWs?.name ||
+                                row.mappedWorkspaceId,
+                            })}
                           </div>
                         ) : (
                           <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-md border border-dls-border bg-dls-bg px-2 py-0.5 text-xs text-dls-tertiary">
                             <Unlink className="size-3" />
-                            Not mapped
+                            {t("sprintnex.mapping.not_mapped")}
                           </div>
                         )}
                       </div>
@@ -277,14 +286,18 @@ export function SprintnexMappingPage() {
                           }}
                         >
                           <SelectTrigger className="w-56 rounded-lg">
-                            <SelectValue placeholder="Select workspace" />
+                            <SelectValue
+                              placeholder={t("sprintnex.form.select_workspace")}
+                            />
                           </SelectTrigger>
                           <SelectContent align="end">
                             <SelectGroup>
-                              <SelectLabel>Workspaces</SelectLabel>
+                              <SelectLabel>
+                                {t("sprintnex.common.workspaces")}
+                              </SelectLabel>
                               {workspaceOptions.length === 0 ? (
                                 <div className="px-2 py-4 text-center text-xs text-dls-tertiary">
-                                  No workspaces found. Create one first.
+                                  {t("sprintnex.mapping.no_workspaces")}
                                 </div>
                               ) : (
                                 workspaceOptions.map((ws) => {
@@ -311,7 +324,7 @@ export function SprintnexMappingPage() {
                             size="icon"
                             className="size-8 shrink-0 text-dls-tertiary hover:text-red-11"
                             onClick={() => handleUnmap(row.project.id)}
-                            aria-label="Unmap workspace"
+                            aria-label={t("sprintnex.action.unmap_workspace")}
                           >
                             <Unlink className="size-4" />
                           </Button>

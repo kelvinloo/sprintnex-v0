@@ -13,6 +13,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { t } from "@/i18n";
 import { AICOE_BASE } from "@/app/lib/api-config";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 
@@ -61,13 +62,13 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  open: "Open",
-  pending_approval: "Pending Approval",
-  assigned: "Assigned",
-  in_progress: "In Progress",
-  completed: "Completed",
-  cancelled: "Cancelled",
-  disputed: "Disputed",
+  open: "sprintnex.status.open",
+  pending_approval: "sprintnex.status.pending_approval",
+  assigned: "sprintnex.status.assigned",
+  in_progress: "sprintnex.status.in_progress",
+  completed: "sprintnex.status.completed",
+  cancelled: "sprintnex.status.cancelled",
+  disputed: "sprintnex.status.disputed",
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -233,7 +234,7 @@ export default function SprintnexMyJobsPage() {
       <div className="shrink-0 border-b border-dls-border px-6 py-2">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" className="h-7" onClick={load}>
-            <RotateCw className="size-3.5" /> Refresh
+            <RotateCw className="size-3.5" /> {t("common.refresh")}
           </Button>
         </div>
       </div>
@@ -244,12 +245,20 @@ export default function SprintnexMyJobsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Job</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="w-16">Tier</TableHead>
-                <TableHead className="w-24">Budget</TableHead>
+                <TableHead>{t("sprintnex.job.job")}</TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.common.status")}
+                </TableHead>
+                <TableHead className="w-16">
+                  {t("sprintnex.common.tier")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.job.budget")}
+                </TableHead>
                 <TableHead className="w-28">
-                  {activeTab === "posted" ? "Assignee" : "Posted by"}
+                  {activeTab === "posted"
+                    ? t("sprintnex.job.assignee")
+                    : t("sprintnex.job.posted_by")}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -260,7 +269,7 @@ export default function SprintnexMyJobsPage() {
                     colSpan={5}
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
-                    Loading...
+                    {t("sprintnex.task.loading")}
                   </TableCell>
                 </TableRow>
               ) : currentJobs.length === 0 ? (
@@ -270,8 +279,8 @@ export default function SprintnexMyJobsPage() {
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
                     {activeTab === "posted"
-                      ? "You haven't posted any jobs yet."
-                      : "No jobs assigned to you yet."}
+                      ? t("sprintnex.job.no_posted_jobs")
+                      : t("sprintnex.job.no_assigned_jobs")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -306,7 +315,9 @@ export default function SprintnexMyJobsPage() {
                           variant="outline"
                           className={`border-0 text-[10px] ${statusColor}`}
                         >
-                          {STATUS_LABELS[job.status] ?? job.status}
+                          {STATUS_LABELS[job.status]
+                            ? t(STATUS_LABELS[job.status])
+                            : job.status}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -326,8 +337,8 @@ export default function SprintnexMyJobsPage() {
                       </TableCell>
                       <TableCell className="text-xs text-dls-secondary">
                         {activeTab === "posted"
-                          ? job.assigneeName || "Unassigned"
-                          : job.posterName || "Unknown"}
+                          ? job.assigneeName || t("sprintnex.skill.unassigned")
+                          : job.posterName || t("common.unknown")}
                       </TableCell>
                     </TableRow>
                   );

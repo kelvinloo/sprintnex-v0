@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Check, X, Globe } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { t } from "@/i18n";
 import {
   useMcpUrls,
   useSelectedMcpUrl,
@@ -57,7 +58,7 @@ export function McpUrlSelector() {
     const entry = urls.find((u) => u.id === id);
     if (entry) {
       void registerBrowserMcpForWorkspace(entry.url).then(() => {
-        toast.success(`Browser MCP switched to ${entry.name}`);
+        toast.success(t("sprintnex.mcp.switched", { name: entry.name }));
       });
     }
   };
@@ -66,7 +67,7 @@ export function McpUrlSelector() {
     <>
       <div className="space-y-1">
         <label className="text-xs font-medium text-dls-text">
-          MCP Browser Server
+          {t("sprintnex.mcp.browser_server")}
         </label>
         <div className="flex gap-2">
           <select
@@ -76,7 +77,7 @@ export function McpUrlSelector() {
           >
             {urls.length === 0 && (
               <option value="" disabled>
-                No MCP servers configured
+                {t("sprintnex.mcp.no_servers")}
               </option>
             )}
             {urls.map((u) => (
@@ -129,7 +130,7 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
     // Auto-select the newly created URL so it reflects immediately
     selectMcpUrl(created.id);
     void registerBrowserMcpForWorkspace(created.url).then(() => {
-      toast.success(`Browser MCP switched to ${created.name}`);
+      toast.success(t("sprintnex.mcp.switched", { name: created.name }));
     });
     setNewName("");
     setNewUrl("");
@@ -140,7 +141,7 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
       <div className="w-full max-w-md rounded-xl border border-dls-border bg-dls-surface p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-dls-text">
-            MCP Server URLs
+            {t("sprintnex.mcp.server_urls")}
           </h2>
           <Button variant="ghost" size="icon-sm" onClick={onClose}>
             <X className="size-4" />
@@ -151,7 +152,7 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
         <div className="mb-4 max-h-48 space-y-2 overflow-auto">
           {urls.length === 0 && (
             <p className="py-4 text-center text-xs text-dls-muted">
-              No MCP servers configured. Add one below.
+              {t("sprintnex.mcp.no_servers_add_one")}
             </p>
           )}
           {urls.map((url) => (
@@ -165,13 +166,13 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     className="h-7 text-xs"
-                    placeholder="Name"
+                    placeholder={t("sprintnex.common.name")}
                   />
                   <Input
                     value={editUrl}
                     onChange={(e) => setEditUrl(e.target.value)}
                     className="h-7 text-xs"
-                    placeholder="URL"
+                    placeholder={t("sprintnex.common.url")}
                   />
                   <div className="flex gap-1">
                     <Button size="sm" className="h-6" onClick={handleSaveEdit}>
@@ -222,18 +223,18 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
         {/* Add new */}
         <div className="space-y-2 border-t border-dls-border pt-3">
           <h3 className="text-[11px] font-medium text-dls-secondary">
-            Add Server
+            {t("sprintnex.mcp.add_server")}
           </h3>
           <Input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            placeholder="Name (e.g. Production MCP)"
+            placeholder={t("sprintnex.form.mcp_name_placeholder")}
             className="h-7 text-xs"
           />
           <Input
             value={newUrl}
             onChange={(e) => setNewUrl(e.target.value)}
-            placeholder="URL (e.g. https://mcp.example.com)"
+            placeholder={t("sprintnex.form.mcp_url_placeholder")}
             className="h-7 text-xs"
           />
           <Button
@@ -243,7 +244,7 @@ function McpUrlManagerModal({ onClose }: { onClose: () => void }) {
             disabled={!newName.trim() || !newUrl.trim()}
           >
             <Plus className="size-3" />
-            Add Server
+            {t("sprintnex.action.add_server")}
           </Button>
         </div>
       </div>

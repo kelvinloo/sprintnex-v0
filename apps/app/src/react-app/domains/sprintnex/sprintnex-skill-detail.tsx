@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Markdown } from "@/components/ui/markdown";
 import { AICOE_BASE } from "@/app/lib/api-config";
+import { t } from "@/i18n";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 
 type SkillRow = {
@@ -107,7 +108,7 @@ export function SprintnexSkillDetailPage() {
             name:
               (found.skillName as string) ||
               (found.name as string) ||
-              "Untitled",
+              t("sprintnex.common.untitled"),
             category: (found.category as string) || "",
             domain: (found.domain as string) || "",
             role: (found.role as string) || "",
@@ -223,7 +224,9 @@ export function SprintnexSkillDetailPage() {
               ) : (
                 <Globe className="size-3.5" />
               )}
-              {published ? "Unpublish" : "Publish to Marketplace"}
+              {published
+                ? t("sprintnex.action.unpublish")
+                : t("sprintnex.action.publish_to_marketplace")}
             </Button>
             {canEdit && (
               <Button
@@ -231,7 +234,7 @@ export function SprintnexSkillDetailPage() {
                 size="sm"
                 onClick={() => navigate(`/sprintnex/skills/${skill.id}/edit`)}
               >
-                <Pencil className="size-3.5" /> Edit
+                <Pencil className="size-3.5" /> {t("common.edit")}
               </Button>
             )}
           </div>
@@ -242,8 +245,10 @@ export function SprintnexSkillDetailPage() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 py-4">
         <Tabs defaultValue="detail" className="flex min-h-0 flex-1 flex-col">
           <TabsList>
-            <TabsTrigger value="detail">Details</TabsTrigger>
-            <TabsTrigger value="markdown">Markdown</TabsTrigger>
+            <TabsTrigger value="detail">{t("sprintnex.skill.detail")}</TabsTrigger>
+            <TabsTrigger value="markdown">
+              {t("sprintnex.common.markdown")}
+            </TabsTrigger>
             <TabsTrigger value="json">JSON</TabsTrigger>
           </TabsList>
           <div className="min-h-0 flex-1 pt-2">
@@ -406,7 +411,7 @@ export function SprintnexSkillDetailPage() {
                 {JSON.stringify(
                   skill?.raw || {
                     noData: true,
-                    note: "Skill not loaded or missing raw data",
+                    note: t("sprintnex.skill.missing_raw_data"),
                   },
                   null,
                   2,

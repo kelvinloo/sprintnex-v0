@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { t } from "@/i18n";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 import { createClient } from "@/app/lib/opencode";
 import { resolveOpenworkConnection } from "@/react-app/shell/openwork-connection";
@@ -43,13 +44,13 @@ export default function SprintnexQaPage() {
   const qaTabs: TabDefinition[] = [
     {
       id: "manual",
-      label: "Manual",
+      label: t("sprintnex.qa.manual"),
       icon: Bug,
       onClick: () => setActiveTab("manual"),
     },
     {
       id: "sessions",
-      label: "Sessions",
+      label: t("sprintnex.qa.sessions"),
       icon: History,
       onClick: () => setActiveTab("sessions"),
     },
@@ -61,11 +62,11 @@ export default function SprintnexQaPage() {
 
   const handleRun = async () => {
     if (!targetUrl.trim()) {
-      setError("Target URL is required");
+      setError(t("sprintnex.qa.error_target_url_required"));
       return;
     }
     if (!testSteps.trim()) {
-      setError("Test steps are required");
+      setError(t("sprintnex.qa.error_test_steps_required"));
       return;
     }
 
@@ -73,25 +74,25 @@ export default function SprintnexQaPage() {
     setError("");
     setLogs([]);
     setSessionId(null);
-    addLog("Initializing QA agent...");
+    addLog(t("sprintnex.qa.initializing_agent"));
 
     try {
       // 1. Ensure MCP browser server is running
-      addLog("Checking MCP browser server...");
+      addLog(t("sprintnex.qa.checking_mcp"));
       await ensureBrowserMcp();
-      addLog("MCP browser server ready");
+      addLog(t("sprintnex.qa.mcp_ready"));
 
       // 2. Connect to OpenWork
-      addLog("Connecting to OpenWork...");
+      addLog(t("sprintnex.qa.connecting_openwork"));
       const { normalizedBaseUrl, resolvedToken } =
         await resolveOpenworkConnection();
       if (!normalizedBaseUrl || !resolvedToken) {
-        throw new Error("OpenWork server not connected");
+        throw new Error(t("sprintnex.qa.openwork_not_connected"));
       }
-      addLog("Connected to OpenWork");
+      addLog(t("sprintnex.qa.connected_openwork"));
 
       // 3. Create OpenCode session
-      addLog("Creating agent session...");
+      addLog(t("sprintnex.qa.creating_session"));
       const opencodeClient = createClient(
         `${normalizedBaseUrl}/workspace/${scope.projectId}/opencode`,
         undefined,
@@ -105,26 +106,26 @@ export default function SprintnexQaPage() {
       );
       const sid = created.id;
       setSessionId(sid);
-      addLog(`Session created: ${sid.slice(0, 8)}...`);
+      addLog(t("sprintnex.qa.session_created", { id: sid.slice(0, 8) }));
 
       // 4. Execute QA task
-      addLog("Sending test instructions to QA agent...");
+      addLog(t("sprintnex.qa.sending_instructions"));
       const result = await executeQaTask(sid, opencodeClient, {
         targetUrl: targetUrl.trim(),
         testSteps: testSteps.trim(),
       });
-      addLog("Test instructions sent to agent");
+      addLog(t("sprintnex.qa.log_instructions_sent"));
 
       if (result.error) {
-        addLog(`Error: ${result.error}`);
+        addLog(t("sprintnex.common.error_with_message", { message: result.error }));
         setError(result.error);
       } else {
-        addLog("QA agent is executing tests in the session...");
-        addLog("Navigate to the session to watch progress");
+        addLog(t("sprintnex.qa.executing_tests"));
+        addLog(t("sprintnex.qa.log_watch_progress"));
       }
     } catch (err) {
       const msg = String(err);
-      addLog(`Error: ${msg}`);
+      addLog(t("sprintnex.common.error_with_message", { message: msg }));
       setError(msg);
     } finally {
       setRunning(false);
@@ -270,7 +271,7 @@ export default function SprintnexQaPage() {
                           </span>
                           <span
                             className={
-                              log.text.startsWith("Error")
+                    log.text.startsWith(t("sprintnex.common.error"))
                                 ? "text-red-400"
                                 : "text-dls-text"
                             }

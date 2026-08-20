@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 import { AICOE_BASE } from "@/app/lib/api-config";
+import { t } from "@/i18n";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -83,7 +84,9 @@ async function fetchMarketplaceSkills(): Promise<MarketplaceSkill[]> {
             _id: (item._id as string) || "",
             id: (item._id as string) || (item.id as string) || "",
             name:
-              (item.skillName as string) || (item.name as string) || "Untitled",
+              (item.skillName as string) ||
+              (item.name as string) ||
+              t("sprintnex.common.untitled"),
             category: (item.category as string) || "",
             domain: (item.domain as string) || "",
             confidenceLevel:
@@ -258,7 +261,7 @@ export function SprintnexMarketplacePage() {
             />
           </div>
           <Button variant="ghost" size="sm" className="h-7" onClick={load}>
-            <RotateCw className="size-3.5" /> Refresh
+            <RotateCw className="size-3.5" /> {t("common.refresh")}
           </Button>
         </div>
       </div>
@@ -269,11 +272,19 @@ export function SprintnexMarketplacePage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-32">Category</TableHead>
-                <TableHead className="w-28">Confidence</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="w-24">Action</TableHead>
+                <TableHead>{t("sprintnex.common.name")}</TableHead>
+                <TableHead className="w-32">
+                  {t("sprintnex.common.category")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.common.confidence")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.common.status")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.form.action")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

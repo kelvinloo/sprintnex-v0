@@ -47,6 +47,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { t } from "@/i18n";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
 
@@ -186,7 +187,7 @@ export function SprintnexKnowledgePage() {
         setRecords(
           items.map((item: Record<string, unknown>, i: number) => ({
             id: (item._id as string) || `k-${i}`,
-            name: (item.name as string) || "Untitled",
+            name: (item.name as string) || t("sprintnex.common.untitled"),
             fileName: (item.fileName as string) || (item.name as string) || "-",
             fileSize: (item.fileSize as number) || 0,
             fileType: (item.fileType as string) || "text/markdown",
@@ -434,10 +435,12 @@ export function SprintnexKnowledgePage() {
             </div>
             <div>
               <h1 className="text-base font-semibold text-dls-text">
-                Knowledge Base
+                {t("sprintnex.knowledge.knowledge_base")}
               </h1>
               <p className="text-xs text-dls-secondary">
-                {scope.projectName || scope.projectId || "No project selected"}
+                {scope.projectName ||
+                  scope.projectId ||
+                  t("sprintnex.task.no_project_selected")}
                 {scope.teamName ? ` · ${scope.teamName}` : ""}
               </p>
             </div>
@@ -448,7 +451,7 @@ export function SprintnexKnowledgePage() {
             onClick={() => navigate("/session")}
           >
             <ArrowLeft className="size-4" />
-            Back
+              {t("common.back")}
           </Button>
         </div>
         <SprintnexTabBar activeTab="knowledge" />
@@ -466,10 +469,12 @@ export function SprintnexKnowledgePage() {
             }}
           >
             <SelectTrigger className="h-7 w-[180px] text-xs">
-              <SelectValue placeholder="Filter by group" />
+              <SelectValue placeholder={t("sprintnex.knowledge.filter_by_group")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all__">All Knowledge</SelectItem>
+              <SelectItem value="__all__">
+                {t("sprintnex.knowledge.all")}
+              </SelectItem>
               {groups.map((g) => (
                 <SelectItem key={g.id} value={g.id}>
                   {g.name} ({g.knowledgeIds.length})
@@ -486,19 +491,19 @@ export function SprintnexKnowledgePage() {
             onClick={() => setGroupManageOpen(true)}
           >
             <FolderOpen className="size-3.5" />
-            Groups
+            {t("sprintnex.knowledge.groups")}
           </Button>
           <Dialog open={groupManageOpen} onOpenChange={setGroupManageOpen}>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Manage Groups</DialogTitle>
+                <DialogTitle>{t("sprintnex.knowledge.manage_groups")}</DialogTitle>
               </DialogHeader>
               <div className="flex flex-col gap-3">
                 <div className="flex gap-2">
                   <Input
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
-                    placeholder="New group name"
+                    placeholder={t("sprintnex.knowledge.new_group_name")}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleCreateGroup();
                     }}
@@ -506,7 +511,7 @@ export function SprintnexKnowledgePage() {
                   />
                   <Button size="sm" className="h-8" onClick={handleCreateGroup}>
                     <FolderPlus className="size-3.5" />
-                    Create
+                    {t("common.create")}
                   </Button>
                 </div>
                 {groups.length === 0 ? (
@@ -637,12 +642,22 @@ export function SprintnexKnowledgePage() {
                     }}
                   />
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-24">Version</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="w-28">Size</TableHead>
-                <TableHead className="w-36">Updated</TableHead>
-                <TableHead className="w-28">Actions</TableHead>
+                <TableHead>{t("sprintnex.common.name")}</TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.knowledge.version")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.common.status")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.knowledge.size")}
+                </TableHead>
+                <TableHead className="w-36">
+                  {t("sprintnex.knowledge.updated")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.knowledge.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -652,7 +667,7 @@ export function SprintnexKnowledgePage() {
                     colSpan={7}
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
-                    Loading...
+                    {t("sprintnex.task.loading")}
                   </TableCell>
                 </TableRow>
               ) : displayRecords.length === 0 ? (
@@ -726,7 +741,7 @@ export function SprintnexKnowledgePage() {
                           variant="ghost"
                           size="icon-sm"
                           className="size-7"
-                          title="View"
+                          title={t("sprintnex.knowledge.view")}
                           onClick={() =>
                             navigate(`/sprintnex/knowledge/${record.id}`)
                           }
@@ -737,7 +752,7 @@ export function SprintnexKnowledgePage() {
                           variant="ghost"
                           size="icon-sm"
                           className="size-7"
-                          title="Rename"
+                          title={t("sprintnex.knowledge.rename")}
                           onClick={() => {
                             setRenameRecord(record);
                             setRenameDraft(record.name);
@@ -750,7 +765,7 @@ export function SprintnexKnowledgePage() {
                           variant="ghost"
                           size="icon-sm"
                           className="size-7 text-red-500 hover:text-red-600"
-                          title="Deactivate"
+                          title={t("sprintnex.skill.title_deactivate")}
                           onClick={() => handleDeactivate(record)}
                         >
                           <Trash2 className="size-3.5" />
@@ -771,13 +786,15 @@ export function SprintnexKnowledgePage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Knowledge</DialogTitle>
+            <DialogTitle>{t("sprintnex.knowledge.new_title")}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-dls-text">Name</label>
+              <label className="text-xs font-medium text-dls-text">
+                {t("sprintnex.common.name")}
+              </label>
               <Input
-                placeholder="e.g. Architecture Overview"
+                placeholder={t("sprintnex.knowledge.name_placeholder")}
                 value={createName}
                 onChange={(e) => setCreateName(e.target.value)}
                 className="h-8 text-sm"
@@ -785,7 +802,7 @@ export function SprintnexKnowledgePage() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-medium text-dls-text">
-                Document
+                {t("sprintnex.knowledge.document")}
               </label>
               <label
                 className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed border-dls-border bg-dls-surface p-6 text-center hover:border-blue-400"
@@ -818,10 +835,10 @@ export function SprintnexKnowledgePage() {
                 ) : (
                   <>
                     <p className="text-sm text-dls-text">
-                      Click or drag a document
+                      {t("sprintnex.knowledge.click_or_drag_document")}
                     </p>
                     <p className="text-xs text-dls-secondary">
-                      PDF, Word, Excel, Markdown, text, ZIP
+                      {t("sprintnex.knowledge.file_types_hint")}
                     </p>
                   </>
                 )}
@@ -839,14 +856,14 @@ export function SprintnexKnowledgePage() {
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button
               onClick={() => handleUpload("create")}
               disabled={uploading || !createName.trim() || !uploadFile}
             >
               <Upload className="size-3.5" />
-              Upload & Create
+              {t("sprintnex.knowledge.upload_create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -856,18 +873,18 @@ export function SprintnexKnowledgePage() {
       <Dialog open={renameOpen} onOpenChange={setRenameOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename Knowledge</DialogTitle>
+            <DialogTitle>{t("sprintnex.knowledge.rename_title")}</DialogTitle>
           </DialogHeader>
           <Input
             value={renameDraft}
             onChange={(e) => setRenameDraft(e.target.value)}
-            placeholder="New name"
+            placeholder={t("sprintnex.knowledge.new_name")}
             maxLength={200}
             className="h-8 text-sm"
           />
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline">{t("common.cancel")}</Button>
             </DialogClose>
             <Button onClick={handleRename} disabled={renameSaving}>
               Save

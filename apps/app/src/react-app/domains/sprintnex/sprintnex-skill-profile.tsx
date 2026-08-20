@@ -48,6 +48,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
+import { t } from "@/i18n";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 import { AICOE_BASE } from "@/app/lib/api-config";
 
@@ -66,10 +67,10 @@ const AI_COE_USAGE_OPTIONS = [
 ] as const;
 
 const CONFIDENCE_LEVELS = [
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "advanced", label: "Advanced" },
-  { value: "expert", label: "Expert" },
+  { value: "beginner", label: t("sprintnex.skill.level.beginner") },
+  { value: "intermediate", label: t("sprintnex.skill.level.intermediate") },
+  { value: "advanced", label: t("sprintnex.skill.level.advanced") },
+  { value: "expert", label: t("sprintnex.skill.level.expert") },
 ] as const;
 
 const CATEGORIES = [
@@ -130,9 +131,19 @@ function statusBadgeVariant(
 function statusLabel(status: string): string {
   switch (status) {
     case "ai_extracted":
-      return "AI Extracted";
+      return t("sprintnex.status.ai_extracted");
     case "pending_review":
-      return "Pending Review";
+      return t("sprintnex.status.pending_review");
+    case "draft":
+      return t("sprintnex.status.draft");
+    case "approved":
+      return t("sprintnex.status.approved");
+    case "published":
+      return t("sprintnex.status.published");
+    case "rejected":
+      return t("sprintnex.status.rejected");
+    case "deprecated":
+      return t("sprintnex.status.deprecated");
     default:
       return status.charAt(0).toUpperCase() + status.slice(1);
   }
@@ -146,13 +157,13 @@ function confidenceLabel(level: string): string {
 function sourceLabel(source: string): string {
   switch (source) {
     case "manual":
-      return "Manual";
+      return t("sprintnex.skill.source.manual");
     case "ai_interview":
-      return "AI Interview";
+      return t("sprintnex.skill.source.ai_interview");
     case "file_upload":
-      return "File Upload";
+      return t("sprintnex.skill.source.file_upload");
     case "repo_scan":
-      return "Repo Scan";
+      return t("sprintnex.skill.source.repo_scan");
     default:
       return source;
   }
@@ -606,10 +617,12 @@ export function SprintnexSkillProfilePage() {
           {/* Category filter */}
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
             <SelectTrigger className="h-7 w-[150px] text-xs">
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder={t("sprintnex.common.category")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all">All Categories</SelectItem>
+              <SelectItem value="__all">
+                {t("sprintnex.skill.all_categories")}
+              </SelectItem>
               {CATEGORIES.map((cat) => (
                 <SelectItem key={cat} value={cat}>
                   {cat}
@@ -621,17 +634,31 @@ export function SprintnexSkillProfilePage() {
           {/* Status filter */}
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="h-7 w-[140px] text-xs">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={t("sprintnex.common.status")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__all">All Statuses</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="ai_extracted">AI Extracted</SelectItem>
-              <SelectItem value="pending_review">Pending Review</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="published">Published</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="deprecated">Deprecated</SelectItem>
+              <SelectItem value="__all">
+                {t("sprintnex.status.all_statuses")}
+              </SelectItem>
+              <SelectItem value="draft">{t("sprintnex.status.draft")}</SelectItem>
+              <SelectItem value="ai_extracted">
+                {t("sprintnex.status.ai_extracted")}
+              </SelectItem>
+              <SelectItem value="pending_review">
+                {t("sprintnex.status.pending_review")}
+              </SelectItem>
+              <SelectItem value="approved">
+                {t("sprintnex.status.approved")}
+              </SelectItem>
+              <SelectItem value="published">
+                {t("sprintnex.status.published")}
+              </SelectItem>
+              <SelectItem value="rejected">
+                {t("sprintnex.status.rejected")}
+              </SelectItem>
+              <SelectItem value="deprecated">
+                {t("sprintnex.status.deprecated")}
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -697,15 +724,31 @@ export function SprintnexSkillProfilePage() {
                     }}
                   />
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-28">Category</TableHead>
-                <TableHead className="w-28">Domain</TableHead>
-                <TableHead className="w-24">Confidence</TableHead>
-                <TableHead className="w-20">Exp.</TableHead>
-                <TableHead className="w-20">Source</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="w-28">Updated</TableHead>
-                <TableHead className="w-28">Actions</TableHead>
+                <TableHead>{t("sprintnex.common.name")}</TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.common.category")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.common.domain_label")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.common.confidence")}
+                </TableHead>
+                <TableHead className="w-20">
+                  {t("sprintnex.skill.experience_abbrev")}
+                </TableHead>
+                <TableHead className="w-20">
+                  {t("sprintnex.skill.source")}
+                </TableHead>
+                <TableHead className="w-24">
+                  {t("sprintnex.common.status")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.knowledge.updated")}
+                </TableHead>
+                <TableHead className="w-28">
+                  {t("sprintnex.knowledge.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -715,7 +758,7 @@ export function SprintnexSkillProfilePage() {
                     colSpan={10}
                     className="py-12 text-center text-xs text-dls-secondary"
                   >
-                    Loading...
+                    {t("sprintnex.task.loading")}
                   </TableCell>
                 </TableRow>
               ) : filteredSkills.length === 0 ? (
@@ -817,7 +860,9 @@ export function SprintnexSkillProfilePage() {
                               <Eye className="size-3.5" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>View details</TooltipContent>
+                          <TooltipContent>
+                            {t("sprintnex.knowledge.view_details")}
+                          </TooltipContent>
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -830,7 +875,7 @@ export function SprintnexSkillProfilePage() {
                               <Pencil className="size-3.5" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Edit</TooltipContent>
+                          <TooltipContent>{t("common.edit")}</TooltipContent>
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -843,7 +888,9 @@ export function SprintnexSkillProfilePage() {
                               <Plus className="size-3.5" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Create revision</TooltipContent>
+                          <TooltipContent>
+                            {t("sprintnex.skill.create_revision")}
+                          </TooltipContent>
                         </Tooltip>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -856,7 +903,9 @@ export function SprintnexSkillProfilePage() {
                               <Send className="size-3.5" />
                             </Button>
                           </TooltipTrigger>
-                          <TooltipContent>Submit for review</TooltipContent>
+                          <TooltipContent>
+                            {t("sprintnex.skill.submit_for_review")}
+                          </TooltipContent>
                         </Tooltip>
                       </div>
                     </TableCell>
@@ -1150,7 +1199,9 @@ export function SprintnexSkillProfilePage() {
                     }
                   >
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue
+                        placeholder={t("sprintnex.common.category")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORIES.map((cat) => (
@@ -1204,7 +1255,9 @@ export function SprintnexSkillProfilePage() {
                     }
                   >
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder="Select level" />
+                      <SelectValue
+                        placeholder={t("sprintnex.skill.select_level")}
+                      />
                     </SelectTrigger>
                     <SelectContent>
                       {CONFIDENCE_LEVELS.map((cl) => (

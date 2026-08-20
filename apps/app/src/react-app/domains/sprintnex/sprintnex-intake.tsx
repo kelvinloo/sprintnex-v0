@@ -5,6 +5,7 @@ import { Loader2, MessageSquare, SendHorizonal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n";
 import {
   createSprintnexDepartmentSession,
   getSprintnexDepartmentSessionMessages,
@@ -308,7 +309,7 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
     const placeholderMsg: IntakeMessage = {
       id: placeholderId,
       role: "assistant",
-      text: "Processing intake",
+      text: t("sprintnex.intake.processing_intake"),
       createdAt: new Date().toISOString(),
       status: "processing",
     };
@@ -345,7 +346,12 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
     } catch (err) {
       replaceMessage(sid, placeholderId, {
         ...placeholderMsg,
-        text: `Error: ${err instanceof Error ? err.message : "Failed to send"}`,
+        text: t("sprintnex.common.error_with_message", {
+          message:
+            err instanceof Error
+              ? err.message
+              : t("sprintnex.common.failed_to_send"),
+        }),
         status: undefined,
       });
     } finally {
@@ -374,12 +380,18 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
             value={activeSessionId}
             onChange={(e) => setActiveSessionId(e.target.value)}
             disabled={loading}
-            aria-label="Intake session"
+            aria-label={t("sprintnex.intake.aria_session")}
           >
-            {allSessions.length === 0 && <option value="">No sessions</option>}
+            {allSessions.length === 0 && (
+              <option value="">{t("sprintnex.intake.no_sessions")}</option>
+            )}
             {allSessions.map((s) => (
               <option key={s.sessionId} value={s.sessionId}>
-                {s.name || `Session ${s.sessionId.slice(0, 8)}`} —{" "}
+                {s.name ||
+                  t("sprintnex.intake.session", {
+                    id: s.sessionId.slice(0, 8),
+                  })}{" "}
+                —{" "}
                 {new Date(s.createdAt).toLocaleDateString()}
               </option>
             ))}
@@ -390,7 +402,7 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
             onClick={() => void createNewSession()}
             disabled={loading}
           >
-            New Session
+            {t("sprintnex.intake.new_session")}
           </Button>
         </div>
       </div>
@@ -402,17 +414,16 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
         {loading ? (
           <div className="flex items-center justify-center py-8 text-sm text-dls-secondary">
             <Loader2 className="mr-2 size-4 animate-spin" />
-            Loading intake session...
+            {t("sprintnex.intake.loading_session")}
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <MessageSquare className="mb-3 size-8 text-dls-tertiary" />
             <p className="text-sm font-medium text-dls-text">
-              Engineering Intake
+              {t("sprintnex.intake.empty_title")}
             </p>
             <p className="mt-1 text-xs text-dls-secondary">
-              Describe what needs to be built. The system will generate a
-              delivery plan with tasks.
+              {t("sprintnex.intake.empty_description")}
             </p>
           </div>
         ) : (
@@ -427,10 +438,10 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
             >
               <div className="mb-1 text-xs font-medium text-dls-secondary">
                 {msg.role === "user"
-                  ? "You"
+                  ? t("sprintnex.intake.you")
                   : msg.status === "processing"
-                    ? "Processing..."
-                    : "Sprintnex"}
+                    ? t("sprintnex.intake.processing")
+                    : t("sprintnex.intake.sprintnex")}
               </div>
               <pre className="whitespace-pre-wrap font-sans leading-6 text-dls-text">
                 {msg.text}
@@ -442,7 +453,10 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
                       variant="outline"
                       className="border-green-7/30 bg-green-2/40 text-green-11"
                     >
-                      {(msg.planData.tasks as unknown[])?.length || 0} tasks
+                      {t("sprintnex.intake.task_count", {
+                        count:
+                          (msg.planData.tasks as unknown[])?.length || 0,
+                      })}
                     </Badge>
                     {msg.planData.deliveryPlan &&
                     typeof msg.planData.deliveryPlan === "object" &&
@@ -531,22 +545,22 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
                       {renderList(
                         msg.planData.requirement as Record<string, unknown>,
                         "userRequirements",
-                        "User Requirements",
+                        t("sprintnex.intake.user_requirements"),
                       )}
                       {renderList(
                         msg.planData.requirement as Record<string, unknown>,
                         "constraints",
-                        "Constraints",
+                        t("sprintnex.intake.constraints"),
                       )}
                       {renderList(
                         msg.planData.requirement as Record<string, unknown>,
                         "outOfScope",
-                        "Out of Scope",
+                        t("sprintnex.intake.out_of_scope"),
                       )}
                       {renderList(
                         msg.planData.requirement as Record<string, unknown>,
                         "assumptions",
-                        "Assumptions",
+                        t("sprintnex.intake.assumptions"),
                       )}
                     </div>
                   ) : null}
@@ -556,7 +570,9 @@ export function SprintnexIntake({ onTasksCreated }: SprintnexIntakeProps) {
                   Array.isArray(msg.planData.tasks) &&
                   msg.planData.tasks.length > 0 ? (
                     <div className="mt-3 space-y-3">
-                      <p className="text-xs font-medium text-green-11">Tasks</p>
+                      <p className="text-xs font-medium text-green-11">
+                        {t("sprintnex.intake.tasks")}
+                      </p>
                       {(msg.planData.tasks as Record<string, unknown>[]).map(
                         (task, ti) => (
                           <div

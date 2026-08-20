@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { t } from "@/i18n";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -352,7 +353,7 @@ export function SprintnexSkillExtractionPage() {
       setUploadedFiles((prev) =>
         prev.map((f) =>
           f.name === file.name
-            ? { ...f, status: "error", error: "Network error" }
+            ? { ...f, status: "error", error: t("sprintnex.common.network_error") }
             : f,
         ),
       );
@@ -671,7 +672,9 @@ export function SprintnexSkillExtractionPage() {
                       {/* Domain */}
                       {extractedSkill.domain && (
                         <div className="flex items-center gap-2 text-xs text-dls-secondary">
-                          <span className="font-medium">Domain:</span>
+                          <span className="font-medium">
+                            {t("sprintnex.common.domain")}
+                          </span>
                           <span>{extractedSkill.domain}</span>
                         </div>
                       )}
@@ -679,12 +682,16 @@ export function SprintnexSkillExtractionPage() {
                       {/* Confidence Level + Years */}
                       <div className="flex flex-wrap gap-3 text-xs text-dls-secondary">
                         <span>
-                          <span className="font-medium">Level:</span>{" "}
+                          <span className="font-medium">
+                            {t("sprintnex.common.level")}
+                          </span>{" "}
                           {extractedSkill.confidenceLevel}
                         </span>
                         <Separator orientation="vertical" className="h-3.5" />
                         <span>
-                          <span className="font-medium">Experience:</span>{" "}
+                          <span className="font-medium">
+                            {t("sprintnex.common.experience")}
+                          </span>{" "}
                           {extractedSkill.yearsOfExperience > 0
                             ? `${extractedSkill.yearsOfExperience} years`
                             : "Not specified"}
@@ -914,7 +921,7 @@ export function SprintnexSkillExtractionPage() {
                         )}
                         {file.status === "error" && (
                           <Badge variant="destructive" className="text-[10px]">
-                            {file.error || "Error"}
+                            {file.error || t("sprintnex.common.error")}
                           </Badge>
                         )}
                         <Button

@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { pluralSuffix, t } from "@/i18n";
 import { AICOE_BASE } from "@/app/lib/api-config";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 import { SprintnexTabBar } from "./sprintnex-tab-bar";
@@ -108,10 +109,13 @@ export function SprintnexActiveSkillsPage() {
             </div>
             <div>
               <h1 className="text-base font-semibold text-dls-text">
-                Active Skills
+                {t("sprintnex.skill.active_title")}
               </h1>
               <p className="text-xs text-dls-secondary">
-                {skills.length} skill{skills.length !== 1 ? "s" : ""} active
+                {t("sprintnex.skill.active_count", {
+                  count: skills.length,
+                  suffix: pluralSuffix("en", skills.length),
+                })}
                 {scope.projectName ? ` · ${scope.projectName}` : ""}
               </p>
             </div>
@@ -121,7 +125,7 @@ export function SprintnexActiveSkillsPage() {
             size="sm"
             onClick={() => navigate("/sprintnex/skills/marketplace")}
           >
-            Browse Marketplace
+            {t("sprintnex.skill.browse_marketplace")}
           </Button>
         </div>
         <SprintnexTabBar activeTab="skills" />
@@ -135,27 +139,27 @@ export function SprintnexActiveSkillsPage() {
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/skills")}
           >
-            <Brain className="size-3.5" /> Profile
+            <Brain className="size-3.5" /> {t("sprintnex.skill.profile")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/skills")}
           >
-            <Sparkles className="size-3.5" /> Extract
+            <Sparkles className="size-3.5" /> {t("sprintnex.skill.extract")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/skills/marketplace")}
           >
-            <Download className="size-3.5" /> Marketplace
+            <Download className="size-3.5" /> {t("sprintnex.skill.marketplace")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium bg-dls-bg text-dls-text shadow-sm transition-colors"
           >
-            <CheckCircle className="size-3.5" /> Active
+            <CheckCircle className="size-3.5" /> {t("sprintnex.skill.active")}
           </button>
         </div>
       </div>
@@ -163,20 +167,22 @@ export function SprintnexActiveSkillsPage() {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         {loading ? (
           <p className="py-12 text-center text-sm text-dls-secondary">
-            Loading...
+            {t("sprintnex.task.loading")}
           </p>
         ) : skills.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16">
             <Brain className="size-10 text-dls-secondary" />
-            <p className="text-sm text-dls-secondary">No active skills.</p>
+            <p className="text-sm text-dls-secondary">
+              {t("sprintnex.skill.no_active")}
+            </p>
             <p className="text-xs text-dls-secondary">
-              Browse the marketplace to add skills to your AI context.
+              {t("sprintnex.skill.browse_marketplace_hint")}
             </p>
             <Button
               size="sm"
               onClick={() => navigate("/sprintnex/skills/marketplace")}
             >
-              Browse Marketplace
+              {t("sprintnex.skill.browse_marketplace")}
             </Button>
           </div>
         ) : (
@@ -211,10 +217,11 @@ export function SprintnexActiveSkillsPage() {
                   <div className="mt-2 flex items-center gap-3 text-[10px] text-dls-secondary">
                     <span>v{s.snapshotVersion}</span>
                     <span>
-                      Updated{" "}
-                      {s.updatedAt
-                        ? new Date(s.updatedAt).toLocaleDateString()
-                        : "-"}
+                      {t("sprintnex.skill.updated", {
+                        date: s.updatedAt
+                          ? new Date(s.updatedAt).toLocaleDateString()
+                          : "-",
+                      })}
                     </span>
                   </div>
                 </div>
@@ -223,7 +230,7 @@ export function SprintnexActiveSkillsPage() {
                     variant="ghost"
                     size="icon-sm"
                     className="size-7 text-red-500 hover:text-red-600"
-                    title="Deactivate"
+                    title={t("sprintnex.skill.title_deactivate")}
                     onClick={() => handleDeactivate(s.skillId)}
                     disabled={removingId === s.skillId}
                   >

@@ -17,6 +17,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { t } from "@/i18n";
 import { AICOE_BASE } from "@/app/lib/api-config";
 import { readSprintnexAicoeScope } from "@/app/lib/sprintnex-aicoe-api";
 
@@ -68,10 +69,10 @@ const TIER_LABELS: Record<string, string> = {
 };
 
 const PRIORITY_OPTIONS = [
-  { value: "LOW", label: "Low" },
-  { value: "MEDIUM", label: "Medium" },
-  { value: "HIGH", label: "High" },
-  { value: "CRITICAL", label: "Critical" },
+  { value: "LOW", label: t("sprintnex.priority.low") },
+  { value: "MEDIUM", label: t("sprintnex.priority.medium") },
+  { value: "HIGH", label: t("sprintnex.priority.high") },
+  { value: "CRITICAL", label: t("sprintnex.priority.critical") },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -128,19 +129,19 @@ export default function SprintnexJobPostPage() {
 
   const handleSubmit = async () => {
     if (!uid) {
-      setError("You must be logged in to post a job.");
+      setError(t("sprintnex.job.error.login_required"));
       return;
     }
     if (!title.trim()) {
-      setError("Title is required.");
+      setError(t("sprintnex.form.title_required"));
       return;
     }
     if (!tier) {
-      setError("Please select a tier.");
+      setError(t("sprintnex.form.select_tier"));
       return;
     }
     if (!paymentDisclaimerAccepted) {
-      setError("You must accept the payment disclaimer before posting.");
+      setError(t("sprintnex.job.error.accept_payment_disclaimer"));
       return;
     }
 
@@ -165,7 +166,9 @@ export default function SprintnexJobPostPage() {
           budgetCurrency,
           tier,
           posterName:
-            scope.userId || localStorage.getItem("userName") || "Anonymous",
+            scope.userId ||
+            localStorage.getItem("userName") ||
+            t("sprintnex.common.anonymous"),
           paymentDisclaimer: paymentDisclaimerAccepted,
         }),
       });
@@ -174,10 +177,10 @@ export default function SprintnexJobPostPage() {
         navigate("/sprintnex/jobs");
       } else {
         const body = await res.json().catch(() => null);
-        setError(body?.message ?? "Failed to post job. Please try again.");
+        setError(body?.message ?? t("sprintnex.job.error.failed_post"));
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError(t("sprintnex.job.error.network_retry"));
     } finally {
       setSubmitting(false);
     }
@@ -194,10 +197,10 @@ export default function SprintnexJobPostPage() {
             </div>
             <div>
               <h1 className="text-base font-semibold text-dls-text">
-                Post a Job
+                {t("sprintnex.job.post_a_job")}
               </h1>
               <p className="text-xs text-dls-secondary">
-                Create a new job listing in the marketplace
+                {t("sprintnex.job.post_description")}
               </p>
             </div>
           </div>
@@ -207,7 +210,7 @@ export default function SprintnexJobPostPage() {
             onClick={() => navigate("/session")}
           >
             <ArrowLeft className="size-4" />
-            Back
+            {t("common.back")}
           </Button>
         </div>
         {/* Sub-nav: Pool / My Jobs / Post */}
@@ -218,20 +221,20 @@ export default function SprintnexJobPostPage() {
             onClick={() => navigate("/sprintnex/jobs")}
           >
             <Briefcase className="size-3.5" />
-            Pool
+            {t("sprintnex.job.pool")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md px-3 text-xs font-medium text-dls-secondary transition-colors hover:text-dls-text"
             onClick={() => navigate("/sprintnex/jobs/mine")}
           >
-            My Jobs
+            {t("sprintnex.job.my_jobs")}
           </button>
           <button
             type="button"
             className="inline-flex h-7 items-center gap-1.5 rounded-md bg-dls-bg px-3 text-xs font-medium text-dls-text shadow-sm"
           >
-            Post a Job
+            {t("sprintnex.job.post_a_job")}
           </button>
         </div>
       </div>
@@ -249,12 +252,12 @@ export default function SprintnexJobPostPage() {
           {/* Title */}
           <div className="space-y-1">
             <Label className="text-xs font-medium text-dls-text">
-              Job Title *
+              {t("sprintnex.job.field.title_required")}
             </Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Build a React dashboard with real-time charts"
+              placeholder={t("sprintnex.job.placeholder.title")}
               className="h-8 text-sm"
             />
           </div>
@@ -262,12 +265,12 @@ export default function SprintnexJobPostPage() {
           {/* Description */}
           <div className="space-y-1">
             <Label className="text-xs font-medium text-dls-text">
-              Description
+              {t("sprintnex.job.field.description")}
             </Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the work, deliverables, and expectations..."
+              placeholder={t("sprintnex.job.placeholder.description")}
               rows={5}
             />
           </div>
@@ -276,7 +279,7 @@ export default function SprintnexJobPostPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label className="text-xs font-medium text-dls-text">
-                Priority
+                {t("sprintnex.task.priority")}
               </Label>
               <Select
                 value={priority}
@@ -297,11 +300,11 @@ export default function SprintnexJobPostPage() {
 
             <div className="space-y-1">
               <Label className="text-xs font-medium text-dls-text">
-                Tier *
+                {t("sprintnex.job.field.tier_required")}
               </Label>
               <Select value={tier} onValueChange={(v) => setTier(v ?? "")}>
                 <SelectTrigger className="h-8 w-full text-xs">
-                  <SelectValue placeholder="Select tier" />
+                  <SelectValue placeholder={t("sprintnex.job.placeholder.select_tier")} />
                 </SelectTrigger>
                 <SelectContent>
                   {tiers.map((t) => (
@@ -329,13 +332,13 @@ export default function SprintnexJobPostPage() {
                 </p>
                 <div className="flex gap-4 text-xs">
                   <span className="text-dls-secondary">
-                    Min budget:{" "}
+                    {t("sprintnex.job.min_budget")}{" "}
                     <strong className="text-dls-text">
                       ${selectedTierInfo.minimumBudget.toLocaleString()}
                     </strong>
                   </span>
                   <span className="text-dls-secondary">
-                    Min rating:{" "}
+                    {t("sprintnex.job.min_rating")}{" "}
                     <strong className="text-dls-text">
                       {selectedTierInfo.minimumRating.toFixed(1)}
                     </strong>
@@ -348,14 +351,14 @@ export default function SprintnexJobPostPage() {
           {/* Required Skills */}
           <div className="space-y-1">
             <Label className="text-xs font-medium text-dls-text">
-              Required Skills
+              {t("sprintnex.job.field.required_skills")}
             </Label>
             <div className="flex items-center gap-2">
               <Input
                 value={skillInput}
                 onChange={(e) => setSkillInput(e.target.value)}
                 onKeyDown={handleSkillKeyDown}
-                placeholder="Type a skill and press Enter..."
+                placeholder={t("sprintnex.job.placeholder.required_skill")}
                 className="h-8 flex-1 text-xs"
               />
               <Button
@@ -394,27 +397,27 @@ export default function SprintnexJobPostPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label className="text-xs font-medium text-dls-text">
-                Estimated Hours
+                {t("sprintnex.job.field.estimated_hours")}
               </Label>
               <Input
                 type="number"
                 min={0}
                 value={estimatedHours}
                 onChange={(e) => setEstimatedHours(e.target.value)}
-                placeholder="e.g. 40"
+                placeholder={t("sprintnex.job.placeholder.hours")}
                 className="h-8 text-xs"
               />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-medium text-dls-text">
-                Estimated Completion (days)
+                {t("sprintnex.job.field.estimated_completion_days")}
               </Label>
               <Input
                 type="number"
                 min={0}
                 value={estimatedCompletionDays}
                 onChange={(e) => setEstimatedCompletionDays(e.target.value)}
-                placeholder="e.g. 14"
+                placeholder={t("sprintnex.job.placeholder.completion_days")}
                 className="h-8 text-xs"
               />
             </div>
@@ -424,20 +427,20 @@ export default function SprintnexJobPostPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label className="text-xs font-medium text-dls-text">
-                Budget Amount
+                {t("sprintnex.job.field.budget_amount")}
               </Label>
               <Input
                 type="number"
                 min={0}
                 value={budgetAmount}
                 onChange={(e) => setBudgetAmount(e.target.value)}
-                placeholder="e.g. 5000"
+                placeholder={t("sprintnex.job.placeholder.budget")}
                 className="h-8 text-xs"
               />
             </div>
             <div className="space-y-1">
               <Label className="text-xs font-medium text-dls-text">
-                Currency
+                {t("sprintnex.job.field.currency")}
               </Label>
               <Select
                 value={budgetCurrency}
@@ -469,13 +472,10 @@ export default function SprintnexJobPostPage() {
             />
             <div className="space-y-0.5">
               <Label className="text-xs font-medium text-dls-text cursor-pointer">
-                Payment Disclaimer *
+                {t("sprintnex.job.field.payment_disclaimer")}
               </Label>
               <p className="text-xs text-dls-secondary leading-relaxed">
-                I understand that payment is handled directly between parties
-                outside of this platform. This marketplace facilitates
-                connections but does not handle transactions, escrow, or payment
-                processing.
+                {t("sprintnex.job.payment_disclaimer_body")}
               </p>
             </div>
           </div>
@@ -487,10 +487,10 @@ export default function SprintnexJobPostPage() {
               size="sm"
               onClick={() => navigate("/sprintnex/jobs")}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button size="sm" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Posting..." : "Post Job"}
+              {submitting ? t("sprintnex.job.posting") : t("sprintnex.job.post_job")}
             </Button>
           </div>
         </div>

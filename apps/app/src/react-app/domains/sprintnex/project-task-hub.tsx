@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { t } from "@/i18n";
 import {
   SprintnexAicoeTaskStatus,
   bulkUpdateSprintnexTaskStatus,
@@ -51,24 +52,24 @@ type ProjectTaskHubProps = {
 };
 
 const STATUS_TABS = [
-  { key: "", label: "All" },
-  { key: SprintnexAicoeTaskStatus.APPROVED, label: "Approved" },
-  { key: SprintnexAicoeTaskStatus.IN_PROGRESS, label: "In Progress" },
-  { key: SprintnexAicoeTaskStatus.BLOCKED, label: "Blocked" },
-  { key: SprintnexAicoeTaskStatus.ON_HOLD, label: "On Hold" },
-  { key: SprintnexAicoeTaskStatus.FAILED, label: "Failed" },
-  { key: SprintnexAicoeTaskStatus.CANCELLED, label: "Cancelled" },
-  { key: SprintnexAicoeTaskStatus.COMPLETED, label: "Done" },
+  { key: "", labelKey: "sprintnex.status.all" },
+  { key: SprintnexAicoeTaskStatus.APPROVED, labelKey: "sprintnex.status.approved" },
+  { key: SprintnexAicoeTaskStatus.IN_PROGRESS, labelKey: "sprintnex.status.in_progress" },
+  { key: SprintnexAicoeTaskStatus.BLOCKED, labelKey: "sprintnex.status.blocked" },
+  { key: SprintnexAicoeTaskStatus.ON_HOLD, labelKey: "sprintnex.status.on_hold" },
+  { key: SprintnexAicoeTaskStatus.FAILED, labelKey: "sprintnex.status.failed" },
+  { key: SprintnexAicoeTaskStatus.CANCELLED, labelKey: "sprintnex.status.cancelled" },
+  { key: SprintnexAicoeTaskStatus.COMPLETED, labelKey: "sprintnex.status.done" },
 ] as const;
 
 const STATUS_LABELS: Record<SprintnexAicoeTaskStatus, string> = {
-  APPROVED: "Approved",
-  IN_PROGRESS: "In Progress",
-  COMPLETED: "Done",
-  BLOCKED: "Blocked",
-  ON_HOLD: "On Hold",
-  FAILED: "Failed",
-  CANCELLED: "Cancelled",
+  APPROVED: "sprintnex.status.approved",
+  IN_PROGRESS: "sprintnex.status.in_progress",
+  COMPLETED: "sprintnex.status.done",
+  BLOCKED: "sprintnex.status.blocked",
+  ON_HOLD: "sprintnex.status.on_hold",
+  FAILED: "sprintnex.status.failed",
+  CANCELLED: "sprintnex.status.cancelled",
 };
 
 const STATUS_CLASSES: Record<SprintnexAicoeTaskStatus, string> = {
@@ -172,7 +173,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
     selectedProjectName ||
     props.workspace?.displayName ||
     props.workspace?.name ||
-    "Selected project";
+    t("sprintnex.form.select_workspace");
   const missingScopeFields = useMemo(
     () =>
       [
@@ -266,7 +267,9 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
         } catch (err) {
           if (!cancelled)
             setError(
-              err instanceof Error ? err.message : "Failed to load tasks",
+              err instanceof Error
+                ? err.message
+                : t("sprintnex.common.failed_to_load_tasks"),
             );
         } finally {
           if (!cancelled) setLoading(false);
@@ -276,7 +279,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
           setError(
             err instanceof Error
               ? err.message
-              : "Failed to load project context",
+              : t("sprintnex.common.failed_to_load_project_context"),
           );
       }
     };
@@ -330,7 +333,11 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
       setTotalTasks(result.total);
       setSelectedIdx(result.tasks.length ? 0 : -1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load tasks");
+      setError(
+        err instanceof Error
+          ? err.message
+          : t("sprintnex.common.failed_to_load_tasks"),
+      );
     } finally {
       setLoading(false);
     }
@@ -466,7 +473,9 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
       pollTaskExecution(selected.taskId);
       await props.onOpenExecutionSession(selected);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Start failed");
+      setError(
+        err instanceof Error ? err.message : t("sprintnex.common.start_failed"),
+      );
     } finally {
       setActionBusy(false);
     }
@@ -484,7 +493,11 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
       await updateSprintnexTaskStatus(selected.taskId, status);
       await fetchTasks();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Status update failed");
+      setError(
+        err instanceof Error
+          ? err.message
+          : t("sprintnex.common.status_update_failed"),
+      );
     } finally {
       setActionBusy(false);
     }
@@ -500,7 +513,11 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
       setSelectedIds(new Set());
       await fetchTasks();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bulk update failed");
+      setError(
+        err instanceof Error
+          ? err.message
+          : t("sprintnex.common.bulk_update_failed"),
+      );
     } finally {
       setActionBusy(false);
     }
@@ -524,14 +541,22 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium uppercase tracking-normal text-dls-secondary">
-              Project workspace
+              {t("sprintnex.task.project_workspace")}
             </p>
             <h1 className="mt-1 text-xl font-semibold text-dls-text">
               {workspaceLabel}
             </h1>
             <p className="mt-1 text-xs text-dls-secondary">
-              Team {selectedTeamName || scope.teamId || "not selected"} ·
-              Project {selectedProjectName || scope.projectId || "not selected"}
+              {t("sprintnex.task.project_context", {
+                team:
+                  selectedTeamName ||
+                  scope.teamId ||
+                  t("sprintnex.task.not_selected"),
+                project:
+                  selectedProjectName ||
+                  scope.projectId ||
+                  t("sprintnex.task.not_selected"),
+              })}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -543,7 +568,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                 onClick={() => props.onNewChat?.()}
               >
                 <MessageSquare className="size-4" />
-                New Chat
+                {t("sprintnex.tabs.chat")}
               </Button>
             ) : null}
             <Button
@@ -553,14 +578,14 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
               onClick={() => downloadJson(tasks, "tasks.json")}
             >
               <Download className="size-4" />
-              Export
+              {t("common.export")}
             </Button>
           </div>
         </div>
         <div className="mt-4">
           <span className="inline-flex items-center gap-2 text-sm font-medium text-dls-text">
             <ListChecks className="size-4" />
-            Tasks
+            {t("sprintnex.tabs.tasks")}
             <Badge variant="outline" className="h-4 px-1.5 text-[10px]">
               {tasks.length}
             </Badge>
@@ -581,7 +606,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Filter tasks..."
+              placeholder={t("sprintnex.task.filter_placeholder")}
               className="pl-9"
             />
           </div>
@@ -590,7 +615,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
             value={roleFilter}
             onChange={(event) => setRoleFilter(event.target.value)}
           >
-            <option value="">All roles</option>
+            <option value="">{t("sprintnex.task.all_roles")}</option>
             {roles.map((role) => (
               <option key={role} value={role}>
                 {role}
@@ -602,7 +627,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
             value={priorityFilter}
             onChange={(event) => setPriorityFilter(event.target.value)}
           >
-            <option value="">All priorities</option>
+            <option value="">{t("sprintnex.task.all_priorities")}</option>
             {priorities.map((priority) => (
               <option key={priority} value={priority}>
                 {priority}
@@ -616,7 +641,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
             disabled={loading}
           >
             <RefreshCw className="size-4" />
-            Refresh
+            {t("common.refresh")}
           </Button>
         </div>
 
@@ -631,7 +656,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                 setSelectedIdx(0);
               }}
             >
-              {tab.label}
+              {t(tab.labelKey)}
               <span className="text-xs opacity-75">{counts[tab.key] ?? 0}</span>
             </button>
           ))}
@@ -660,11 +685,17 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                 }
               >
                 {selectedIds.size
-                  ? `${selectedIds.size} selected`
-                  : "Select tasks"}
+                  ? t("sprintnex.task.selected_count", {
+                      count: selectedIds.size,
+                    })
+                  : t("sprintnex.task.select_tasks")}
               </button>
               <span>
-                {loading ? "Loading..." : `${filtered.length} visible`}
+                {loading
+                  ? t("sprintnex.task.loading")
+                  : t("sprintnex.task.visible_count", {
+                      count: filtered.length,
+                    })}
               </span>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
@@ -692,11 +723,11 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                             variant="outline"
                             className={STATUS_CLASSES[task.status]}
                           >
-                            {STATUS_LABELS[task.status]}
+                            {t(STATUS_LABELS[task.status])}
                           </Badge>
                         </div>
                         <p className="mt-1 line-clamp-2 text-xs leading-5 text-dls-secondary">
-                          {task.description || "No description"}
+                          {task.description || t("sprintnex.task.no_description")}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-dls-tertiary">
                           <span>#{shortId(task.taskId)}</span>
@@ -712,7 +743,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                 ))
               ) : (
                 <div className="p-6 text-sm text-dls-secondary">
-                  No tasks in this scope.
+                  {t("sprintnex.task.no_tasks_in_scope")}
                 </div>
               )}
             </div>
@@ -725,7 +756,10 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                   onClick={() => void loadMoreTasks()}
                   disabled={loadingMore}
                 >
-                  Load More ({tasks.length} of {totalTasks} tasks)
+                  {t("sprintnex.task.load_more", {
+                    loaded: tasks.length,
+                    total: totalTasks,
+                  })}
                 </Button>
               </div>
             ) : null}
@@ -740,13 +774,16 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                       variant="outline"
                       className={STATUS_CLASSES[selected.status]}
                     >
-                      {STATUS_LABELS[selected.status]}
+                      {t(STATUS_LABELS[selected.status])}
                     </Badge>
                     <h2 className="mt-3 text-lg font-semibold text-dls-text">
                       {selected.title}
                     </h2>
                     <p className="mt-1 text-xs text-dls-secondary">
-                      Task {shortId(selected.taskId)} · {selected.role}
+                      {t("sprintnex.task.task_id", {
+                        id: shortId(selected.taskId),
+                      })}{" "}
+                      · {selected.role}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -780,16 +817,18 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                       disabled={actionBusy || props.busy}
                     >
                       <PlayCircle className="size-4" />
-                      Start
+                      {t("sprintnex.action.start")}
                     </Button>
                   </div>
                 </div>
                 <p className="whitespace-pre-wrap text-sm leading-6 text-dls-secondary">
-                  {selected.description || "No description"}
+                  {selected.description || t("sprintnex.task.no_description")}
                 </p>
                 <div className="grid gap-3 text-sm sm:grid-cols-3">
                   <div className="rounded-lg border border-dls-border bg-dls-bg p-3">
-                    <p className="text-xs text-dls-secondary">Priority</p>
+                    <p className="text-xs text-dls-secondary">
+                      {t("sprintnex.task.priority")}
+                    </p>
                     <p
                       className={`mt-1 font-medium ${PRIORITY_CLASSES[selected.priority]}`}
                     >
@@ -797,13 +836,17 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                     </p>
                   </div>
                   <div className="rounded-lg border border-dls-border bg-dls-bg p-3">
-                    <p className="text-xs text-dls-secondary">Progress</p>
+                    <p className="text-xs text-dls-secondary">
+                      {t("sprintnex.task.progress")}
+                    </p>
                     <p className="mt-1 font-medium text-dls-text">
                       {selected.progress ?? 0}%
                     </p>
                   </div>
                   <div className="rounded-lg border border-dls-border bg-dls-bg p-3">
-                    <p className="text-xs text-dls-secondary">Estimate</p>
+                    <p className="text-xs text-dls-secondary">
+                      {t("sprintnex.task.estimate")}
+                    </p>
                     <p className="mt-1 font-medium text-dls-text">
                       {selected.estimateHours ?? "-"}h
                     </p>
@@ -821,7 +864,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                     }
                   >
                     <CheckCircle2 className="size-4" />
-                    Approve
+                    {t("sprintnex.action.approve")}
                   </Button>
                   <Button
                     type="button"
@@ -834,7 +877,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                     }
                   >
                     <StopCircle className="size-4" />
-                    Block
+                    {t("sprintnex.action.block")}
                   </Button>
                   <Button
                     type="button"
@@ -847,7 +890,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                     }
                   >
                     <PauseCircle className="size-4" />
-                    Hold
+                    {t("sprintnex.action.hold")}
                   </Button>
                   <Button
                     type="button"
@@ -860,7 +903,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                     }
                   >
                     <CheckCircle2 className="size-4" />
-                    Complete
+                    {t("sprintnex.action.complete")}
                   </Button>
                   <Button
                     type="button"
@@ -873,13 +916,13 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                     }
                   >
                     <XCircle className="size-4" />
-                    Cancel
+                    {t("sprintnex.action.cancel")}
                   </Button>
                 </div>
                 {selectedIds.size ? (
                   <div className="rounded-lg border border-dls-border bg-dls-bg p-3">
                     <p className="mb-2 text-xs font-medium text-dls-secondary">
-                      Bulk status
+                      {t("sprintnex.task.bulk_status")}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       <Button
@@ -892,7 +935,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                           )
                         }
                       >
-                        Done
+                        {t("sprintnex.status.done")}
                       </Button>
                       <Button
                         type="button"
@@ -904,7 +947,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                           )
                         }
                       >
-                        In Progress
+                        {t("sprintnex.status.in_progress")}
                       </Button>
                       <Button
                         type="button"
@@ -916,7 +959,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
                           )
                         }
                       >
-                        Approved
+                        {t("sprintnex.status.approved")}
                       </Button>
                     </div>
                   </div>
@@ -924,7 +967,7 @@ export function ProjectTaskHub(props: ProjectTaskHubProps) {
               </div>
             ) : (
               <div className="text-sm text-dls-secondary">
-                Select a task to review details.
+                {t("sprintnex.task.select_task_details")}
               </div>
             )}
           </div>

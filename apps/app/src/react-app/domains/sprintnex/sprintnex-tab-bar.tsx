@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { t } from "@/i18n";
 
 export type TabDefinition = {
   id: string;
@@ -43,18 +44,23 @@ export function SprintnexTabBar({
   const defaultTabs: TabDefinition[] = [
     {
       id: "tasks",
-      label: "Tasks",
+      label: t("sprintnex.tabs.tasks"),
       icon: ListChecks,
       onClick: onTasksClick,
       route: "/sprintnex/tasks",
     },
     {
       id: "knowledge",
-      label: "Knowledge",
+      label: t("sprintnex.tabs.knowledge"),
       icon: FileText,
       route: "/sprintnex/knowledge",
     },
-    { id: "skills", label: "Skills", icon: Brain, route: "/sprintnex/skills" },
+    {
+      id: "skills",
+      label: t("sprintnex.tabs.skills"),
+      icon: Brain,
+      route: "/sprintnex/skills",
+    },
   ];
 
   const tabs = customTabs ?? defaultTabs;

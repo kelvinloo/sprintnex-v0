@@ -1,7 +1,7 @@
 # IMPORTANT: appId intentionally matches the Tauri shell so both builds share
 # the same macOS bundle identifier, keychain entries, Launchpad slot, and TCC
 # permissions. In-place migration from Tauri to Electron depends on this.
-appId: com.differentai.openwork
+appId: com.sprintnex.desktop
 productName: Sprintnex
 protocols:
   - name: Sprintnex
@@ -76,7 +76,7 @@ mac:
     - zip
 linux:
   icon: resources/icons/icon.png
-  executableName: openwork
+  executableName: sprintnex
   extraResources:
     - from: resources/sidecars
       to: sidecars
@@ -95,6 +95,12 @@ linux:
     - tar.gz
 win:
   icon: resources/icons/icon.ico
+  sign:
+    type: azure
+    endpoint: "https://singapore.codesigning.azure.net/"
+    codeSigningAccountName: "<your-artifact-signing-account>"
+    certificateProfileName: "<your-certificate-profile>"
+    publisherName: "<EXACT certificate subject>"
   extraResources:
     - from: resources/sidecars
       to: sidecars

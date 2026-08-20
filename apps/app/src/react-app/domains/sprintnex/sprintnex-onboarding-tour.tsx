@@ -11,6 +11,7 @@ import {
   Settings,
   Workflow,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,63 +22,63 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { t } from "@/i18n";
 
 const STORAGE_KEY = "sprintnex.onboardingTourShown.v1";
 
-const STEPS = [
+type TourStep = {
+  icon: LucideIcon;
+  titleKey: string;
+  descriptionKey: string;
+  actionKey?: string;
+};
+
+const STEPS: TourStep[] = [
   {
     icon: Workflow,
-    title: "Welcome to Sprintnex",
-    description:
-      "Sprintnex connects project management with AI agent workspaces for automated task delivery. This tour will walk you through the key features.",
+    titleKey: "sprintnex.onboarding.step_welcome_title",
+    descriptionKey: "sprintnex.onboarding.step_welcome_description",
   },
   {
     icon: Settings,
-    title: "1. Configure Mappings",
-    description:
-      "Go to **Sprintnex settings** in the sidebar footer. Under the **Mappings** tab, select a team and map each Sprintnex project to an OpenWork workspace. This tells the system which workspace to use for each project.",
-    action: "Navigate: Sidebar footer → Sprintnex settings → Mappings tab",
+    titleKey: "sprintnex.onboarding.step_mappings_title",
+    descriptionKey: "sprintnex.onboarding.step_mappings_description",
+    actionKey: "sprintnex.onboarding.step_mappings_action",
   },
   {
     icon: KeyRound,
-    title: "2. Connect AI Providers",
-    description:
-      "In **Sprintnex settings → Providers** tab, check that your AI provider (e.g., DeepSeek, Anthropic) is connected. Click **Manage providers** to open the AI settings page if needed.",
-    action: "Navigate: Sprintnex settings → Providers tab → Manage providers",
+    titleKey: "sprintnex.onboarding.step_providers_title",
+    descriptionKey: "sprintnex.onboarding.step_providers_description",
+    actionKey: "sprintnex.onboarding.step_providers_action",
   },
   {
     icon: Layout,
-    title: "3. Sidebar Overview",
-    description:
-      "The left sidebar shows the **Sprintnex project selector** at the top. Choose a team and project to scope your work. The workspace list below shows only the mapped workspace for the selected project.",
-    action: "Sidebar header → Select team + project",
+    titleKey: "sprintnex.onboarding.step_sidebar_title",
+    descriptionKey: "sprintnex.onboarding.step_sidebar_description",
+    actionKey: "sprintnex.onboarding.step_sidebar_action",
   },
   {
     icon: MessageSquare,
-    title: "4. Task Intake (Chat)",
-    description:
-      "Open **Sprintnex tasks** from the sidebar footer. The **Intake** tab lets you describe what you want to build. The system classifies your request — small changes are handled directly, while large requests are routed through the Sprintnex delivery flow.",
-    action: "Sidebar footer → Sprintnex tasks → Intake tab",
+    titleKey: "sprintnex.onboarding.step_intake_title",
+    descriptionKey: "sprintnex.onboarding.step_intake_description",
+    actionKey: "sprintnex.onboarding.step_intake_action",
   },
   {
     icon: ListChecks,
-    title: "5. Task Execution",
-    description:
-      "Approved tasks appear in the **Tasks** tab. Click **Start Execution** to create an OpenCode session in the mapped workspace. The agent executes the task with the Delivery Agent prompt. You can chat with the agent in the session.",
-    action: "Sprintnex tasks → Tasks tab → Start Execution",
+    titleKey: "sprintnex.onboarding.step_execution_title",
+    descriptionKey: "sprintnex.onboarding.step_execution_description",
+    actionKey: "sprintnex.onboarding.step_execution_action",
   },
   {
     icon: PlayCircle,
-    title: "6. Chat with the Agent",
-    description:
-      "In the session chat, the **Workspace Agent** handles questions, code inspection, and small changes. Large feature requests are blocked and routed to the Sprintnex intake flow. Select your model (e.g., DeepSeek V4 Flash) from the model picker.",
-    action: "Session chat → Type your request",
+    titleKey: "sprintnex.onboarding.step_chat_title",
+    descriptionKey: "sprintnex.onboarding.step_chat_description",
+    actionKey: "sprintnex.onboarding.step_chat_action",
   },
   {
     icon: CheckCircle2,
-    title: "You're all set!",
-    description:
-      "You can now manage Sprintnex projects, execute tasks, and collaborate with AI agents. Re-open this guide anytime from the **Help** button in the Sprintnex tasks page.",
+    titleKey: "sprintnex.onboarding.step_done_title",
+    descriptionKey: "sprintnex.onboarding.step_done_description",
   },
 ];
 
@@ -139,21 +140,23 @@ export function SprintnexOnboardingTour({
 
           {/* Title */}
           <DialogTitle className="mb-2 text-lg font-semibold text-dls-text">
-            {step.title}
+            {t(step.titleKey)}
           </DialogTitle>
 
           {/* Description */}
           <div className="mb-4 space-y-3 text-sm leading-relaxed text-dls-secondary">
-            {step.description.split("\n").map((line, i) => (
+            {t(step.descriptionKey).split("\n").map((line, i) => (
               <p key={i}>{line}</p>
             ))}
           </div>
 
           {/* Action hint */}
-          {step.action && (
+          {step.actionKey && (
             <div className="rounded-lg border border-dls-border bg-dls-surface px-3 py-2 text-xs text-dls-tertiary">
-              <span className="font-medium text-dls-secondary">Tip: </span>
-              {step.action}
+              <span className="font-medium text-dls-secondary">
+                {t("sprintnex.onboarding.tip")}{" "}
+              </span>
+              {t(step.actionKey)}
             </div>
           )}
         </div>

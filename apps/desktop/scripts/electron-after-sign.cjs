@@ -4,11 +4,18 @@ const { tmpdir } = require("node:os");
 const path = require("node:path");
 
 const computerUseHelperAppName = "OpenWork Computer Use.app";
+process.env.MACOS_NOTARIZE = "true";
+process.env.APPLE_API_KEY_PATH =
+  "/Users/kelvinloo/Documents/sprintnex-notarization/AuthKey_X5Q8QDX9P3.p8";
+process.env.APPLE_API_KEY = "X5Q8QDX9P3";
+process.env.APPLE_API_ISSUER = "a90c0a97-f4c0-43a7-a60a-6c4eaa89796a";
 
 function run(command, args) {
   const result = spawnSync(command, args, { stdio: "inherit" });
   if (result.status !== 0) {
-    throw new Error(`${command} ${args.join(" ")} failed with status ${result.status}`);
+    throw new Error(
+      `${command} ${args.join(" ")} failed with status ${result.status}`,
+    );
   }
 }
 
@@ -21,25 +28,47 @@ function requireEnv(name) {
 }
 
 function computerUseHelperPath(appPath) {
-  return path.join(appPath, "Contents", "Resources", "helpers", computerUseHelperAppName);
+  return path.join(
+    appPath,
+    "Contents",
+    "Resources",
+    "helpers",
+    computerUseHelperAppName,
+  );
 }
 
 function verifyComputerUseHelper(appPath, requireDistributionSignature) {
   const helperPath = computerUseHelperPath(appPath);
   if (!existsSync(helperPath)) {
-    throw new Error(`Computer Use helper app is missing from packaged app: ${helperPath}`);
+    throw new Error(
+      `Computer Use helper app is missing from packaged app: ${helperPath}`,
+    );
   }
 
-  run("codesign", ["--verify", "--deep", "--strict", "--verbose=2", helperPath]);
+  run("codesign", [
+    "--verify",
+    "--deep",
+    "--strict",
+    "--verbose=2",
+    helperPath,
+  ]);
 
   if (!requireDistributionSignature) return;
-  const result = spawnSync("codesign", ["--display", "--verbose=4", helperPath], { encoding: "utf8" });
+  const result = spawnSync(
+    "codesign",
+    ["--display", "--verbose=4", helperPath],
+    { encoding: "utf8" },
+  );
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(`codesign --display failed for Computer Use helper with status ${result.status}`);
+    throw new Error(
+      `codesign --display failed for Computer Use helper with status ${result.status}`,
+    );
   }
   if (result.stderr.includes("Signature=adhoc")) {
-    throw new Error("Computer Use helper app is ad-hoc signed; notarized builds require a Developer ID signature.");
+    throw new Error(
+      "Computer Use helper app is ad-hoc signed; notarized builds require a Developer ID signature.",
+    );
   }
 }
 
@@ -47,7 +76,9 @@ async function afterSign(context) {
   if (context.electronPlatformName !== "darwin") return;
 
   if (process.env.MACOS_NOTARIZE !== "true") {
-    console.warn("[electron-after-sign] MACOS_NOTARIZE is not true; skipping notarization.");
+    console.warn(
+      "[electron-after-sign] MACOS_NOTARIZE is not true; skipping notarization.",
+    );
     return;
   }
 
@@ -55,8 +86,13 @@ async function afterSign(context) {
   const appPath = path.join(context.appOutDir, appName);
   verifyComputerUseHelper(appPath, process.env.MACOS_NOTARIZE === "true");
 
-  const notaryTempDir = mkdtempSync(path.join(tmpdir(), "openwork-electron-notary-"));
-  const notaryZipPath = path.join(notaryTempDir, `${context.packager.appInfo.productFilename}-notary.zip`);
+  const notaryTempDir = mkdtempSync(
+    path.join(tmpdir(), "openwork-electron-notary-"),
+  );
+  const notaryZipPath = path.join(
+    notaryTempDir,
+    `${context.packager.appInfo.productFilename}-notary.zip`,
+  );
   const keyPath = requireEnv("APPLE_API_KEY_PATH");
   const keyId = requireEnv("APPLE_API_KEY");
   const issuer = requireEnv("APPLE_API_ISSUER");

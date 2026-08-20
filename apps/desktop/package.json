@@ -1,7 +1,7 @@
 {
-  "name": "@openwork/desktop",
+  "name": "@sprintnex/desktop",
   "private": true,
-  "version": "0.3.9",
+  "version": "0.3.11",
   "description": "Sprintnex Desktop",
   "author": {
     "name": "Sprintnex",

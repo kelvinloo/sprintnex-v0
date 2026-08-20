@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { t } from "@/i18n";
 import {
   addStepToScenario,
   removeStepFromScenario,
@@ -248,7 +249,7 @@ export default function SprintnexTestPlanDetailPage() {
   };
 
   const handleDeleteScenario = (scenarioId: string) => {
-    if (confirm("Delete this scenario?")) {
+    if (confirm(t("sprintnex.test.delete_scenario_confirm"))) {
       removeScenarioFromPlan(plan.id, scenarioId);
     }
   };
@@ -566,13 +567,13 @@ function ScenarioCard({
                         value={editAction}
                         onChange={(e) => setEditAction(e.target.value)}
                         className="h-6 text-[11px]"
-                        placeholder="Action"
+                        placeholder={t("sprintnex.form.action")}
                       />
                       <Input
                         value={editExpected}
                         onChange={(e) => setEditExpected(e.target.value)}
                         className="h-6 text-[11px]"
-                        placeholder="Expected result"
+                        placeholder={t("sprintnex.common.expected_result")}
                       />
                       <div className="flex gap-1">
                         <Button
@@ -601,7 +602,9 @@ function ScenarioCard({
                         <p className="text-dls-text">{step.action}</p>
                         {step.expectedResult && (
                           <p className="text-dls-secondary">
-                            <span className="font-medium">Expected:</span>{" "}
+                            <span className="font-medium">
+                              {t("sprintnex.common.expected")}
+                            </span>{" "}
                             {step.expectedResult}
                           </p>
                         )}

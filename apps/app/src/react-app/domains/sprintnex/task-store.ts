@@ -1,5 +1,6 @@
 /** @jsxImportSource react */
 import { useMemo, useSyncExternalStore } from "react";
+import { t } from "@/i18n";
 
 export type SprintnexTaskPriority = "low" | "medium" | "high" | "urgent";
 export type SprintnexTaskStatus = "draft" | "queued" | "running" | "done" | "blocked";
@@ -86,7 +87,7 @@ const createTaskId = () => {
 export const normalizeSprintnexTaskInput = (
   input: Partial<SprintnexTaskCreateInput>,
 ): SprintnexTaskCreateInput => ({
-  title: input.title?.trim() || "Untitled task",
+  title: input.title?.trim() || t("sprintnex.task.untitled"),
   description: input.description?.trim() || "",
   priority: input.priority ?? "medium",
   executionMode: input.executionMode ?? "guided",
