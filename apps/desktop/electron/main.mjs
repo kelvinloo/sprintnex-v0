@@ -62,23 +62,23 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const pty = require(["node", "pty"].join("-"));
-const NATIVE_DEEP_LINK_EVENT = "openwork:deep-link-native";
-const TAURI_APP_IDENTIFIER = "com.differentai.openwork";
-const DEV_APP_IDENTIFIER = "com.differentai.openwork.dev";
-const DESKTOP_PROTOCOL_SCHEME = "openwork";
+const NATIVE_DEEP_LINK_EVENT = "sprintnex:deep-link-native";
+const TAURI_APP_IDENTIFIER = "com.sprintnex.desktop";
+const DEV_APP_IDENTIFIER = "com.sprintnex.desktop.dev";
+const DESKTOP_PROTOCOL_SCHEME = "sprintnex";
 const isDevMode = process.env.OPENWORK_DEV_MODE === "1";
 const APP_NAME =
   process.env.OPENWORK_ELECTRON_APP_NAME?.trim() ||
-  (isDevMode ? "OpenWork - Dev" : "OpenWork");
+  (isDevMode ? "Sprintnex - Dev" : "Sprintnex");
 let currentDisplayAppName = APP_NAME;
 const APP_IDENTIFIER =
   process.env.OPENWORK_ELECTRON_APP_IDENTIFIER?.trim() ||
   (isDevMode ? DEV_APP_IDENTIFIER : TAURI_APP_IDENTIFIER);
 const RELEASE_DOWNLOAD_BASE_URL =
-  "https://github.com/different-ai/openwork/releases/latest/download";
+  "https://github.com/k3lvinlkf/openwork/releases/latest/download";
 const RELEASE_PAGE_URL =
-  "https://github.com/different-ai/openwork/releases/latest";
-const DOCS_PAGE_URL = "https://openworklabs.com/docs";
+  "https://github.com/k3lvinlkf/openwork/releases/latest";
+const DOCS_PAGE_URL = "https://sprintnex.com/docs";
 const applicationMenu = createApplicationMenu({
   appName: APP_NAME,
   docsUrl: DOCS_PAGE_URL,
@@ -302,7 +302,7 @@ async function resolveArchitectureInfo() {
   const version = app.getVersion();
   const targetArch =
     systemArch === "arm64" || systemArch === "x64" ? systemArch : appArch;
-  const assetName = `openwork-${platformDownloadSlug()}-${downloadAssetArch(targetArch)}-${version}.${downloadAssetExtension()}`;
+  const assetName = `sprintnex-${platformDownloadSlug()}-${downloadAssetArch(targetArch)}-${version}.${downloadAssetExtension()}`;
   const latestDownloadUrl =
     await resolveCorrectArchitectureDownloadUrl(targetArch);
   const hasCorrectArchitectureDownload = Boolean(latestDownloadUrl);

@@ -144,7 +144,7 @@ export function SprintnexLoginPage() {
                   value={organizationCode}
                 />
                 <span className="block text-xs leading-5 text-[#667085]">
-                  Required for team members. Leave empty for platform admin.
+                  Required for team members.
                 </span>
               </label>
 
@@ -163,37 +163,31 @@ export function SprintnexLoginPage() {
                 <ArrowRight size={15} />
               </Button>
             </form>
-
-            <p className="mt-4 text-xs leading-5 text-[#667085]">
-              Admin: admin@aicoe.test / leave org code empty
-            </p>
           </div>
 
-          <div className="text-xs text-[#98a2b3]">
-            Sprintnex local development
-          </div>
+          <div className="text-xs text-[#98a2b3]">Sprintnex Development</div>
         </section>
 
         <section className="hidden min-h-screen bg-[#111827] p-8 text-white lg:block">
           <div className="flex h-full flex-col justify-between rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,#172033,#0b1220)] p-10 shadow-2xl">
             <div className="max-w-xl">
               <div className="mb-5 inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-white/80">
-                Prompt to production execution
+                Governed AI delivery
               </div>
               <h2 className="text-4xl font-semibold tracking-tight">
-                Run structured tasks without losing control of the workflow.
+                Turn approved work into controlled agent execution.
               </h2>
               <p className="mt-4 max-w-lg text-sm leading-6 text-white/65">
-                Sprintnex keeps the workspace, skills, MCP rules, artifacts, and
-                verification steps visible while the engine executes.
+                Sprintnex keeps scope, workspace context, MCP access, artifacts,
+                and verification visible from intake through delivery.
               </p>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
               {[
-                ["Task Intake", "Title, scope, system prompt, workspace"],
-                ["Execution", "Strict runtime with visible runs"],
-                ["Evidence", "Artifacts, commands, and verification"],
+                ["Intake", "Scope, owner, workspace, and acceptance criteria"],
+                ["Execution", "Agent runs with governed tools and rules"],
+                ["Verification", "Artifacts, commands, results, and evidence"],
               ].map(([title, body]) => (
                 <div
                   key={title}

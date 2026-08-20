@@ -95,12 +95,12 @@ linux:
     - tar.gz
 win:
   icon: resources/icons/icon.ico
-  sign:
-    type: azure
-    endpoint: "https://singapore.codesigning.azure.net/"
-    codeSigningAccountName: "<your-artifact-signing-account>"
-    certificateProfileName: "<your-certificate-profile>"
-    publisherName: "<EXACT certificate subject>"
+  # sign:
+  #   type: azure
+  #   endpoint: "https://singapore.codesigning.azure.net/"
+  #   codeSigningAccountName: "<your-artifact-signing-account>"
+  #   certificateProfileName: "<your-certificate-profile>"
+  #   publisherName: "<EXACT certificate subject>"
   extraResources:
     - from: resources/sidecars
       to: sidecars
