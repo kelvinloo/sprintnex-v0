@@ -1,9 +1,15 @@
 /** @jsxImportSource react */
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, LockKeyhole, Workflow } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import { SPRINTNEX_PORTAL_URL } from "../../../app/lib/api-config";
+import {
+  openDesktopUrl,
+  subscribeDesktopDeepLinks,
+} from "../../../app/lib/desktop";
+import { isDesktopRuntime } from "../../../app/lib/runtime-env";
 import { useSprintnexAuth } from "./sprintnex-auth-provider";
 import { useBootState } from "../../shell/boot-state";
 
@@ -23,11 +29,98 @@ export function SprintnexLoginPage() {
   const state = location.state as LocationState | null;
   const redirectPath = `${state?.from?.pathname || "/session"}${state?.from?.search || ""}${state?.from?.hash || ""}`;
 
-  const [organizationCode, setOrganizationCode] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // SSO ticket resolution state
+  const [ssoPhase, setSsoPhase] = useState<"idle" | "resolving" | "org-select">(
+    "idle",
+  );
+  const [ssoError, setSsoError] = useState<string | null>(null);
+  const [ssoTicket, setSsoTicket] = useState<string | null>(null);
+  const [ssoOrganizations, setSsoOrganizations] = useState<
+    Array<{
+      organizationId: string;
+      organizationName: string;
+      organizationCode: string;
+      role: string;
+    }>
+  >([]);
+  const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>();
+  const ssoResolvedRef = useRef(false);
+
+  // Resolve a ticket once (guard handles StrictMode double-invocation).
+  const handleSsoTicket = useCallback(
+    (ticket: string) => {
+      if (ssoResolvedRef.current) return;
+      ssoResolvedRef.current = true;
+      setSsoPhase("resolving");
+      setSsoError(null);
+
+      auth
+        .resolveSsoTicket(ticket)
+        .then((resolution) => {
+          if (resolution.status === "OWNER") {
+            auth.persistSsoLogin(resolution.login);
+            // isSignedIn flips true → the existing redirect effect navigates.
+          } else if (resolution.status === "ORG_USER") {
+            setSsoTicket(ticket);
+            setSsoOrganizations(resolution.organizations);
+            setSsoPhase("org-select");
+          } else {
+            // NEW identity → send to the web portal for plan selection/checkout.
+            const portalUrl = `${SPRINTNEX_PORTAL_URL}/signup?sso_ticket=${encodeURIComponent(ticket)}`;
+            if (isDesktopRuntime()) {
+              void openDesktopUrl(portalUrl);
+            } else {
+              window.location.assign(portalUrl);
+            }
+          }
+        })
+        .catch((err) => {
+          setSsoError(
+            err instanceof Error
+              ? err.message
+              : "Unable to complete SSO sign-in",
+          );
+          setSsoPhase("idle");
+        });
+    },
+    [auth],
+  );
+
+  // Web: the IdP callback returns to the login route with ?sso_ticket=...
+  useEffect(() => {
+    const ticket = auth.consumeSsoTicketFromUrl();
+    if (ticket) handleSsoTicket(ticket);
+  }, [auth, handleSsoTicket]);
+
+  // Desktop: the IdP callback returns via the openwork:// deep link.
+  useEffect(() => {
+    if (!isDesktopRuntime()) return;
+    let unsub: (() => void) | undefined;
+    void subscribeDesktopDeepLinks((urls) => {
+      for (const raw of urls) {
+        if (
+          raw.startsWith("openwork://auth/callback") ||
+          raw.startsWith("openwork-dev://auth/callback")
+        ) {
+          try {
+            const parsed = new URL(raw);
+            const ticket = parsed.searchParams.get("sso_ticket");
+            if (ticket) handleSsoTicket(ticket);
+          } catch {
+            // ignore malformed deep links
+          }
+        }
+      }
+    }).then((fn) => {
+      unsub = fn;
+    });
+    return () => {
+      unsub?.();
+    };
+  }, [auth, handleSsoTicket]);
 
   // Dismiss the full-screen boot overlay so it stops blocking form clicks
   useEffect(() => {
@@ -40,22 +133,39 @@ export function SprintnexLoginPage() {
     }
   }, [auth.isSignedIn, navigate, redirectPath]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSso(event: FormEvent<HTMLButtonElement>) {
     event.preventDefault();
     if (busy) return;
 
     setBusy(true);
     setError(null);
     try {
-      const result = await auth.signIn({ email, organizationCode, password });
+      const result = await auth.startSso({ email: "" });
       if (!result.ok) {
         setError(result.error);
-        return;
       }
-      navigate(redirectPath, { replace: true });
     } finally {
       setBusy(false);
     }
+  }
+
+  async function handleSsoOrgSelect() {
+    if (!ssoTicket || !selectedOrgId) return;
+    setSsoError(null);
+    const result = await auth.selectSsoOrganization(ssoTicket, selectedOrgId);
+    if (!result.ok) {
+      setSsoError(result.error);
+      return;
+    }
+    // isSignedIn flips true → the existing redirect effect navigates.
+  }
+
+  function resetSso() {
+    setSsoPhase("idle");
+    setSsoError(null);
+    setSsoTicket(null);
+    setSsoOrganizations([]);
+    setSelectedOrgId(undefined);
   }
 
   return (
@@ -84,85 +194,83 @@ export function SprintnexLoginPage() {
                 <h1 className="text-3xl font-semibold tracking-tight text-[#101828]">
                   Sign in to Sprintnex
                 </h1>
-                <p className="mt-2 text-sm leading-6 text-[#667085]">
-                  Continue into your local execution workspace and task runs.
-                </p>
+                {/* <p className="mt-2 text-sm leading-6 text-[#667085]">
+                  Email/password supports organization owner access. Organization
+                  users can add their organization code, or use SSO below.
+                </p> */}
               </div>
             </div>
 
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-[#344054]">
-                  Email
+            {ssoPhase === "org-select" ? (
+              <div className="space-y-4">
+                <span className="block text-sm font-medium text-[#344054]">
+                  Choose organization
                 </span>
-                <input
-                  autoComplete="email"
-                  autoFocus
-                  className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
-                  inputMode="email"
-                  onChange={(event) => setEmail(event.currentTarget.value)}
-                  placeholder="Enter your email"
-                  type="email"
-                  value={email}
-                />
-              </label>
-
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-[#344054]">
-                  Password
-                </span>
-                <input
-                  autoComplete="current-password"
-                  className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
-                  onChange={(event) => setPassword(event.currentTarget.value)}
-                  placeholder="Enter your password"
-                  type="password"
-                  value={password}
-                />
-              </label>
-
-              <div className="flex items-center gap-3 py-1">
-                <div className="h-px flex-1 bg-[#d0d5dd]" />
-                <span className="text-xs text-[#98a2b3]">
-                  Organization Access
-                </span>
-                <div className="h-px flex-1 bg-[#d0d5dd]" />
-              </div>
-
-              <label className="block space-y-1.5">
-                <span className="text-sm font-medium text-[#344054]">
-                  Organization Code
-                </span>
-                <input
-                  autoCapitalize="characters"
-                  autoComplete="organization"
+                <select
                   className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
                   onChange={(event) =>
-                    setOrganizationCode(event.currentTarget.value)
+                    setSelectedOrgId(event.currentTarget.value || undefined)
                   }
-                  placeholder="e.g. default"
-                  value={organizationCode}
-                />
+                  value={selectedOrgId ?? ""}
+                >
+                  <option value="">Select an organization</option>
+                  {ssoOrganizations.map((org) => (
+                    <option key={org.organizationId} value={org.organizationId}>
+                      {org.organizationName}
+                      {org.role === "OWNER" ? " (owner)" : ""}
+                    </option>
+                  ))}
+                </select>
                 <span className="block text-xs leading-5 text-[#667085]">
-                  Required for team members.
+                  Your account belongs to more than one organization. Choose one
+                  to continue.
                 </span>
-              </label>
-
-              {error ? (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {error}
-                </div>
-              ) : null}
-
-              <Button
-                className="h-11 w-full rounded-xl"
-                disabled={busy}
-                type="submit"
-              >
-                {busy ? "Signing in" : "Sign in"}
-                <ArrowRight size={15} />
-              </Button>
-            </form>
+                {ssoError ? (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {ssoError}
+                  </div>
+                ) : null}
+                <Button
+                  className="h-11 w-full rounded-xl"
+                  disabled={!selectedOrgId}
+                  onClick={() => void handleSsoOrgSelect()}
+                >
+                  Continue <ArrowRight size={15} />
+                </Button>
+                <Button
+                  className="h-11 w-full rounded-xl"
+                  onClick={resetSso}
+                  type="button"
+                  variant="outline"
+                >
+                  Use a different sign-in method
+                </Button>
+              </div>
+            ) : ssoPhase === "resolving" ? (
+              <div className="space-y-4 py-10 text-center text-sm text-[#667085]">
+                Completing SSO sign-in...
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {error ? (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {error}
+                  </div>
+                ) : null}
+                <Button
+                  className="h-11 w-full rounded-xl"
+                  disabled={busy}
+                  type="button"
+                  onClick={handleSso}
+                  variant="outline"
+                >
+                  {busy
+                    ? "Signing in with Sprintnex SSO"
+                    : "Continue with Sprintnex SSO"}
+                  <ArrowRight size={15} />
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="text-xs text-[#98a2b3]">Sprintnex Development</div>

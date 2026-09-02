@@ -10,6 +10,8 @@ import {
 } from "react";
 
 import { AUTH_BASE } from "../../../app/lib/api-config";
+import { openDesktopUrl } from "../../../app/lib/desktop";
+import { isDesktopRuntime } from "../../../app/lib/runtime-env";
 
 const STORAGE_KEY = "sprintnex.auth.session";
 
@@ -29,6 +31,27 @@ type SprintnexLoginResponse = {
   };
 };
 
+type OrganizationAuthResolution = {
+  organizationId: string;
+  organizationCode: string;
+  organizationName: string;
+  authMode: "LOCAL" | "SSO" | "HYBRID";
+  localLoginAllowed: boolean;
+  ssoLoginAllowed: boolean;
+};
+
+type SsoOrganization = {
+  organizationId: string;
+  organizationName: string;
+  organizationCode: string;
+  role: string;
+};
+
+type SsoResolution =
+  | { status: "OWNER"; login: SprintnexLoginResponse }
+  | { status: "ORG_USER"; organizations: SsoOrganization[] }
+  | { status: "NEW" };
+
 export type SprintnexUser = {
   id: string;
   email: string;
@@ -47,7 +70,18 @@ export type SprintnexAuthStore = {
     organizationCode?: string;
     password: string;
   }) => Promise<{ ok: true } | { ok: false; error: string }>;
-  signOut: () => void;
+  startSso: (input: {
+    email: string;
+    organizationCode?: string;
+  }) => Promise<{ ok: true } | { ok: false; error: string }>;
+  consumeSsoTicketFromUrl: () => string | null;
+  resolveSsoTicket: (ticket: string) => Promise<SsoResolution>;
+  selectSsoOrganization: (
+    ticket: string,
+    organizationId: string,
+  ) => Promise<{ ok: true } | { ok: false; error: string }>;
+  persistSsoLogin: (login: SprintnexLoginResponse) => void;
+  signOut: () => Promise<void>;
   /** Returns a valid access token, refreshing if expired. Throws if refresh fails. */
   getValidToken: () => Promise<string>;
 };
@@ -138,9 +172,85 @@ function sprintnexAuthBase(): string {
   return AUTH_BASE;
 }
 
+function buildSprintnexSsoRedirectUrl(input: {
+  email: string;
+  organizationCode?: string;
+  returnTo: string;
+}): string {
+  const url = new URL(
+    `${sprintnexAuthBase()}/sso/redirect`,
+    window.location.origin,
+  );
+  url.searchParams.set("email", input.email.trim().toLowerCase());
+  url.searchParams.set("returnTo", input.returnTo);
+  if (input.organizationCode?.trim()) {
+    url.searchParams.set(
+      "organizationCode",
+      input.organizationCode.trim().toLowerCase(),
+    );
+  }
+  return url.toString();
+}
+
+function consumeSsoCallbackFromUrl(): SprintnexUser | null {
+  if (typeof window === "undefined") return null;
+  const url = new URL(window.location.href);
+  const accessToken = url.searchParams.get("auth_token");
+  if (!accessToken) {
+    return null;
+  }
+
+  const refreshToken = url.searchParams.get("refresh_token") || "";
+  const expiresIn = Number(url.searchParams.get("expires_in") || "900");
+  const tenantId = url.searchParams.get("tenant_id") || "default";
+  const userId = url.searchParams.get("user_id") || "";
+  const email = url.searchParams.get("email") || "";
+  const displayName = url.searchParams.get("display_name") || email;
+  const organizationId = url.searchParams.get("organization_id");
+  const organizationCode =
+    url.searchParams.get("organization_code") || undefined;
+
+  window.localStorage.setItem("auth_token", accessToken);
+  window.localStorage.setItem("accessToken", accessToken);
+  if (refreshToken) window.localStorage.setItem("refresh_token", refreshToken);
+  window.localStorage.setItem(
+    "token_expiry",
+    String(Date.now() + expiresIn * 1000),
+  );
+  window.localStorage.setItem("tenantId", tenantId);
+  window.localStorage.setItem("userId", userId);
+  if (organizationId) {
+    window.localStorage.setItem("organization_id", organizationId);
+    window.localStorage.setItem("selected_organization_id", organizationId);
+  }
+
+  [
+    "auth_token",
+    "refresh_token",
+    "expires_in",
+    "tenant_id",
+    "user_id",
+    "email",
+    "display_name",
+    "organization_id",
+    "organization_code",
+  ].forEach((key) => url.searchParams.delete(key));
+  window.history.replaceState({}, document.title, url.toString());
+
+  return {
+    id: userId || email,
+    email,
+    name: displayName || displayNameFromEmail(email),
+    tenantId,
+    organizationId: organizationId || null,
+    organizationCode,
+    signedInAt: new Date().toISOString(),
+  };
+}
+
 export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<SprintnexUser | null>(() =>
-    readStoredUser(),
+  const [user, setUser] = useState<SprintnexUser | null>(
+    () => consumeSsoCallbackFromUrl() || readStoredUser(),
   );
 
   useEffect(() => {
@@ -160,6 +270,40 @@ export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
       ) {
         return { ok: false, error: "Enter a valid organization code." };
       }
+      let resolvedOrg: OrganizationAuthResolution | null = null;
+      if (normalizedOrganizationCode) {
+        const resolveResponse = await fetch(
+          `${sprintnexAuthBase()}/organization/resolve`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Tenant-Id": "default",
+            },
+            body: JSON.stringify({
+              organizationCode: normalizedOrganizationCode,
+            }),
+          },
+        );
+        if (!resolveResponse.ok) {
+          const message = await resolveResponse.text();
+          return { ok: false, error: message || "Organization lookup failed." };
+        }
+        resolvedOrg =
+          (await resolveResponse.json()) as OrganizationAuthResolution;
+      }
+
+      if (resolvedOrg?.authMode === "SSO") {
+        window.location.assign(
+          buildSprintnexSsoRedirectUrl({
+            email: normalizedEmail,
+            organizationCode: normalizedOrganizationCode,
+            returnTo: `${window.location.pathname}${window.location.search}`,
+          }),
+        );
+        return { ok: true };
+      }
+
       if (password.length < 8) {
         return { ok: false, error: "Use at least 8 characters." };
       }
@@ -245,6 +389,154 @@ export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const startSso = useCallback<SprintnexAuthStore["startSso"]>(async () => {
+    // Global SSO — identity comes from the IdP, so no email/org code is
+    // needed upfront. Organization resolution happens after auth via the
+    // ticket flow (owner → dashboard, org user → picker, new → web portal).
+    const url = new URL(
+      `${sprintnexAuthBase()}/sso/redirect`,
+      window.location.origin,
+    );
+    const desktop = isDesktopRuntime();
+    // On desktop, the SSO callback returns to the app via the openwork://
+    // deep link (opened in the system browser). On web it returns to the
+    // login route where the ticket is read from the URL.
+    const returnTo = desktop
+      ? "openwork://auth/callback"
+      : `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    url.searchParams.set("returnTo", returnTo);
+    if (desktop) {
+      await openDesktopUrl(url.toString());
+    } else {
+      window.location.assign(url.toString());
+    }
+    return { ok: true };
+  }, []);
+
+  /** Read and strip the sso_ticket from the URL. */
+  const consumeSsoTicketFromUrl = useCallback((): string | null => {
+    if (typeof window === "undefined") return null;
+    const url = new URL(window.location.href);
+    const ticket = url.searchParams.get("sso_ticket");
+    if (!ticket) return null;
+    url.searchParams.delete("sso_ticket");
+    window.history.replaceState({}, document.title, url.toString());
+    return ticket;
+  }, []);
+
+  /** Resolve the identity behind an SSO ticket into OWNER / ORG_USER / NEW. */
+  const resolveSsoTicket = useCallback(
+    async (ticket: string): Promise<SsoResolution> => {
+      const response = await fetch(`${sprintnexAuthBase()}/sso/resolve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Tenant-Id": "default",
+        },
+        body: JSON.stringify({ ticket }),
+      });
+      const text = await response.text();
+      const data = text
+        ? (JSON.parse(text) as SsoResolution & { message?: string })
+        : {};
+      if (!response.ok) {
+        throw new Error(
+          typeof data.message === "string" && data.message.trim()
+            ? data.message
+            : `SSO resolution failed: ${response.status}`,
+        );
+      }
+      return data as SsoResolution;
+    },
+    [],
+  );
+
+  /** Persist a successful SSO login (tokens + user) and sign the user in. */
+  const persistSsoLogin = useCallback((login: SprintnexLoginResponse): void => {
+    const accessToken = login.accessToken || login.token || "";
+    const refreshToken = login.refreshToken || "";
+    const expiresIn =
+      typeof login.expiresIn === "number" ? login.expiresIn : 900;
+    const backendUser = login.user ?? {};
+    const userId = backendUser.id || "";
+    const email = backendUser.email || "";
+    const tenantId = backendUser.tenantId || "default";
+    const organizationId = backendUser.organizationId || null;
+
+    window.localStorage.setItem("auth_token", accessToken);
+    window.localStorage.setItem("accessToken", accessToken);
+    if (refreshToken)
+      window.localStorage.setItem("refresh_token", refreshToken);
+    window.localStorage.setItem(
+      "token_expiry",
+      String(Date.now() + expiresIn * 1000),
+    );
+    window.localStorage.setItem("tenantId", tenantId);
+    window.localStorage.setItem("userId", userId);
+    if (organizationId) {
+      window.localStorage.setItem("organization_id", organizationId);
+      window.localStorage.setItem("selected_organization_id", organizationId);
+    }
+
+    setUser({
+      id: userId || email,
+      email,
+      name:
+        backendUser.displayName ||
+        backendUser.username ||
+        displayNameFromEmail(email),
+      tenantId,
+      organizationId,
+      signedInAt: new Date().toISOString(),
+    });
+  }, []);
+
+  /** Complete SSO login for an organization user into a chosen organization. */
+  const selectSsoOrganization = useCallback(
+    async (
+      ticket: string,
+      organizationId: string,
+    ): Promise<{ ok: true } | { ok: false; error: string }> => {
+      try {
+        const response = await fetch(
+          `${sprintnexAuthBase()}/sso/select-organization`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Tenant-Id": "default",
+            },
+            body: JSON.stringify({ ticket, organizationId }),
+          },
+        );
+        const text = await response.text();
+        const data = text
+          ? (JSON.parse(text) as SprintnexLoginResponse & { message?: string })
+          : {};
+        if (!response.ok) {
+          return {
+            ok: false,
+            error:
+              typeof data.message === "string" && data.message.trim()
+                ? data.message
+                : `Selection failed: ${response.status}`,
+          };
+        }
+        persistSsoLogin(data);
+        return { ok: true };
+      } catch (error) {
+        return {
+          ok: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unable to complete SSO sign-in",
+        };
+      }
+    },
+    [persistSsoLogin],
+  );
+
   /** Attempt to refresh the access token using the stored refresh token. */
   const refreshAccessToken = useCallback(async (): Promise<string> => {
     const currentRefreshToken = window.localStorage.getItem("refresh_token");
@@ -297,7 +589,7 @@ export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
     return token;
   }, [refreshAccessToken]);
 
-  const signOut = useCallback(() => {
+  const clearLocalSession = useCallback(() => {
     setUser(null);
     if (typeof window === "undefined") return;
     const keys = [
@@ -314,15 +606,73 @@ export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
     keys.forEach((k) => window.localStorage.removeItem(k));
   }, []);
 
+  /** Clear the local session and terminate the IdP (SSO) session as well, so
+   *  the next sign-in is not silently re-authenticated with the same account. */
+  const signOut = useCallback(async (): Promise<void> => {
+    const refreshToken =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("refresh_token") || undefined
+        : undefined;
+    // Clear the local session immediately — never blocked on the network.
+    clearLocalSession();
+    // Best-effort: revoke the IdP refresh token and end the IdP session.
+    try {
+      const response = await fetch(`${sprintnexAuthBase()}/sso/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Tenant-Id": "default",
+        },
+        body: JSON.stringify({
+          refreshToken,
+          redirect:
+            typeof window !== "undefined"
+              ? `${window.location.origin}/login`
+              : undefined,
+        }),
+      });
+      const text = await response.text();
+      const data = text
+        ? (JSON.parse(text) as { endSessionUrl?: string })
+        : {};
+      const endSessionUrl = data?.endSessionUrl;
+      if (endSessionUrl) {
+        if (isDesktopRuntime()) {
+          await openDesktopUrl(endSessionUrl);
+        } else {
+          window.location.assign(endSessionUrl);
+        }
+      }
+    } catch (error) {
+      // Local session is already cleared; IdP termination is best-effort.
+      console.warn("IdP SSO logout failed", error);
+    }
+  }, [clearLocalSession]);
+
   const value = useMemo<SprintnexAuthStore>(
     () => ({
       user,
       isSignedIn: Boolean(user),
       signIn,
+      startSso,
+      consumeSsoTicketFromUrl,
+      resolveSsoTicket,
+      selectSsoOrganization,
+      persistSsoLogin,
       signOut,
       getValidToken,
     }),
-    [getValidToken, signIn, signOut, user],
+    [
+      consumeSsoTicketFromUrl,
+      getValidToken,
+      persistSsoLogin,
+      resolveSsoTicket,
+      selectSsoOrganization,
+      signIn,
+      signOut,
+      startSso,
+      user,
+    ],
   );
 
   return (

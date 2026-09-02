@@ -25,3 +25,13 @@ export const API_ROOT: string =
 export const AICOE_BASE = `${API_ROOT}/aicoe`;
 
 export const AUTH_BASE = `${API_ROOT}/aicoe/auth`;
+
+/**
+ * Web portal URL — used to hand NEW SSO identities to the web portal for plan
+ * selection and checkout. Override via VITE_SPRINTNEX_PORTAL_URL.
+ */
+export const SPRINTNEX_PORTAL_URL: string =
+  typeof import.meta.env?.VITE_SPRINTNEX_PORTAL_URL === "string" &&
+  import.meta.env.VITE_SPRINTNEX_PORTAL_URL.trim()
+    ? import.meta.env.VITE_SPRINTNEX_PORTAL_URL.trim().replace(/\/+$/, "")
+    : "http://localhost:3001";

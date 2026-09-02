@@ -62,7 +62,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const pty = require(["node", "pty"].join("-"));
-const NATIVE_DEEP_LINK_EVENT = "sprintnex:deep-link-native";
+const NATIVE_DEEP_LINK_EVENT = "openwork:deep-link-native";
 const TAURI_APP_IDENTIFIER = "com.sprintnex.desktop";
 const DEV_APP_IDENTIFIER = "com.sprintnex.desktop.dev";
 const DESKTOP_PROTOCOL_SCHEME = "sprintnex";
@@ -144,6 +144,8 @@ app.setName(APP_NAME);
 app.setAppUserModelId(APP_IDENTIFIER);
 if (app.isPackaged) {
   app.setAsDefaultProtocolClient(DESKTOP_PROTOCOL_SCHEME);
+  app.setAsDefaultProtocolClient("openwork");
+  app.setAsDefaultProtocolClient("openwork-dev");
 }
 const userDataOverride = process.env.OPENWORK_ELECTRON_USERDATA?.trim();
 if (userDataOverride) {

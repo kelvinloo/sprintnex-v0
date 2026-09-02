@@ -4,7 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 
-import { findFreePort, makeClient, parseArgs, spawnOpencodeServe, waitForHealthy } from "./_util.mjs";
+import {
+  findFreePort,
+  makeClient,
+  parseArgs,
+  spawnOpencodeServe,
+  waitForHealthy,
+} from "./_util.mjs";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -28,7 +34,9 @@ function createTextStream(text) {
     {
       id: "chatcmpl-1",
       object: "chat.completion.chunk",
-      choices: [{ index: 0, delta: { role: "assistant" }, finish_reason: null }],
+      choices: [
+        { index: 0, delta: { role: "assistant" }, finish_reason: null },
+      ],
     },
     {
       id: "chatcmpl-1",
@@ -48,7 +56,9 @@ function createInvalidToolStream() {
     {
       id: "chatcmpl-2",
       object: "chat.completion.chunk",
-      choices: [{ index: 0, delta: { role: "assistant" }, finish_reason: null }],
+      choices: [
+        { index: 0, delta: { role: "assistant" }, finish_reason: null },
+      ],
     },
     {
       id: "chatcmpl-2",
@@ -122,12 +132,21 @@ const mockSockets = new Set();
 try {
   tmpdir = await mkdtemp(path.join(os.tmpdir(), "openwork-browser-entry-"));
 
-  const templateUrl = new URL("../src/app/data/commands/browser-setup.md", import.meta.url);
+  const templateUrl = new URL(
+    "../src/app/data/commands/browser-setup.md",
+    import.meta.url,
+  );
   const template = await readFile(templateUrl, "utf8");
 
   await step("workspace.setup", async () => {
-    await mkdir(path.join(tmpdir, ".opencode", "commands"), { recursive: true });
-    await writeFile(path.join(tmpdir, ".opencode", "commands", "browser-setup.md"), template, "utf8");
+    await mkdir(path.join(tmpdir, ".opencode", "commands"), {
+      recursive: true,
+    });
+    await writeFile(
+      path.join(tmpdir, ".opencode", "commands", "browser-setup.md"),
+      template,
+      "utf8",
+    );
     return { tmpdir };
   });
 
@@ -136,13 +155,16 @@ try {
 
   await step("provider.mock.start", async () => {
     mock = http.createServer(async (req, res) => {
-      const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "127.0.0.1"}`);
+      const url = new URL(
+        req.url ?? "/",
+        `http://${req.headers.host ?? "127.0.0.1"}`,
+      );
       if (req.method === "GET" && url.pathname.endsWith("/models")) {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(
           JSON.stringify({
             object: "list",
-            data: [{ id: "qwen-plus", object: "model" }],
+            data: [{ id: "t", object: "model" }],
           }),
         );
         return;
@@ -220,7 +242,10 @@ try {
 
   const port = await findFreePort();
   opencode = await spawnOpencodeServe({ directory: tmpdir, port });
-  const client = makeClient({ baseUrl: opencode.baseUrl, directory: opencode.cwd });
+  const client = makeClient({
+    baseUrl: opencode.baseUrl,
+    directory: opencode.cwd,
+  });
 
   await step("health", async () => {
     const health = await waitForHealthy(client);
@@ -230,7 +255,9 @@ try {
   let sessionId;
 
   await step("session.create", async () => {
-    const session = await client.session.create({ title: "OpenWork browser-entry test" });
+    const session = await client.session.create({
+      title: "OpenWork browser-entry test",
+    });
     sessionId = session.id;
     assert.ok(sessionId);
     return { id: session.id };
@@ -247,7 +274,11 @@ try {
   });
 
   await step("assert.built-in-browser-quickstart", async () => {
-    assert.equal(sawBuiltInBrowserPrompt, true, "Expected browser quickstart prompt to use the built-in OpenWork Browser");
+    assert.equal(
+      sawBuiltInBrowserPrompt,
+      true,
+      "Expected browser quickstart prompt to use the built-in OpenWork Browser",
+    );
     return { sawBuiltInBrowserPrompt };
   });
 
@@ -255,19 +286,34 @@ try {
     const start = Date.now();
     // Keep this internal polling window short: the test should wait up to 12 seconds for the assistant response before failing
     while (Date.now() - start < 12_000) {
-      const msgs = await client.session.messages({ sessionID: sessionId, limit: 50 });
+      const msgs = await client.session.messages({
+        sessionID: sessionId,
+        limit: 50,
+      });
       const parts = msgs.flatMap((m) => m.parts ?? []);
-      const toolErrors = parts.filter((p) => p?.type === "tool" && String(p?.state?.status ?? "").toLowerCase() === "error");
+      const toolErrors = parts.filter(
+        (p) =>
+          p?.type === "tool" &&
+          String(p?.state?.status ?? "").toLowerCase() === "error",
+      );
       if (toolErrors.length > 0) {
         const first = toolErrors[0];
         const tool = typeof first.tool === "string" ? first.tool : "tool";
-        const title = typeof first.state?.title === "string" ? first.state.title : "";
-        const err = typeof first.state?.error === "string" ? first.state.error : "";
-        throw new Error(`Unexpected tool error (${tool}): ${title} ${err}`.trim());
+        const title =
+          typeof first.state?.title === "string" ? first.state.title : "";
+        const err =
+          typeof first.state?.error === "string" ? first.state.error : "";
+        throw new Error(
+          `Unexpected tool error (${tool}): ${title} ${err}`.trim(),
+        );
       }
 
       const hasAssistantText = msgs.some(
-        (m) => m.info?.role === "assistant" && (m.parts ?? []).some((p) => p.type === "text" && String(p.text ?? "").trim()),
+        (m) =>
+          m.info?.role === "assistant" &&
+          (m.parts ?? []).some(
+            (p) => p.type === "text" && String(p.text ?? "").trim(),
+          ),
       );
       if (hasAssistantText) {
         return { messages: msgs.length };

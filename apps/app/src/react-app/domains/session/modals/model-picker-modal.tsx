@@ -53,7 +53,6 @@ type ProviderGroup = {
 };
 
 export function ModelPickerModal(props: ModelPickerModalProps) {
-  console.log("ModelPickerModal props", props);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(
     new Set(),

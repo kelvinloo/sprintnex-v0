@@ -47,7 +47,9 @@ function platformLabel(platform: ArchitectureInfo["platform"]): string {
   return "Linux";
 }
 
-export function ArchitectureMismatchGate({ children }: ArchitectureMismatchGateProps) {
+export function ArchitectureMismatchGate({
+  children,
+}: ArchitectureMismatchGateProps) {
   const { markRouteReady } = useBootState();
   const [state, dispatch] = useReducer(architectureGateReducer, {
     info: null,
@@ -70,7 +72,10 @@ export function ArchitectureMismatchGate({ children }: ArchitectureMismatchGateP
       })
       .catch((error) => {
         if (cancelled) return;
-        console.warn("[architecture-gate] failed to resolve runtime architecture", error);
+        console.warn(
+          "[architecture-gate] failed to resolve runtime architecture",
+          error,
+        );
         dispatch({ type: "checked" });
       });
 
@@ -111,20 +116,34 @@ export function ArchitectureMismatchGate({ children }: ArchitectureMismatchGateP
                   Install the correct OpenWork build
                 </h1>
                 <p className="max-w-2xl text-base leading-7 text-white/72 sm:text-lg">
-                  Your application is running the {info.appArchLabel} version of OpenWork, but this {platformLabel(info.platform)} system is {info.systemArchLabel}. This may cause unpredictable issues.
+                  Your application is running the {info.appArchLabel} version of
+                  OpenWork, but this {platformLabel(info.platform)} system is{" "}
+                  {info.systemArchLabel}. This may cause unpredictable issues.
                 </p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                  <div className="text-xs uppercase tracking-[0.2em] text-white/40">Running app</div>
-                  <div className="mt-2 text-2xl font-semibold text-white">{info.appArchLabel}</div>
-                  <div className="mt-1 font-mono text-xs text-white/45">{info.appArch}</div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-white/40">
+                    Running app
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-white">
+                    {info.appArchLabel}
+                  </div>
+                  <div className="mt-1 font-mono text-xs text-white/45">
+                    {info.appArch}
+                  </div>
                 </div>
                 <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4">
-                  <div className="text-xs uppercase tracking-[0.2em] text-emerald-100/70">Your system</div>
-                  <div className="mt-2 text-2xl font-semibold text-emerald-50">{info.systemArchLabel}</div>
-                  <div className="mt-1 font-mono text-xs text-emerald-100/55">{info.systemArch}</div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-emerald-100/70">
+                    Your system
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-emerald-50">
+                    {info.systemArchLabel}
+                  </div>
+                  <div className="mt-1 font-mono text-xs text-emerald-100/55">
+                    {info.systemArch}
+                  </div>
                 </div>
               </div>
 
@@ -148,15 +167,23 @@ export function ArchitectureMismatchGate({ children }: ArchitectureMismatchGateP
 
             <aside className="border-t border-white/10 bg-gradient-to-br from-emerald-300/12 via-sky-300/8 to-transparent p-8 sm:p-10 lg:border-l lg:border-t-0 lg:p-12">
               <div className="space-y-5 rounded-[28px] border border-white/10 bg-black/25 p-6 text-sm leading-6 text-white/68">
-                <div className="text-lg font-semibold text-white">Why OpenWork stopped here</div>
+                <div className="text-lg font-semibold text-white">
+                  Why Sprintnex stopped here
+                </div>
                 <p>
-                  OpenWork blocks startup when the installed app architecture does not match the machine architecture. This prevents runtime sidecars, browser tooling, and update downloads from continuing on the wrong build.
+                  Sprintnex blocks startup when the installed app architecture
+                  does not match the machine architecture. This prevents runtime
+                  sidecars, browser tooling, and update downloads from
+                  continuing on the wrong build.
                 </p>
                 <p>
-                  After installing the correct {info.systemArchLabel} build, quit this copy and launch OpenWork again. Your workspaces and settings are kept in the same app data folder.
+                  After installing the correct {info.systemArchLabel} build,
+                  quit this copy and launch Sprintnex again. Your workspaces and
+                  settings are kept in the same app data folder.
                 </p>
                 <div className="rounded-2xl bg-white/[0.06] p-4 font-mono text-xs text-white/55">
-                  v{info.version} · {platformLabel(info.platform)} · {info.systemArch}
+                  v{info.version} · {platformLabel(info.platform)} ·{" "}
+                  {info.systemArch}
                 </div>
               </div>
             </aside>
