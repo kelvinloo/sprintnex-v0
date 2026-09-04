@@ -29,6 +29,9 @@ export function SprintnexLoginPage() {
   const state = location.state as LocationState | null;
   const redirectPath = `${state?.from?.pathname || "/session"}${state?.from?.search || ""}${state?.from?.hash || ""}`;
 
+  const [organizationCode, setOrganizationCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -149,6 +152,24 @@ export function SprintnexLoginPage() {
     }
   }
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await auth.signIn({ email, organizationCode, password });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      navigate(redirectPath, { replace: true });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleSsoOrgSelect() {
     if (!ssoTicket || !selectedOrgId) return;
     setSsoError(null);
@@ -194,10 +215,10 @@ export function SprintnexLoginPage() {
                 <h1 className="text-3xl font-semibold tracking-tight text-[#101828]">
                   Sign in to Sprintnex
                 </h1>
-                {/* <p className="mt-2 text-sm leading-6 text-[#667085]">
-                  Email/password supports organization owner access. Organization
-                  users can add their organization code, or use SSO below.
-                </p> */}
+                <p className="mt-2 text-sm leading-6 text-[#667085]">
+                  Sign in with local credentials, or use Sprintnex SSO for your
+                  organization.
+                </p>
               </div>
             </div>
 
@@ -252,6 +273,69 @@ export function SprintnexLoginPage() {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* <form className="space-y-4" onSubmit={handleSubmit}>
+                  <label className="block space-y-1.5">
+                    <span className="text-sm font-medium text-[#344054]">
+                      Email
+                    </span>
+                    <input
+                      autoComplete="email"
+                      autoFocus
+                      className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
+                      inputMode="email"
+                      onChange={(event) => setEmail(event.currentTarget.value)}
+                      placeholder="Enter your email"
+                      type="email"
+                      value={email}
+                    />
+                  </label>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-sm font-medium text-[#344054]">
+                      Password
+                    </span>
+                    <input
+                      autoComplete="current-password"
+                      className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
+                      onChange={(event) => setPassword(event.currentTarget.value)}
+                      placeholder="Enter your password"
+                      type="password"
+                      value={password}
+                    />
+                  </label>
+
+                  <label className="block space-y-1.5">
+                    <span className="text-sm font-medium text-[#344054]">
+                      Organization code <span className="font-normal text-[#667085]">(optional)</span>
+                    </span>
+                    <input
+                      autoCapitalize="characters"
+                      autoComplete="organization"
+                      className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
+                      onChange={(event) =>
+                        setOrganizationCode(event.currentTarget.value)
+                      }
+                      placeholder="e.g. default"
+                      value={organizationCode}
+                    />
+                  </label>
+
+                  <Button
+                    className="h-11 w-full rounded-xl"
+                    disabled={busy}
+                    type="submit"
+                  >
+                    {busy ? "Signing in" : "Sign in"}
+                    <ArrowRight size={15} />
+                  </Button>
+                </form>
+
+                <div className="flex items-center gap-3 py-1">
+                  <div className="h-px flex-1 bg-[#d0d5dd]" />
+                  <span className="text-xs text-[#98a2b3]">or</span>
+                  <div className="h-px flex-1 bg-[#d0d5dd]" />
+                </div> */}
+
                 {error ? (
                   <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                     {error}

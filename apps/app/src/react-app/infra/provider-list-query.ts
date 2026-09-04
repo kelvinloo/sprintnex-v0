@@ -22,7 +22,10 @@ export type ConnectedProviderSnapshotChange = {
 };
 
 const connectedProviderSnapshots = new Map<string, ConnectedProviderSnapshot>();
-const connectedProviderSnapshotChanges = new Map<string, ConnectedProviderSnapshotChange>();
+const connectedProviderSnapshotChanges = new Map<
+  string,
+  ConnectedProviderSnapshotChange
+>();
 
 export function providerListQueryKey(input: {
   baseUrl?: string | null;
@@ -37,7 +40,10 @@ export function providerListQueryKey(input: {
 
 export async function refreshProviderListQueries(queryClient: QueryClient) {
   await queryClient.invalidateQueries({ queryKey: PROVIDER_LIST_QUERY_ROOT });
-  await queryClient.refetchQueries({ queryKey: PROVIDER_LIST_QUERY_ROOT, type: "active" });
+  await queryClient.refetchQueries({
+    queryKey: PROVIDER_LIST_QUERY_ROOT,
+    type: "active",
+  });
 }
 
 export async function fetchProviderList(input: {
@@ -54,23 +60,31 @@ export async function fetchProviderList(input: {
   return value;
 }
 
-export function getConnectedProviderItems(value: ProviderListResponse | null | undefined) {
+export function getConnectedProviderItems(
+  value: ProviderListResponse | null | undefined,
+) {
   const connected = new Set(value?.connected ?? []);
   return (value?.all ?? []).filter(
     (provider) =>
       connected.has(provider.id) &&
-      (provider.source !== "custom" || provider.id === "opencode" || Object.keys(provider.models ?? {}).length > 0),
+      (provider.source !== "custom" ||
+        provider.id === "opencode" ||
+        Object.keys(provider.models ?? {}).length > 0),
   );
 }
 
-export function getConnectedProviderSnapshot(value: ProviderListResponse | null | undefined): ConnectedProviderSnapshot {
+export function getConnectedProviderSnapshot(
+  value: ProviderListResponse | null | undefined,
+): ConnectedProviderSnapshot {
   return getConnectedProviderItems(value)
     .map((provider) => ({
       id: provider.id,
       name: provider.name,
       source: provider.source,
       models: Object.fromEntries(
-        Object.entries(provider.models ?? {}).sort(([a], [b]) => a.localeCompare(b)),
+        Object.entries(provider.models ?? {}).sort(([a], [b]) =>
+          a.localeCompare(b),
+        ),
       ),
     }))
     .sort((a, b) => a.id.localeCompare(b.id));
@@ -82,7 +96,9 @@ export function isModelAvailableInConnectedProviders(
 ) {
   if (!model?.providerID || !model.modelID) return true;
   return getConnectedProviderItems(value).some(
-    (provider) => provider.id === model.providerID && Boolean(provider.models?.[model.modelID]),
+    (provider) =>
+      provider.id === model.providerID &&
+      Boolean(provider.models?.[model.modelID]),
   );
 }
 
@@ -90,7 +106,10 @@ export function getConnectedProviderSnapshotChange(input: {
   baseUrl?: string | null;
   directory?: string | null;
 }) {
-  return connectedProviderSnapshotChanges.get(connectedProviderSnapshotKey(input)) ?? null;
+  return (
+    connectedProviderSnapshotChanges.get(connectedProviderSnapshotKey(input)) ??
+    null
+  );
 }
 
 function recordConnectedProviderSnapshot(
@@ -103,7 +122,8 @@ function recordConnectedProviderSnapshot(
   const key = connectedProviderSnapshotKey(input);
   const previous = connectedProviderSnapshots.get(key) ?? null;
   const next = getConnectedProviderSnapshot(value);
-  const changed = previous !== null && JSON.stringify(previous) !== JSON.stringify(next);
+  const changed =
+    previous !== null && JSON.stringify(previous) !== JSON.stringify(next);
   connectedProviderSnapshots.set(key, next);
   connectedProviderSnapshotChanges.set(key, { changed, previous, next });
   if (changed) {
@@ -123,8 +143,12 @@ function dispatchConnectedProviderChanges(
   next: ConnectedProviderSnapshot,
 ) {
   if (!previous) return;
-  const previousById = new Map(previous.map((provider) => [provider.id, provider]));
-  const newProviders = next.filter((provider) => !previousById.has(provider.id));
+  const previousById = new Map(
+    previous.map((provider) => [provider.id, provider]),
+  );
+  const newProviders = next.filter(
+    (provider) => !previousById.has(provider.id),
+  );
   const changedProviders = new Map<string, ConnectedProviderSnapshot[number]>();
   let newModelCount = 0;
 
@@ -153,7 +177,9 @@ function dispatchConnectedProviderChanges(
         name: provider.name,
         providerId: provider.id,
         firstModelId,
-        firstModelName: firstModelId ? provider.models[firstModelId]?.name ?? firstModelId : undefined,
+        firstModelName: firstModelId
+          ? (provider.models[firstModelId]?.name ?? firstModelId)
+          : undefined,
       };
     }),
     newProviderCount: newProviders.length,

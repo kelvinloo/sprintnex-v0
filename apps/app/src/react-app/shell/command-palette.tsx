@@ -24,7 +24,15 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { BrainCircuit, Check, ChevronLeftIcon, FileText, FolderInput, Globe, Zap } from "lucide-react";
+import {
+  BrainCircuit,
+  Check,
+  ChevronLeftIcon,
+  FileText,
+  FolderInput,
+  Globe,
+  Zap,
+} from "lucide-react";
 
 export type PaletteItem = {
   id: string;
@@ -44,7 +52,12 @@ export type AccessibleTargetOption = {
   preview: string;
 };
 
-type PaletteMode = "root" | "sessions" | "accessible-items" | "agents" | "groups";
+type PaletteMode =
+  | "root"
+  | "sessions"
+  | "accessible-items"
+  | "agents"
+  | "groups";
 
 export type SessionOption = {
   workspaceId: string;
@@ -154,168 +167,190 @@ export function CommandPalette(props: CommandPaletteProps) {
 
   const accessibleTargetCount = props.accessibleTargets?.length ?? 0;
   const sessionGroupCount = props.sessionGroups?.length ?? 0;
-  const canMoveCurrentSessionToGroup = Boolean(props.currentSessionForGroupMove && props.onMoveCurrentSessionToGroup);
+  const canMoveCurrentSessionToGroup = Boolean(
+    props.currentSessionForGroupMove && props.onMoveCurrentSessionToGroup,
+  );
 
-  const rootItems = useMemo<PaletteItem[]>(() => [
-    {
-      id: "new-session",
-      title: t("session.cmd_new_session_title"),
-      detail: t("session.cmd_new_session_detail"),
-      meta: t("session.cmd_new_session_meta"),
-      action: () => {
-        props.onClose();
-        props.onCreateNewSession();
+  const rootItems = useMemo<PaletteItem[]>(
+    () => [
+      {
+        id: "new-session",
+        title: t("session.cmd_new_session_title"),
+        detail: t("session.cmd_new_session_detail"),
+        meta: t("session.cmd_new_session_meta"),
+        action: () => {
+          props.onClose();
+          props.onCreateNewSession();
+        },
       },
-    },
-    {
-      id: "sessions",
-      title: t("session.cmd_sessions_title"),
-      detail: t("session.cmd_sessions_detail", undefined, {
-        count: props.sessions.length.toLocaleString(),
-      }),
-      meta: t("session.cmd_sessions_meta"),
-      action: () => {
-        setMode("sessions");
+      {
+        id: "sessions",
+        title: t("session.cmd_sessions_title"),
+        detail: t("session.cmd_sessions_detail", undefined, {
+          count: props.sessions.length.toLocaleString(),
+        }),
+        meta: t("session.cmd_sessions_meta"),
+        action: () => {
+          setMode("sessions");
+        },
       },
-    },
-    ...(props.onOpenModelPicker
-      ? [{
-          id: "models",
-          title: "Switch model",
-          detail: "Choose the LLM that runs your next prompts",
-          meta: props.selectedModelLabel ?? t("session.default_model"),
-          icon: <BrainCircuit className="size-4 text-primary" />,
-          searchText: "model models llm provider openai anthropic claude gpt gemini switch pick select default",
-          action: () => {
-            props.onClose();
-            props.onOpenModelPicker?.();
-          },
-        }]
-      : []),
-    ...(props.listAgents
-      ? [{
-          id: "agents",
-          title: t("session.cmd_agents_title"),
-          detail: t("session.cmd_agents_detail"),
-          meta: props.selectedAgent
-            ? props.selectedAgent.charAt(0).toUpperCase() + props.selectedAgent.slice(1)
-            : t("session.default_agent"),
-          searchText: "agent agents switch pick select default build plan",
-          action: () => {
-            setMode("agents");
-          },
-        }]
-      : []),
-    ...(canMoveCurrentSessionToGroup
-      ? [{
-          id: "move-to-group",
-          title: "Move to Group",
-          detail: props.currentSessionForGroupMove
-            ? `Add ${props.currentSessionForGroupMove.title} to an existing group`
-            : "Add the selected task to an existing group",
-          meta: sessionGroupCount > 0 ? `${sessionGroupCount.toLocaleString()} groups` : "No groups",
-          icon: <FolderInput className="size-4 text-primary" />,
-          searchText: "move to group add task session folder organize",
-          action: () => {
-            setMode("groups");
-          },
-        }]
-      : []),
-    {
-      id: "accessible-items",
-      title: "Accessible items",
-      detail: accessibleTargetCount > 0
-        ? `Open ${accessibleTargetCount.toLocaleString()} servers and artifacts detected in this session`
-        : "No servers or artifacts detected in this session yet",
-      meta: "Session",
-      action: () => {
-        setMode("accessible-items");
+      ...(props.onOpenModelPicker
+        ? [
+            {
+              id: "models",
+              title: "Switch model",
+              detail: "Choose the LLM that runs your next prompts",
+              meta: props.selectedModelLabel ?? t("session.default_model"),
+              icon: <BrainCircuit className="size-4 text-primary" />,
+              searchText:
+                "model models llm provider openai anthropic claude gpt gemini switch pick select default",
+              action: () => {
+                props.onClose();
+                props.onOpenModelPicker?.();
+              },
+            },
+          ]
+        : []),
+      ...(props.listAgents
+        ? [
+            {
+              id: "agents",
+              title: t("session.cmd_agents_title"),
+              detail: t("session.cmd_agents_detail"),
+              meta: props.selectedAgent
+                ? props.selectedAgent.charAt(0).toUpperCase() +
+                  props.selectedAgent.slice(1)
+                : t("session.default_agent"),
+              searchText: "agent agents switch pick select default build plan",
+              action: () => {
+                setMode("agents");
+              },
+            },
+          ]
+        : []),
+      ...(canMoveCurrentSessionToGroup
+        ? [
+            {
+              id: "move-to-group",
+              title: "Move to Group",
+              detail: props.currentSessionForGroupMove
+                ? `Add ${props.currentSessionForGroupMove.title} to an existing group`
+                : "Add the selected task to an existing group",
+              meta:
+                sessionGroupCount > 0
+                  ? `${sessionGroupCount.toLocaleString()} groups`
+                  : "No groups",
+              icon: <FolderInput className="size-4 text-primary" />,
+              searchText: "move to group add task session folder organize",
+              action: () => {
+                setMode("groups");
+              },
+            },
+          ]
+        : []),
+      {
+        id: "accessible-items",
+        title: "Accessible items",
+        detail:
+          accessibleTargetCount > 0
+            ? `Open ${accessibleTargetCount.toLocaleString()} servers and artifacts detected in this session`
+            : "No servers or artifacts detected in this session yet",
+        meta: "Session",
+        action: () => {
+          setMode("accessible-items");
+        },
       },
-    },
-    ...(props.extraItems ?? []),
-    {
-      id: "open-settings",
-      title: t("settings.tab_general"),
-      detail: t("settings.tab_description_general"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        props.onOpenSettings();
+      ...(props.extraItems ?? []),
+      {
+        id: "open-settings",
+        title: t("settings.tab_general"),
+        detail: t("settings.tab_description_general"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          props.onOpenSettings();
+        },
       },
-    },
-    // Top-bar shortcuts — these used to be selectable via Cmd+K and were
-    // missing after the React port. Each one mirrors one of the icons at
-    // the bottom-right of the session surface (documentation / feedback)
-    // plus every settings tab the user is likely to reach for.
-    {
-      id: "open-docs",
-      title: t("session.support_docs"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        openUrl("https://openwork.dev/docs");
+      // Top-bar shortcuts — these used to be selectable via Cmd+K and were
+      // missing after the React port. Each one mirrors one of the icons at
+      // the bottom-right of the session surface (documentation / feedback)
+      // plus every settings tab the user is likely to reach for.
+      {
+        id: "open-docs",
+        title: t("session.support_docs"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          openUrl("https://openwork.dev/docs");
+        },
       },
-    },
-    {
-      id: "open-feedback",
-      title: t("session.support_feedback"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        openUrl("https://openwork.dev/feedback");
+      {
+        id: "open-feedback",
+        title: t("session.support_feedback"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          openUrl("https://openwork.dev/feedback");
+        },
       },
-    },
-    {
-      id: "settings-skills",
-      title: t("settings.tab_skills"),
-      detail: t("settings.tab_description_skills"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        props.onOpenSettings("/settings/skills");
+      {
+        id: "settings-skills",
+        title: t("settings.tab_skills"),
+        detail: t("settings.tab_description_skills"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          props.onOpenSettings("/settings/skills");
+        },
       },
-    },
-    {
-      id: "settings-extensions",
-      title: t("settings.tab_extensions"),
-      detail: t("settings.tab_description_extensions"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        props.onOpenSettings("/settings/extensions");
+      {
+        id: "settings-extensions",
+        title: t("settings.tab_extensions"),
+        detail: t("settings.tab_description_extensions"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          props.onOpenSettings("/settings/extensions");
+        },
       },
-    },
-    {
-      id: "settings-appearance",
-      title: t("settings.tab_appearance"),
-      detail: t("settings.tab_description_appearance"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        props.onOpenSettings("/settings/appearance");
+      {
+        id: "settings-appearance",
+        title: t("settings.tab_appearance"),
+        detail: t("settings.tab_description_appearance"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          props.onOpenSettings("/settings/appearance");
+        },
       },
-    },
-    {
-      id: "settings-recovery",
-      title: t("settings.tab_recovery"),
-      detail: t("settings.tab_description_recovery"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        props.onOpenSettings("/settings/recovery");
+      {
+        id: "settings-recovery",
+        title: t("settings.tab_recovery"),
+        detail: t("settings.tab_description_recovery"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          props.onOpenSettings("/settings/recovery");
+        },
       },
-    },
-    {
-      id: "settings-updates",
-      title: t("settings.tab_updates"),
-      detail: t("settings.tab_description_updates"),
-      meta: t("session.cmd_settings_meta"),
-      action: () => {
-        props.onClose();
-        props.onOpenSettings("/settings/updates");
+      {
+        id: "settings-updates",
+        title: t("settings.tab_updates"),
+        detail: t("settings.tab_description_updates"),
+        meta: t("session.cmd_settings_meta"),
+        action: () => {
+          props.onClose();
+          props.onOpenSettings("/settings/updates");
+        },
       },
-    },
-  ], [accessibleTargetCount, canMoveCurrentSessionToGroup, props, sessionGroupCount]);
+    ],
+    [
+      accessibleTargetCount,
+      canMoveCurrentSessionToGroup,
+      props,
+      sessionGroupCount,
+    ],
+  );
 
   const sessionItems = useMemo<PaletteItem[]>(
     () =>
@@ -344,7 +379,8 @@ export function CommandPalette(props: CommandPaletteProps) {
         detail: target.value,
         meta: target.kind === "url" ? "Server" : "Artifact",
         icon: targetIcon(target),
-        searchText: `${target.name} ${target.value} ${target.preview}`.toLowerCase(),
+        searchText:
+          `${target.name} ${target.value} ${target.preview}`.toLowerCase(),
         action: () => {
           props.onClose();
           props.onOpenAccessibleTarget?.(target);
@@ -356,7 +392,8 @@ export function CommandPalette(props: CommandPaletteProps) {
         detail: target.value,
         meta: "Hide",
         icon: targetIcon(target),
-        searchText: `stop tracking hide ${target.name} ${target.value} ${target.preview}`.toLowerCase(),
+        searchText:
+          `stop tracking hide ${target.name} ${target.value} ${target.preview}`.toLowerCase(),
         action: () => {
           props.onClose();
           props.onHideAccessibleTarget?.(target);
@@ -375,41 +412,59 @@ export function CommandPalette(props: CommandPaletteProps) {
         id: "agent:default",
         title: t("session.default_agent"),
         detail: t("session.cmd_agent_default_detail"),
-        meta: props.selectedAgent == null ? t("session.cmd_agent_active") : undefined,
-        icon: props.selectedAgent == null
-          ? <Check className="size-4 text-primary" />
-          : <Zap className="size-4 text-muted-foreground" />,
+        meta:
+          props.selectedAgent == null
+            ? t("session.cmd_agent_active")
+            : undefined,
+        icon:
+          props.selectedAgent == null ? (
+            <Check className="size-4 text-primary" />
+          ) : (
+            <Zap className="size-4 text-muted-foreground" />
+          ),
         action: () => selectAgent(null),
       },
       ...agents.map((agent) => ({
         id: `agent:${agent.name}`,
         title: agent.name.charAt(0).toUpperCase() + agent.name.slice(1),
         detail: agent.description,
-        meta: props.selectedAgent === agent.name ? t("session.cmd_agent_active") : undefined,
-        icon: props.selectedAgent === agent.name
-          ? <Check className="size-4 text-primary" />
-          : <Zap className="size-4 text-muted-foreground" />,
-        searchText: `agent ${agent.name} ${agent.description ?? ""}`.toLowerCase(),
+        meta:
+          props.selectedAgent === agent.name
+            ? t("session.cmd_agent_active")
+            : undefined,
+        icon:
+          props.selectedAgent === agent.name ? (
+            <Check className="size-4 text-primary" />
+          ) : (
+            <Zap className="size-4 text-muted-foreground" />
+          ),
+        searchText:
+          `agent ${agent.name} ${agent.description ?? ""}`.toLowerCase(),
         action: () => selectAgent(agent.name),
       })),
     ];
   }, [agents, props]);
 
-  const groupItems = useMemo<PaletteItem[]>(() => (
-    (props.sessionGroups ?? []).map((group) => ({
-      id: `group:${group.id}`,
-      title: group.label,
-      meta: props.currentSessionGroupId === group.id ? "Current" : undefined,
-      icon: props.currentSessionGroupId === group.id
-        ? <Check className="size-4 text-primary" />
-        : <FolderInput className="size-4 text-muted-foreground" />,
-      searchText: `group ${group.label}`.toLowerCase(),
-      action: () => {
-        props.onClose();
-        props.onMoveCurrentSessionToGroup?.(group.id);
-      },
-    }))
-  ), [props]);
+  const groupItems = useMemo<PaletteItem[]>(
+    () =>
+      (props.sessionGroups ?? []).map((group) => ({
+        id: `group:${group.id}`,
+        title: group.label,
+        meta: props.currentSessionGroupId === group.id ? "Current" : undefined,
+        icon:
+          props.currentSessionGroupId === group.id ? (
+            <Check className="size-4 text-primary" />
+          ) : (
+            <FolderInput className="size-4 text-muted-foreground" />
+          ),
+        searchText: `group ${group.label}`.toLowerCase(),
+        action: () => {
+          props.onClose();
+          props.onMoveCurrentSessionToGroup?.(group.id);
+        },
+      })),
+    [props],
+  );
 
   const handleEscape = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape") {
@@ -440,15 +495,16 @@ export function CommandPalette(props: CommandPaletteProps) {
     }
   };
 
-  const items = mode === "sessions"
-    ? sessionItems
-    : mode === "accessible-items"
-      ? accessibleItems
-      : mode === "agents"
-        ? agentItems
-        : mode === "groups"
-          ? groupItems
-          : rootItems;
+  const items =
+    mode === "sessions"
+      ? sessionItems
+      : mode === "accessible-items"
+        ? accessibleItems
+        : mode === "agents"
+          ? agentItems
+          : mode === "groups"
+            ? groupItems
+            : rootItems;
 
   return (
     <CommandDialog open={props.open} onOpenChange={handleOpenChange}>
@@ -462,13 +518,17 @@ export function CommandPalette(props: CommandPaletteProps) {
                 ? t("session.cmd_agents_title")
                 : mode === "groups"
                   ? "Move to Group"
-                  : t("session.palette_title_actions")
-          }
+                  : t("session.palette_title_actions")}
         </CommandDialogTitle>
         <Command key={mode} items={items}>
           <CommandHeader className="flex items-center gap-0">
             {mode !== "root" && (
-              <Button variant="outline" size="icon-sm" className="rounded-xl" onClick={() => setMode("root")}>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="rounded-xl"
+                onClick={() => setMode("root")}
+              >
                 <ChevronLeftIcon className="size-4" />
                 <span className="sr-only">{t("common.back")}</span>
               </Button>
@@ -490,7 +550,13 @@ export function CommandPalette(props: CommandPaletteProps) {
             />
           </CommandHeader>
           <CommandPanel>
-            <CommandEmpty>{mode === "accessible-items" ? "No accessible items found for this session." : mode === "groups" ? "No groups found for this workspace." : t("session.palette_no_matches")}</CommandEmpty>
+            <CommandEmpty>
+              {mode === "accessible-items"
+                ? "No accessible items found for this session."
+                : mode === "groups"
+                  ? "No groups found for this workspace."
+                  : t("session.palette_no_matches")}
+            </CommandEmpty>
             <CommandList>
               {(item: PaletteItem) => (
                 <CommandItem
@@ -498,7 +564,9 @@ export function CommandPalette(props: CommandPaletteProps) {
                   value={item.id}
                   onClick={item.action}
                 >
-                  {item.icon ? <span className="mr-2 shrink-0">{item.icon}</span> : null}
+                  {item.icon ? (
+                    <span className="mr-2 shrink-0">{item.icon}</span>
+                  ) : null}
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{item.title}</div>
                     {item.detail ? (
@@ -510,7 +578,9 @@ export function CommandPalette(props: CommandPaletteProps) {
                       <span className="sr-only">{item.searchText}</span>
                     ) : null}
                   </div>
-                  {item.meta ? <CommandShortcut>{item.meta}</CommandShortcut> : null}
+                  {item.meta ? (
+                    <CommandShortcut>{item.meta}</CommandShortcut>
+                  ) : null}
                 </CommandItem>
               )}
             </CommandList>

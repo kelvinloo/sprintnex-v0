@@ -632,9 +632,7 @@ export function SprintnexAuthProvider({ children }: { children: ReactNode }) {
         }),
       });
       const text = await response.text();
-      const data = text
-        ? (JSON.parse(text) as { endSessionUrl?: string })
-        : {};
+      const data = text ? (JSON.parse(text) as { endSessionUrl?: string }) : {};
       const endSessionUrl = data?.endSessionUrl;
       if (endSessionUrl) {
         if (isDesktopRuntime()) {

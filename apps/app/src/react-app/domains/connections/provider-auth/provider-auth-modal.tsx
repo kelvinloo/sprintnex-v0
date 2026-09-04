@@ -193,7 +193,6 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
     const methods = props.authMethods ?? {};
     const connected = new Set(props.connectedProviderIds ?? []);
     const providers = props.providers ?? [];
-
     const providersById = new Map(
       providers.map((provider) => [provider.id, provider]),
     );
@@ -201,6 +200,8 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
       .flatMap((id) => {
         const provider = providersById.get(id);
         const entryMethods = (methods[id] ?? []).filter((method) => {
+          if (method.type === "oauth") return true;
+          return false;
           if (
             isAnthropicProvider(id, provider?.name) &&
             isClaudeProMaxMethod(method)
@@ -225,22 +226,22 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
       })
       .sort(compareProviders);
 
-    if (props.showOpenWorkModelsSubscribe) {
-      const connectedToOpenWork = connected.has(OPENWORK_MODELS_PROVIDER_ID);
-      return [
-        {
-          id: OPENWORK_MODELS_PROVIDER_ID,
-          name: "OpenWork",
-          methods: [{ type: "cloud", label: "Subscribe" }],
-          connected: connectedToOpenWork,
-          env: [],
-        },
-        ...nextEntries.filter(
-          (entry) =>
-            entry.id.trim().toLowerCase() !== OPENWORK_MODELS_PROVIDER_ID,
-        ),
-      ];
-    }
+    // if (props.showOpenWorkModelsSubscribe) {
+    //   const connectedToOpenWork = connected.has(OPENWORK_MODELS_PROVIDER_ID);
+    //   return [
+    //     {
+    //       id: OPENWORK_MODELS_PROVIDER_ID,
+    //       name: "OpenWork",
+    //       methods: [{ type: "cloud", label: "Subscribe" }],
+    //       connected: connectedToOpenWork,
+    //       env: [],
+    //     },
+    //     ...nextEntries.filter(
+    //       (entry) =>
+    //         entry.id.trim().toLowerCase() !== OPENWORK_MODELS_PROVIDER_ID,
+    //     ),
+    //   ];
+    // }
 
     return nextEntries;
   }, [
@@ -1074,7 +1075,9 @@ export default function ProviderAuthModal(props: ProviderAuthModalProps) {
                   {(selectedCloudMethod.modelCount ?? 0) > 0 ? (
                     <div className="rounded-lg border border-gray-6/60 bg-gray-1/60 px-3 py-2 text-[11px] text-gray-9">
                       {selectedCloudMethod.modelCount ?? 0} curated model
-                      {(selectedCloudMethod.modelCount ?? 0) === 1 ? "" : "s"}{" "}
+                      {(selectedCloudMethod.modelCount ?? 0) === 1
+                        ? ""
+                        : "s"}{" "}
                       will be added to this workspace.
                     </div>
                   ) : null}

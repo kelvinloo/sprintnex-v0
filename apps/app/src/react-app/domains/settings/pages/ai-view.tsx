@@ -221,7 +221,7 @@ export function AiSettingsView(props: AiSettingsViewProps) {
           </div>
         ) : null}
 
-        {props.onInstallModelStudio ? (
+        {/* {props.onInstallModelStudio ? (
           <ModelStudioConnectCard
             connectedProviders={props.connectedProviders}
             onConnect={async (input) => {
@@ -229,7 +229,7 @@ export function AiSettingsView(props: AiSettingsViewProps) {
             }}
             disabled={props.busy || props.providerAuthBusy}
           />
-        ) : null}
+        ) : null} */}
 
         {props.showOpenWorkModelsConnect ? (
           <LayoutSectionItem className="flex-row flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-dls-border px-4 py-3">
