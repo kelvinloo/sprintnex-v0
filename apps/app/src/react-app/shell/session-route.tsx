@@ -1435,10 +1435,8 @@ export function SessionRoute() {
           selectedAgent != null
             ? await resolveSprintnexAgent(selectedAgent)
             : undefined;
-        console.log("selectedAgentResolution", selectedAgentResolution);
         const isSelectedSprintnexAgent =
           selectedAgentResolution?.isSprintnex === true;
-        console.log("isSelectedSprintnexAgent", isSelectedSprintnexAgent);
         const selectedSprintnexPrompt = selectedAgentResolution?.prompt;
         const selectedAgentSystem =
           isSelectedSprintnexAgent && selectedSprintnexPrompt
@@ -1450,8 +1448,6 @@ export function SessionRoute() {
           selectedAgent && !isSelectedSprintnexAgent
             ? { agent: selectedAgent }
             : {};
-
-        console.log("selectedAgentOption", selectedAgentOption);
 
         // Sprintnex: integrated blocking classification with task creation.
         // The model can include a task object in structured output to create a task.

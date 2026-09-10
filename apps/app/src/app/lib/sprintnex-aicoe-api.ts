@@ -772,8 +772,6 @@ export async function fetchSprintnexAgents(): Promise<Agent[]> {
       })
       .filter((agent): agent is Agent => agent !== null);
     sprintnexAgentsCache = agents;
-    console.log("[sprintnex] fetched agents", { count: agents.length });
-    console.log("[sprintnex] agent names", sprintnexAgentsCache);
     return agents;
   } catch {
     return [];

@@ -273,7 +273,7 @@ export function SprintnexLoginPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* <form className="space-y-4" onSubmit={handleSubmit}>
+                <form className="space-y-4" onSubmit={handleSubmit}>
                   <label className="block space-y-1.5">
                     <span className="text-sm font-medium text-[#344054]">
                       Email
@@ -297,7 +297,9 @@ export function SprintnexLoginPage() {
                     <input
                       autoComplete="current-password"
                       className="h-11 w-full rounded-lg border border-[#d0d5dd] bg-white px-3 py-1 text-[#101828] outline-none focus:border-[#111827] focus:ring-2 focus:ring-[#111827]/20"
-                      onChange={(event) => setPassword(event.currentTarget.value)}
+                      onChange={(event) =>
+                        setPassword(event.currentTarget.value)
+                      }
                       placeholder="Enter your password"
                       type="password"
                       value={password}
@@ -306,7 +308,10 @@ export function SprintnexLoginPage() {
 
                   <label className="block space-y-1.5">
                     <span className="text-sm font-medium text-[#344054]">
-                      Organization code <span className="font-normal text-[#667085]">(optional)</span>
+                      Organization code{" "}
+                      <span className="font-normal text-[#667085]">
+                        (optional)
+                      </span>
                     </span>
                     <input
                       autoCapitalize="characters"
@@ -334,7 +339,7 @@ export function SprintnexLoginPage() {
                   <div className="h-px flex-1 bg-[#d0d5dd]" />
                   <span className="text-xs text-[#98a2b3]">or</span>
                   <div className="h-px flex-1 bg-[#d0d5dd]" />
-                </div> */}
+                </div>
 
                 {error ? (
                   <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">

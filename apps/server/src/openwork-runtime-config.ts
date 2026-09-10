@@ -31,6 +31,75 @@ import {
   runtimeStorageDir,
 } from "./runtime-opencode-config-store.js";
 
+const MANAGED_AGENT_CONTEXT_URL =
+  "https://n8n.directintegrate.com/webhook/aicoe/agent/runtime/context";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function normalizeManagedSubagents(
+  value: unknown,
+): Record<string, Record<string, unknown>> {
+  if (!isRecord(value) || !Array.isArray(value.agents)) return {};
+
+  const entries = value.agents.flatMap((item) => {
+    if (!isRecord(item) || item.isDefault === true) return [];
+    const name =
+      typeof item.name === "string" && item.name.trim()
+        ? item.name.trim()
+        : typeof item.agent === "string"
+          ? item.agent.trim()
+          : "";
+    if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$/.test(name)) return [];
+
+    return [
+      [
+        name,
+        {
+          ...(typeof item.description === "string"
+            ? { description: item.description }
+            : {}),
+          mode: "subagent",
+          ...(typeof item.prompt === "string" ? { prompt: item.prompt } : {}),
+          hidden: item.hidden === true,
+        },
+      ],
+    ] as Array<[string, Record<string, unknown>]>;
+  });
+
+  return Object.fromEntries(entries);
+}
+
+async function fetchManagedSubagents(): Promise<
+  Record<string, Record<string, unknown>>
+> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+  try {
+    const response = await fetch(MANAGED_AGENT_CONTEXT_URL, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      console.warn(
+        `[openwork-runtime-config] Managed agent request failed with HTTP ${response.status}`,
+      );
+      return {};
+    }
+    return normalizeManagedSubagents(await response.json());
+  } catch (error) {
+    console.warn(
+      "[openwork-runtime-config] Unable to retrieve managed subagents",
+      error,
+    );
+    return {};
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 const OPENWORK_AGENT_PROMPT = `You are Sprintnex.
 
 When the user refers to "you", they mean the Sprintnex app and the current workspace.
@@ -91,15 +160,25 @@ export async function buildOpenworkRuntimeConfigObject(
       ? await readRuntimeOpencodeConfig(config, workspaceId)
       : {};
   const disabledProviders = runtimeDisabledProviderList(runtimeConfig);
+  const managedSubagents = await fetchManagedSubagents();
+  console.log("managedSubagents", managedSubagents);
   return {
     ...runtimeConfig,
     default_agent: runtimeConfig.default_agent ?? "sprintnex",
     agent: {
+      ...managedSubagents,
       sprintnex: {
         description: "Sprintnex default agent",
         mode: "primary",
         temperature: 0.2,
         prompt: OPENWORK_AGENT_PROMPT,
+      },
+      kelvinloo: {
+        name: "kelvinloo",
+        description: "Kelvin's personal agent",
+        mode: "subagent",
+        temperature: 0.2,
+        prompt: "specialized agent for Kelvin's personal use",
       },
     },
     plugin: [
