@@ -173,13 +173,6 @@ export async function buildOpenworkRuntimeConfigObject(
         temperature: 0.2,
         prompt: OPENWORK_AGENT_PROMPT,
       },
-      kelvinloo: {
-        name: "kelvinloo",
-        description: "Kelvin's personal agent",
-        mode: "subagent",
-        temperature: 0.2,
-        prompt: "specialized agent for Kelvin's personal use",
-      },
     },
     plugin: [
       "opencode-chrome-devtools",
