@@ -30,7 +30,7 @@ function resolveAppVersion(app) {
   return _cachedAppVersion;
 }
 const ELECTRON_UPDATER_FEEDS = Object.freeze({
-  stable: "https://github.com/differentai/openwork/releases/latest/download",
+  stable: "https://github.com/k3lvinlkf/openwork/releases/latest/download",
   alpha:
     "https://github.com/k3lvinlkf/openwork/releases/download/alpha-macos-latest",
 });
